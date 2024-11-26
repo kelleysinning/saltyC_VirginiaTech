@@ -49,7 +49,7 @@ library(lubridate)
 library(ggridges)
 
 
-Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC/2P sheets/SEC_PROD.csv")
+Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/2P sheets/SEC_PROD.csv")
 
 
 # Subsetting for Leuctra----------------------
@@ -253,4 +253,54 @@ tukey_result %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
 
 
+# Looking at everything but filter so nothing bigger than 20--------------------------------------------------------
 
+TotalLengths_slim<- Total_Lengths %>%
+  filter(Site %in% c("EAS", "FRY", "RIC") & Length <= 20 )  
+
+# Fix length and count columns
+TotalLengths_slim$Length<-as.numeric(TotalLengths_slim$Length)
+TotalLengths_slim$Abundance<-as.numeric(TotalLengths_slim$Abundance)
+
+# Putting months in order of how I sampled them
+TotalLengths_slim$Sample.Month <- factor(
+  TotalLengths_slim$Sample.Month, 
+  levels = c("September", "October", "November", "December",
+             "January", "February", "March", "April", "May", 
+             "June", "July", "August")
+)
+
+
+# Ensure SC.Category is a factor with the desired order
+TotalLengths_slim$SC.Category <- factor(TotalLengths_slim$SC.Category, levels = c("REF", "MID", "HIGH"))
+
+# Make ggridges plot
+
+ggplot(TotalLengths_slim, aes(Length, y = Sample.Month, fill = after_stat(x))) +
+  facet_wrap(~SC.Category)+
+  geom_density_ridges_gradient(scale = 1.5, alpha=.4) +
+  scale_y_discrete(limits = rev(levels(TotalLengths_slim$Sample.Month)))+
+  scale_fill_gradient(name = "Length (mm)", low= "skyblue", high="darkgoldenrod1") +
+  theme_classic()
+
+ggsave("ALLdensity_ridge_plot.jpeg", path="Graphs/ggridge", width = 12, height= 8, unit= "in")
+
+# ANOVA
+anova_result <- aov(Length ~ SC.Category, data = TotalLengths_slim)
+summary(anova_result)
+tukey_result <- TukeyHSD(anova_result)
+print(tukey_result)
+plot(tukey_result)
+
+# Extract the result for SC.Category and convert to a data frame
+tukey_result <- as.data.frame(tukey_result$SC.Category)
+
+# Install and load kableExtra to make it pretty
+install.packages("kableExtra")
+library(kableExtra)
+
+# Assuming scrapers_table is already in a data frame format
+# Create and style the table
+tukey_result %>%
+  knitr::kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
