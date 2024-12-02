@@ -42,7 +42,6 @@ ggsave("densiy_ridge_plot.jpeg", path="graphs/manuscript", width = 12, height= 8
 
 # Insert my data--------------------------------------------------------------
 
-
 library(tidyverse)
 library(readxl)
 library(lubridate)
@@ -50,6 +49,120 @@ library(ggridges)
 
 
 Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/2P sheets/SEC_PROD.csv")
+
+
+# FFGs
+
+Total_Lengths$FFG[Total_Lengths$Genus=="Acerpenna"] ="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Acentrella"] = "Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Acroneuria"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Allocapnia"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Allognasta"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Alloperla"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Ameletus"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Amphinemura"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Antocha"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Atherix"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Attenella"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Baetidae"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Baetis"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Baetisca"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Boyeria"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Calopteryx"]=="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Capniidae"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Ceratopogonidae"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Cernotina"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Chauloides"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Chelifera"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Chimarra"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Cheumatopsyche"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Chironomidae"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Chironomini"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Circulionidae"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Collembola"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Cordulegaster"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Cyrnellus"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Dicranota"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Diplectrona"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Discocerina"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Dixa"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Dixella"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Dolophilodes"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Ectopria"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Eloeophila"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Epeorus"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Eriopterini"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Ephemera"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Ephemerellidae"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Eurylophella"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Gerris"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Glossosoma"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Goera"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Gomphus"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Gomphurus"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Gyrinus"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Helichus"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Hemiptera"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Heptageniidae"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Hetaerina"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Hexatoma"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Hydrachnia"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Hydatophylax"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Hydropsyche"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Isonychia"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Isoperla"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Langessa"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Lanthus"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Leptophlebiidae"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Lepidostoma"]= "Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Leuctra"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Leuctridae"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Limnephilidae"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Limnophila"]= "Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Limoniidae"]= "Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Lypodiversa"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Micrasema"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Microvelia"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Molophilus"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Neocleon"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Neophylax"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Neoplasta"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Nigronia"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Oligochaeta"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Optioservus"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Oreogeton"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Orthocladine"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Oulimnius"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Paracapnia"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Paraleptophlebiidae"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Polycentropodidae"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Polycentropus"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Probezzia"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Prodaticus"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Prosimulium"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Psephenus"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Pseudolimnophila"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Psychodini"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Pteronarcys"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Pycnopsyche"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Remenus"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Rhagovelia"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Rhyacophila"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Prostoia"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Sialis"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Simulium"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Stratiomyidae"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Stylogomphus"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Tallaperla"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Stenelmis"]="Scraper"
+Total_Lengths$FFG[Total_Lengths$Genus=="Stenonema"]="Scraper" 
+Total_Lengths$FFG[Total_Lengths$Genus=="Taeniopteryx"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Tanypodinae"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Tanytarsini"]="Collector-Gatherer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Tipula"]="Shredder"
+Total_Lengths$FFG[Total_Lengths$Genus=="Triacanthagyna"]="Predator"
+Total_Lengths$FFG[Total_Lengths$Genus=="Wormaldia"]="Collector-Filterer"
+Total_Lengths$FFG[Total_Lengths$Genus=="Zoraena"]="Predator"
 
 
 # Subsetting for Leuctra----------------------
@@ -304,3 +417,61 @@ library(kableExtra)
 tukey_result %>%
   knitr::kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
+
+
+
+
+# Subsetting for FFGS----------------------
+TotalLengths_FFG <- Total_Lengths %>%
+  filter(FFG %in% c("Scraper", "Shredder") & Site %in% c("EAS", "FRY", "RIC"))
+
+# Fix length and count columns
+TotalLengths_FFG$Length<-as.numeric(TotalLengths_FFG$Length)
+TotalLengths_FFG$Abundance<-as.numeric(TotalLengths_FFG$Abundance)
+
+# Putting months in order of how I sampled them
+TotalLengths_FFG$Sample.Month <- factor(
+  TotalLengths_FFG$Sample.Month, 
+  levels = c("September", "October", "November", "December",
+             "January", "February", "March", "April", "May", 
+             "June", "July", "August")
+)
+
+
+# Ensure SC.Category is a factor with the desired order
+TotalLengths_FFG$FFG <- factor(TotalLengths_FFG$FFG, levels = c("Scraper", "Shredder"))
+TotalLengths_FFG$SC.Category <- factor(TotalLengths_FFG$SC.Category, levels = c("REF", "MID", "HIGH"))
+
+# Make ggridges plot
+
+ggplot(TotalLengths_FFG, aes(Length, y = Sample.Month, fill = after_stat(x))) + # after_stat let's you reference a computer variable (length) during plotting...maps length values to fill aesthetic
+  facet_wrap(FFG~SC.Category)+
+  geom_density_ridges_gradient(scale = 1.5, alpha=.4) + # computation of densities, kernal density estimations to get smoothed ridgelines
+  scale_y_discrete(limits = rev(levels(TotalLengths_FFG$Sample.Month)))+ # reverses order of months so it read top to bottom easier
+  scale_fill_gradient(name = "Length (mm)", low= "skyblue", high="darkgoldenrod1") +
+  theme_classic()
+
+ggsave("FFGdensity_ridge_plot.jpeg", path="Graphs/ggridge", width = 12, height= 8, unit= "in")
+
+# ANOVA
+anova_result <- aov(Length ~ FFG, data = TotalLengths_FFG)
+summary(anova_result)
+tukey_result <- TukeyHSD(anova_result)
+print(tukey_result)
+plot(tukey_result)
+
+# Extract the result for SC.Category and convert to a data frame
+tukey_result <- as.data.frame(tukey_result$FFG)
+
+# Install and load kableExtra to make it pretty
+install.packages("kableExtra")
+library(kableExtra)
+
+# Assuming scrapers_table is already in a data frame format
+# Create and style the table
+tukey_result %>%
+  knitr::kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
+
+
+
