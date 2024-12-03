@@ -2197,16 +2197,19 @@ str(EAS_genus_2P[[1]])  # Inspect the first genus dataframe
 # Function to Add Additional Columns to Each Genus Dataframe
 Production_Columns <- function(SECPROD) {
   SECPROD %>%
-    arrange(Length) %>%
-    mutate(Density.Final = as.numeric(Density.Final)) %>%
+    arrange(Length) %>%                       # Sort by Length
+    group_by(Genus) %>%                       # Group by Genus
     mutate(
-      No.Lost = Density.Final - lead(Density.Final),  # Subtract next row's density from current row's density
-      No.Lost = replace_na(No.Lost, 0)  # Replace NA with 0 for the last row (no next row)
-    )
+      No.Lost = Density.Final - lead(Density.Final),  # Subtract next row's density
+      No.Lost = ifelse(is.na(No.Lost), 0, No.Lost)    # Replace NA with 0 (only for the last row)
+    ) %>%
+    ungroup()  # Ungroup after calculation
 }
 
 # Apply Production_Columns to each genus dataframe in the list
+
 EAS_genus_2P_Final <- map(EAS_genus_2P, ~Production_Columns(.x))
+
 
 
 # Saving it to excel where each genus is it's own tab
@@ -2218,7 +2221,7 @@ library(openxlsx)
 wb <- createWorkbook()
 
 # Add each genus dataframe to a separate sheet
-iwalk(EAS_genus_2P_final, function(data, sheet_name) {
+iwalk(EAS_genus_2P_Final, function(data, sheet_name) {
   addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
   writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
 })
@@ -2227,4 +2230,18 @@ iwalk(EAS_genus_2P_final, function(data, sheet_name) {
 saveWorkbook(wb, "EAS_Genus_Summary.xlsx", overwrite = TRUE)
 
 
+
+
+
+
+# Check results for one genus
+EAS_genus_2P_Final[[1]] %>% 
+  select(Genus, Length, Density.Final, No.Lost) %>%
+  print()
+
+
+# Apply Production_Columns and print a preview
+Production_Columns(EAS_genus_2P[[1]]) %>%
+  select(Length, Density.Final, No.Lost) %>%
+  print()
 
