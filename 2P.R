@@ -17,7 +17,7 @@ library(dplyr)
 library(purrr)
 
 # Setting the working directory to "SUMMARY SHEETS" where I store my biomass
-setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC/SUMMARY SHEETS")
+setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
 
 # Ok, bring in the csv summary sheets for each site and month
 # September monthly
@@ -2128,6 +2128,103 @@ mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%  # Calculating individua
 install.packages("writexl")
 library(writexl)
 write_xlsx(IGM_leuctra.EAS, path = "IGM_leuctra.EAS.xlsx")
+
+
+
+
+
+
+
+
+
+# Automating 2P for every taxa in EAS---------
+
+SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month and Sample.Month factor order
+    arrange(factor(Sample.Month, levels = c(
+      "September", "October", "November", "December",
+      "January", "February", "March", "April",
+      "May", "June", "July", "August"
+    )), Sample.Month) %>%
+    
+    # Calculate Density
+    mutate(Density = Abundance / 0.0929) %>%
+    
+    # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE),     # Sum Density
+      Sum.Biomass = sum(Biomass, na.rm = TRUE)      # Sum Biomass
+    ) %>%
+    
+    # Calculate Individual Mass
+    mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
+    
+    # Group by Site, Genus, Sample.Month, Sample.Date, Length
+    group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
+    summarise(
+      Mean.Density = mean(Sum.Density, na.rm = TRUE),  # Average Density
+      Mean.Individual.Mass = mean(Individual.Mass, na.rm = TRUE)  # Average Individual Mass
+    ) %>%
+    
+    # Group by Genus, Length, Site to calculate final densities and biomass per genus
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = sum(Mean.Density, na.rm = TRUE),  # Final Density across the year
+      Individual.Mass.Final = sum(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
+    ) %>%
+    
+    # Arrange by Length for correct ordering of size classes
+    arrange(Length)
+}
+
+# Create a list of dataframes, one for each genus, for the "EAS" site
+EAS_genus_2P <- SECPROD %>%
+  filter(Site == "EAS") %>%             # Filter for the "EAS" site
+  distinct(Genus) %>%                   # Get distinct genera
+  pull(Genus) %>%                       # Pull them as a vector
+  set_names() %>%                       # Set genus names as list names
+  map(~ SECPROD_EAS(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
+
+# Check if Density.Final exists for each genus
+str(EAS_genus_2P[[1]])  # Inspect the first genus dataframe
+
+
+# Function to Add Additional Columns to Each Genus Dataframe
+Production_Columns <- function(SECPROD) {
+  SECPROD %>%
+    arrange(Length) %>%
+    mutate(Density.Final = as.numeric(Density.Final)) %>%
+    mutate(
+      No.Lost = Density.Final - lead(Density.Final),  # Subtract next row's density from current row's density
+      No.Lost = replace_na(No.Lost, 0)  # Replace NA with 0 for the last row (no next row)
+    )
+}
+
+# Apply Production_Columns to each genus dataframe in the list
+EAS_genus_2P_Final <- map(EAS_genus_2P, ~Production_Columns(.x))
+
+
+# Saving it to excel where each genus is it's own tab
+library(dplyr)
+library(purrr)
+install.packages("openxlsx")
+library(openxlsx)
+
+wb <- createWorkbook()
+
+# Add each genus dataframe to a separate sheet
+iwalk(EAS_genus_2P_final, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
+  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
+})
+
+# Step 4: Save the workbook to an Excel file
+saveWorkbook(wb, "EAS_Genus_Summary.xlsx", overwrite = TRUE)
 
 
 

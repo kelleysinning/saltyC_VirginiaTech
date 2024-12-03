@@ -454,7 +454,7 @@ ggplot(TotalLengths_FFG, aes(Length, y = Sample.Month, fill = after_stat(x))) + 
 ggsave("FFGdensity_ridge_plot.jpeg", path="Graphs/ggridge", width = 12, height= 8, unit= "in")
 
 # ANOVA
-anova_result <- aov(Length ~ FFG, data = TotalLengths_FFG)
+anova_result <- aov(Length ~ FFG*SC.Category, data = TotalLengths_FFG)
 summary(anova_result)
 tukey_result <- TukeyHSD(anova_result)
 print(tukey_result)
