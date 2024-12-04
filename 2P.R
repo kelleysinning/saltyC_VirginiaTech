@@ -2199,12 +2199,44 @@ Production_Columns <- function(SECPROD) {
   SECPROD %>%
     arrange(Length) %>%                       # Sort by Length
     group_by(Genus) %>%                       # Group by Genus
+    
     mutate(
-      No.Lost = Density.Final - lead(Density.Final),  # Subtract next row's density
-      No.Lost = ifelse(is.na(No.Lost), 0, No.Lost)    # Replace NA with 0 (only for the last row)
+      No.Lost = if_else(
+        is.na(lead(Density.Final)),  # If the next value is NA (i.e., last row)
+        Density.Final / 1,           # Divide current value by 1 for the last row (same value)
+        (Density.Final - lead(Density.Final))),  # Subtract next row's density to get Number Lost
+      
+      Biomass = Density.Final * Individual.Mass.Final,  # Calculate Biomass
+      
+      # Modify Mass.at.Loss to divide the last value by itself
+      Mass.at.Loss = if_else(
+        is.na(lead(Individual.Mass.Final)),  # If the next value is NA (i.e., last row)
+        Individual.Mass.Final / 2,           # Divide current value by 2 for the last row
+        (Individual.Mass.Final + lead(Individual.Mass.Final)) / 2  # Average with the next value for others
+      ),
+     
+      Biomass.Lost = No.Lost * Mass.at.Loss,
+      
+      Times.No.Size.Classes = Biomass.Lost * n_distinct(Length),  # Multiply Biomass Lost by number of size classes
+      
+      Biomass.Sum = sum(Biomass), # 1 value for taxa
+      
+      Production.Uncorrected = sum(Times.No.Size.Classes[Times.No.Size.Classes > 0], na.rm = TRUE),
+      
+      CohortP.B = Production.Uncorrected/Biomass.Sum,
+      
+      Annual.Production = Production.Uncorrected/(12/n_distinct(Length)),
+      
+      AnnualP.B = Annual.Production/Biomass.Sum,
+      
+      # Calculate Daily Growth:
+      Largest.Mass = Individual.Mass.Final[which.max(Length)],  # Mass for the largest length class
+      Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
+      Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
     ) %>%
     ungroup()  # Ungroup after calculation
 }
+
 
 # Apply Production_Columns to each genus dataframe in the list
 
@@ -2235,8 +2267,9 @@ saveWorkbook(wb, "EAS_Genus_Summary.xlsx", overwrite = TRUE)
 
 
 # Check results for one genus
-EAS_genus_2P_Final[[1]] %>% 
-  select(Genus, Length, Density.Final, No.Lost) %>%
+EAS_genus_2P_Final[["Leuctra"]] %>% 
+  select(Genus, Length, No.Lost, Biomass, 
+         Mass.at.Loss, Biomass.Lost, Biomass.Sum) %>%
   print()
 
 
