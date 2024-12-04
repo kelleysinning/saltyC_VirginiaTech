@@ -1922,6 +1922,14 @@ list_of_greater_secprod <- list(EASsept_long, FRYsept_long, RICsept_long,
  SECPROD <-  SECPROD %>%
    mutate(Genus = ifelse(Genus == "Paraleptophlebiidae", "Paraleptophlebia", Genus))
  SECPROD <-  SECPROD %>%
+   mutate(Genus = ifelse(Genus == "Heptageniidae", "Stenonema", Genus))
+ SECPROD <-  SECPROD %>%
+   mutate(Genus = ifelse(Genus == "Chironomidae", "Orthocladine", Genus))
+ SECPROD <-  SECPROD %>%
+   mutate(Genus = ifelse(Genus == "Leptophlebiidae", "Paraleptophlebiidae", Genus))
+ SECPROD <-  SECPROD %>%
+   mutate(Genus = ifelse(Genus == "Capniidae", "Paracapnia", Genus))
+ SECPROD <-  SECPROD %>%
    mutate(Fraction = ifelse(Fraction == ">1", "> 1", Fraction))
  SECPROD <-  SECPROD %>%
    mutate(Genus = ifelse(Genus == "Allocapnia", "Paracapnia", Genus)) 
@@ -1942,10 +1950,16 @@ list_of_greater_secprod <- list(EASsept_long, FRYsept_long, RICsept_long,
  SECPROD <- SECPROD %>%
    mutate(Biomass = ifelse(Genus == "Probezzia", Biomass / 10, Biomass))
 
- # Taking out zeroes in biomass too
- library(dplyr)
+ # Taking out zeroes and P/A in biomass too
  
-SECPROD <- SECPROD %>% filter(Biomass != 0)
+ library(dplyr)
+ library(stringr)
+ 
+ SECPROD <- SECPROD %>%
+   filter(
+     Biomass != 0,  # Filter out rows where Biomass is zero
+     !str_detect(Genus, "Pupa|Adult|\\(A\\)")  # Exclude rows with "Pupa", "Adult", or "(A)" in the Genus column
+   )
 
 # Saving as a CSV for geom_ridge code
 write.csv(SECPROD, "SEC_PROD.csv", row.names = FALSE)
@@ -2138,11 +2152,12 @@ write_xlsx(IGM_leuctra.EAS, path = "IGM_leuctra.EAS.xlsx")
 
 
 # Automating 2P for every taxa in EAS---------
-
+# Function to calculate density and individual mass correctly for length classes
 SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
   SECPROD %>%
     # Filter by site
     filter(Site == site_filter) %>%
+
     
     # Arrange by month and Sample.Month factor order
     arrange(factor(Sample.Month, levels = c(
@@ -2190,9 +2205,6 @@ EAS_genus_2P <- SECPROD %>%
   set_names() %>%                       # Set genus names as list names
   map(~ SECPROD_EAS(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
 
-# Check if Density.Final exists for each genus
-str(EAS_genus_2P[[1]])  # Inspect the first genus dataframe
-
 
 # Function to Add Additional Columns to Each Genus Dataframe
 Production_Columns <- function(SECPROD) {
@@ -2234,8 +2246,11 @@ Production_Columns <- function(SECPROD) {
       Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
       Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
     ) %>%
+    select(-Largest.Mass, -Smallest.Mass)%>%  # Remove Largest.Mass and Smallest.Mass columns after using them
+  
     ungroup()  # Ungroup after calculation
 }
+
 
 
 # Apply Production_Columns to each genus dataframe in the list
@@ -2247,20 +2262,22 @@ EAS_genus_2P_Final <- map(EAS_genus_2P, ~Production_Columns(.x))
 # Saving it to excel where each genus is it's own tab
 library(dplyr)
 library(purrr)
-install.packages("openxlsx")
 library(openxlsx)
 
+# Create a workbook
 wb <- createWorkbook()
 
-# Add each genus dataframe to a separate sheet
-iwalk(EAS_genus_2P_Final, function(data, sheet_name) {
+# Sort the list of genus dataframes by sheet names (genus names) alphabetically
+sorted_genus_list <- EAS_genus_2P_Final[order(names(EAS_genus_2P_Final))]
+
+# Add each sorted genus dataframe to a separate sheet
+iwalk(sorted_genus_list, function(data, sheet_name) {
   addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
   writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
 })
 
-# Step 4: Save the workbook to an Excel file
+# Save the workbook to an Excel file
 saveWorkbook(wb, "EAS_Genus_Summary.xlsx", overwrite = TRUE)
-
 
 
 
