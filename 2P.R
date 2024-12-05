@@ -2043,6 +2043,11 @@ library(writexl)
 write_xlsx(leuctra.EAS, path = "leuctra.EAS.xlsx")
 
 
+
+
+
+
+
 # Filter for Stenonema taxa in EAS across the year and arrange by Length in ascending order, and add a column for density---
 
 SECPROD_stenonema.EAS <- SECPROD %>%
@@ -2197,6 +2202,9 @@ SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
     arrange(Length)
 }
 
+
+
+
 # Create a list of dataframes, one for each genus, for the "EAS" site
 EAS_genus_2P <- SECPROD %>%
   filter(Site == "EAS") %>%             # Filter for the "EAS" site
@@ -2282,9 +2290,8 @@ saveWorkbook(wb, "EAS_Genus_Summary.xlsx", overwrite = TRUE)
 
 
 
-
 # Check results for one genus
-EAS_genus_2P_Final[["Leuctra"]] %>% 
+EAS_genus_2P_Final[["Diplectrona"]] %>% 
   select(Genus, Length, No.Lost, Biomass, 
          Mass.at.Loss, Biomass.Lost, Biomass.Sum) %>%
   print()
