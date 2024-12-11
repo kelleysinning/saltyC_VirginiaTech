@@ -2590,11 +2590,23 @@ saveWorkbook(wb, "RIC_Genus_Summary.xlsx", overwrite = TRUE)
 
 
 
+# Combining df of production for EAS, FRY, RIC------------------
 
+CORE_PROD <- rbind(EAS_genus_2P_Final_df, FRY_genus_2P_Final_df, RIC_genus_2P_Final_df) 
 
+# Load the dplyr package
+library(dplyr)
 
-# Combining df of production for EAS, FRY, RIC
+# One value per taxa, cleaning up CORE PROD. Right now the annual production value is assigned with each genera
+# length class, but I just want one, so averaging it will do that since they are the same
+COREPROD <- CORE_PROD %>%
+  group_by(Site, Genus) %>%
+  summarise(Annual.Production = mean(Annual.Production, na.rm = TRUE), .groups = 'drop')
 
-CORE_PROD <- rbind(EAS_genus_2P_Final_df, FRY_genus_2P_Final_df, RIC_genus_2P_Final_df)  # From dplyr
+# Ok, perfect. Now, I want to sum the production for all the taxa in each site
+COREPROD_sum <- COREPROD %>%
+  group_by(Site) %>%
+  summarise(Sum.Annual.Production = sum(Annual.Production, na.rm = TRUE), .groups = 'drop')
+
 
 
