@@ -718,6 +718,7 @@ FRYsept_less<- FRYsept_less %>%
 RICsept_less<- RICsept_less %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
+
 # October quarterly
 CROoct <- CROoct %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
@@ -2188,7 +2189,7 @@ RICapril <- RICapril %>%
     .cols = (which(names(RICapril) == "BIOMASS.STARTS.HERE") + 1):ncol(RICapril),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
-EASapril_less <- EASapri_lessl %>%
+EASapril_less <- EASapril_less %>%
   rename_with(
     .cols = (which(names(EASapril_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASapril_less),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
@@ -2913,7 +2914,8 @@ EASjan_less_long <- EASjan_less %>%
     names_to = c(".value", "Length"),      
     names_pattern = "(.*)\\.Length_(\\d+)"  
   ) %>%
-  mutate(Length = as.numeric(Length))       
+  mutate(Length = as.numeric(Length))  
+
 
 FRYjan_less_long <- FRYjan_less %>% 
   pivot_longer(
@@ -3549,7 +3551,7 @@ LLWaug_less_long <- LLWaug_less %>%
   ) %>%
   mutate(Length = as.numeric(Length)) 
 
-LLCaug_less_long <- LLCau_less %>% 
+LLCaug_less_long <- LLCaug_less %>% 
   pivot_longer(
     cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
     names_to = c(".value", "Length"),      
@@ -3606,8 +3608,6 @@ combined_2Plists <- c(list_of_greater_secprod, list_of_less_secprod)
 SECPROD <- do.call(rbind, combined_2Plists)
 
 
- SECPROD<- do.call(rbind, list_of_greater_secprod) #THIS WORKS
- 
  
  # Cleaning up data sheet (typos, equations...)--------
  
@@ -3642,7 +3642,21 @@ SECPROD <- do.call(rbind, combined_2Plists)
                          "Paracapnia", # Allocapnia were actually paracapnia
                          Genus))
  
+ # Taking out zeroes and P/A in biomass too
+ 
+ library(dplyr)
+ library(stringr)
+ 
+ SECPROD <- SECPROD %>%
+   filter(
+     Biomass != 0,  # Filter out rows where Biomass is zero
+     !str_detect(Genus, "Terrestrial|Pupa|Adult|\\(A\\)|\\(terrestrial\\)")  # Exclude rows with "Pupa", "Adult", or "(A)" in the Genus column
+   )
+ 
  # Realized i had decimal in wrong place and needed to move one spot to the left
+ SECPROD$Biomass <- as.numeric(as.character(SECPROD$Biomass))
+ 
+ 
  SECPROD <- SECPROD %>%
    mutate(Biomass = ifelse(Genus == "Acroneuria", Biomass / 10, Biomass)) 
  SECPROD <- SECPROD %>%
@@ -3654,16 +3668,7 @@ SECPROD <- do.call(rbind, combined_2Plists)
  SECPROD <- SECPROD %>%
    mutate(Biomass = ifelse(Genus == "Probezzia", Biomass / 10, Biomass))
 
- # Taking out zeroes and P/A in biomass too
- 
- library(dplyr)
- library(stringr)
- 
- SECPROD <- SECPROD %>%
-   filter(
-     Biomass != 0,  # Filter out rows where Biomass is zero
-     !str_detect(Genus, "Terrestrial|Pupa|Adult|\\(A\\)|\\(terrestrial\\)")  # Exclude rows with "Pupa", "Adult", or "(A)" in the Genus column
-   )
+
 
 # Saving as a CSV for geom_ridge code
 write.csv(SECPROD, "SEC_PROD.csv", row.names = FALSE)
