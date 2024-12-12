@@ -24,6 +24,9 @@ setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_V
 EASsept=read.csv("EAS_Sept.2023_SUMMARY.csv")
 FRYsept=read.csv("FRY_Sept.2023_SUMMARY.csv")
 RICsept=read.csv("RIC_Sept.2023_SUMMARY.csv")
+EASsept_less=read.csv("EAS_Sept.2023_SUMMARYless.csv")
+FRYsept_less=read.csv("FRY_Sept.2023_SUMMARYless.csv")
+RICsept_less=read.csv("RIC_Sept.2023_SUMMARYless.csv")
 # October quarterly
 CROoct=read.csv("CRO_Oct.2023_SUMMARY.csv")
 EASoct=read.csv("EAS_Oct.2023_SUMMARY.csv")
@@ -34,18 +37,36 @@ RUToct=read.csv("RUT_Oct.2023_SUMMARY.csv")
 LLWoct=read.csv("LLW_Oct.2023_SUMMARY.csv")
 LLCoct=read.csv("LLC_Oct.2023_SUMMARY.csv")
 RICoct=read.csv("RIC_Oct.2023_SUMMARY.csv")
+CROoct_less=read.csv("CRO_Oct.2023_SUMMARYless.csv")
+EASoct_less=read.csv("EAS_Oct.2023_SUMMARYless.csv")
+HCNoct_less=read.csv("HCN_Oct.2023_SUMMARYless.csv")
+FRYoct_less=read.csv("FRY_Oct.2023_SUMMARYless.csv")
+HURoct_less=read.csv("HUR_Oct.2023_SUMMARYless.csv")
+RUToct_less=read.csv("RUT_Oct.2023_SUMMARYless.csv")
+LLWoct_less=read.csv("LLW_Oct.2023_SUMMARYless.csv")
+LLCoct_less=read.csv("LLC_Oct.2023_SUMMARYless.csv")
+RICoct_less=read.csv("RIC_Oct.2023_SUMMARYless.csv")
 # November monthly
 EASnov=read.csv("EAS_Nov.2023_SUMMARY.csv")
 FRYnov=read.csv("FRY_Nov.2023_SUMMARY.csv")
 RICnov=read.csv("RIC_Nov.2023_SUMMARY.csv")
+EASnov_less=read.csv("EAS_Nov.2023_SUMMARYless.csv")
+FRYnov_less=read.csv("FRY_Nov.2023_SUMMARYless.csv")
+RICnov_less=read.csv("RIC_Nov.2023_SUMMARYless.csv")
 # December monthly
 EASdec=read.csv("EAS_Dec.2023_SUMMARY.csv")
 FRYdec=read.csv("FRY_Dec.2023_SUMMARY.csv")
 RICdec=read.csv("RIC_Dec.2023_SUMMARY.csv")
+EASdec_less=read.csv("EAS_Dec.2023_SUMMARYless.csv")
+FRYdec_less=read.csv("FRY_Dec.2023_SUMMARYless.csv")
+RICdec_less=read.csv("RIC_Dec.2023_SUMMARYless.csv")
 # January monthly
 EASjan=read.csv("EAS_Jan.2024_SUMMARY.csv")
 FRYjan=read.csv("FRY_Jan.2024_SUMMARY.csv")
 RICjan=read.csv("RIC_Jan.2024_SUMMARY.csv")
+EASjan_less=read.csv("EAS_Jan.2024_SUMMARYless.csv")
+FRYjan_less=read.csv("FRY_Jan.2024_SUMMARYless.csv")
+RICjan_less=read.csv("RIC_Jan.2024_SUMMARYless.csv")
 # February quarterly
 CROfeb=read.csv("CRO_Feb.2024_SUMMARY.csv")
 EASfeb=read.csv("EAS_Feb.2024_SUMMARY.csv")
@@ -56,14 +77,29 @@ RUTfeb=read.csv("RUT_Feb.2024_SUMMARY.csv")
 LLWfeb=read.csv("LLW_Feb.2024_SUMMARY.csv")
 LLCfeb=read.csv("LLC_Feb.2024_SUMMARY.csv")
 RICfeb=read.csv("RIC_Feb.2024_SUMMARY.csv")
+CROfeb_less=read.csv("CRO_Feb.2024_SUMMARYless.csv")
+EASfeb_less=read.csv("EAS_Feb.2024_SUMMARYless.csv")
+HCNfeb_less=read.csv("HCN_Feb.2024_SUMMARYless.csv")
+FRYfeb_less=read.csv("FRY_Feb.2024_SUMMARYless.csv")
+HURfeb_less=read.csv("HUR_Feb.2024_SUMMARYless.csv")
+RUTfeb_less=read.csv("RUT_Feb.2024_SUMMARYless.csv")
+LLWfeb_less=read.csv("LLW_Feb.2024_SUMMARYless.csv")
+LLCfeb_less=read.csv("LLC_Feb.2024_SUMMARYless.csv")
+RICfeb_less=read.csv("RIC_Feb.2024_SUMMARYless.csv")
 # March monthly
 EASmarch=read.csv("EAS_March.2024_SUMMARY.csv")
 FRYmarch=read.csv("FRY_March.2024_SUMMARY.csv")
 RICmarch=read.csv("RIC_March.2024_SUMMARY.csv")
+EASmarch_less=read.csv("EAS_March.2024_SUMMARYless.csv")
+FRYmarch_less=read.csv("FRY_March.2024_SUMMARYless.csv")
+RICmarch_less=read.csv("RIC_March.2024_SUMMARYless.csv")
 # April monthly
 EASapril=read.csv("EAS_April.2024_SUMMARY.csv")
 FRYapril=read.csv("FRY_April.2024_SUMMARY.csv")
 RICapril=read.csv("RIC_April.2024_SUMMARY.csv")
+EASapril_less=read.csv("EAS_April.2024_SUMMARYless.csv")
+FRYapril_less=read.csv("FRY_April.2024_SUMMARYless.csv")
+RICapril_less=read.csv("RIC_April.2024_SUMMARYless.csv")
 # May quarterly
 CROmay=read.csv("CRO_May.2024_SUMMARY.csv")
 EASmay=read.csv("EAS_May.2024_SUMMARY.csv")
@@ -74,14 +110,29 @@ RUTmay=read.csv("RUT_May.2024_SUMMARY.csv")
 LLWmay=read.csv("LLW_May.2024_SUMMARY.csv")
 LLCmay=read.csv("LLC_May.2024_SUMMARY.csv")
 RICmay=read.csv("RIC_May.2024_SUMMARY.csv")
+CROmay_less=read.csv("CRO_May.2024_SUMMARYless.csv")
+EASmay_less=read.csv("EAS_May.2024_SUMMARYless.csv")
+HCNmay_less=read.csv("HCN_May.2024_SUMMARYless.csv")
+FRYmay_less=read.csv("FRY_May.2024_SUMMARYless.csv")
+HURmay_less=read.csv("HUR_May.2024_SUMMARYless.csv")
+RUTmay_less=read.csv("RUT_May.2024_SUMMARYless.csv")
+LLWmay_less=read.csv("LLW_May.2024_SUMMARYless.csv")
+LLCmay_less=read.csv("LLC_May.2024_SUMMARYless.csv")
+RICmay_less=read.csv("RIC_May.2024_SUMMARYless.csv")
 # June monthly
 EASjune=read.csv("EAS_June.2024_SUMMARY.csv")
 FRYjune=read.csv("FRY_June.2024_SUMMARY.csv")
 RICjune=read.csv("RIC_June.2024_SUMMARY.csv")
+EASjune_less=read.csv("EAS_June.2024_SUMMARYless.csv")
+FRYjune_less=read.csv("FRY_June.2024_SUMMARYless.csv")
+RICjune_less=read.csv("RIC_June.2024_SUMMARYless.csv")
 # July monthly
 EASjuly=read.csv("EAS_July.2024_SUMMARY.csv")
 FRYjuly=read.csv("FRY_July.2024_SUMMARY.csv")
 RICjuly=read.csv("RIC_July.2024_SUMMARY.csv")
+EASjuly_less=read.csv("EAS_July.2024_SUMMARYless.csv")
+FRYjuly_less=read.csv("FRY_July.2024_SUMMARYless.csv")
+RICjuly_less=read.csv("RIC_July.2024_SUMMARYless.csv")
 # August quarterly
 CROaug=read.csv("CRO_Aug.2024_SUMMARY.csv")
 EASaug=read.csv("EAS_Aug.2024_SUMMARY.csv")
@@ -92,6 +143,15 @@ RUTaug=read.csv("RUT_Aug.2024_SUMMARY.csv")
 LLWaug=read.csv("LLW_Aug.2024_SUMMARY.csv")
 LLCaug=read.csv("LLC_Aug.2024_SUMMARY.csv")
 RICaug=read.csv("RIC_Aug.2024_SUMMARY.csv")
+CROaug_less=read.csv("CRO_Aug.2024_SUMMARYless.csv")
+EASaug_less=read.csv("EAS_Aug.2024_SUMMARYless.csv")
+HCNaug_less=read.csv("HCN_Aug.2024_SUMMARYless.csv")
+FRYaug_less=read.csv("FRY_Aug.2024_SUMMARYless.csv")
+HURaug_less=read.csv("HUR_Aug.2024_SUMMARYless.csv")
+RUTaug_less=read.csv("RUT_Aug.2024_SUMMARYless.csv")
+LLWaug_less=read.csv("LLW_Aug.2024_SUMMARYless.csv")
+LLCaug_less=read.csv("LLC_Aug.2024_SUMMARYless.csv")
+RICaug_less=read.csv("RIC_Aug.2024_SUMMARYless.csv")
 
 
 
@@ -100,6 +160,9 @@ RICaug=read.csv("RIC_Aug.2024_SUMMARY.csv")
 EASsept$Site <- c("EAS")
 FRYsept$Site <- c("FRY")
 RICsept$Site <- c("RIC")
+EASsept_less$Site <- c("EAS")
+FRYsept_less$Site <- c("FRY")
+RICsept_less$Site <- c("RIC")
 # October quarterly
 CROoct$Site <- c("CRO")
 EASoct$Site <- c("EAS")
@@ -110,18 +173,36 @@ RUToct$Site <- c("RUT")
 LLWoct$Site <- c("LLW")
 LLCoct$Site <- c("LLC")
 RICoct$Site <- c("RIC")
+CROoct_less$Site <- c("CRO")
+EASoct_less$Site <- c("EAS")
+HCNoct_less$Site <- c("HCN")
+FRYoct_less$Site <- c("FRY")
+HURoct_less$Site <- c("HUR")
+RUToct_less$Site <- c("RUT")
+LLWoct_less$Site <- c("LLW")
+LLCoct_less$Site <- c("LLC")
+RICoct_less$Site <- c("RIC")
 # November monthly
 EASnov$Site <- c("EAS")
 FRYnov$Site <- c("FRY")
 RICnov$Site <- c("RIC")
+EASnov_less$Site <- c("EAS")
+FRYnov_less$Site <- c("FRY")
+RICnov_less$Site <- c("RIC")
 # December monthly
 EASdec$Site <- c("EAS")
 FRYdec$Site <- c("FRY")
 RICdec$Site <- c("RIC")
+EASdec_less$Site <- c("EAS")
+FRYdec_less$Site <- c("FRY")
+RICdec_less$Site <- c("RIC")
 # January monthly
 EASjan$Site <- c("EAS")
 FRYjan$Site <- c("FRY")
 RICjan$Site <- c("RIC")
+EASjan_less$Site <- c("EAS")
+FRYjan_less$Site <- c("FRY")
+RICjan_less$Site <- c("RIC")
 # February quarterly
 CROfeb$Site <- c("CRO")
 EASfeb$Site <- c("EAS")
@@ -132,14 +213,29 @@ RUTfeb$Site <- c("RUT")
 LLWfeb$Site <- c("LLW")
 LLCfeb$Site <- c("LLC")
 RICfeb$Site <- c("RIC")
+CROfeb_less$Site <- c("CRO")
+EASfeb_less$Site <- c("EAS")
+HCNfeb_less$Site <- c("HCN")
+FRYfeb_less$Site <- c("FRY")
+HURfeb_less$Site <- c("HUR")
+RUTfeb_less$Site <- c("RUT")
+LLWfeb_less$Site <- c("LLW")
+LLCfeb_less$Site <- c("LLC")
+RICfeb_less$Site <- c("RIC")
 # March monthly
 EASmarch$Site <- c("EAS")
 FRYmarch$Site <- c("FRY")
 RICmarch$Site <- c("RIC")
+EASmarch_less$Site <- c("EAS")
+FRYmarch_less$Site <- c("FRY")
+RICmarch_less$Site <- c("RIC")
 # April monthly
 EASapril$Site <- c("EAS")
 FRYapril$Site <- c("FRY")
 RICapril$Site <- c("RIC")
+EASapril_less$Site <- c("EAS")
+FRYapril_less$Site <- c("FRY")
+RICapril_less$Site <- c("RIC")
 # May quarterly
 CROmay$Site <- c("CRO")
 EASmay$Site <- c("EAS")
@@ -150,14 +246,29 @@ RUTmay$Site <- c("RUT")
 LLWmay$Site <- c("LLW")
 LLCmay$Site <- c("LLC")
 RICmay$Site <- c("RIC")
+CROmay_less$Site <- c("CRO")
+EASmay_less$Site <- c("EAS")
+HCNmay_less$Site <- c("HCN")
+FRYmay_less$Site <- c("FRY")
+HURmay_less$Site <- c("HUR")
+RUTmay_less$Site <- c("RUT")
+LLWmay_less$Site <- c("LLW")
+LLCmay_less$Site <- c("LLC")
+RICmay_less$Site <- c("RIC")
 # June monthly
 EASjune$Site <- c("EAS")
 FRYjune$Site <- c("FRY")
 RICjune$Site <- c("RIC")
+EASjune_less$Site <- c("EAS")
+FRYjune_less$Site <- c("FRY")
+RICjune_less$Site <- c("RIC")
 # July monthly
 EASjuly$Site <- c("EAS")
 FRYjuly$Site <- c("FRY")
 RICjuly$Site <- c("RIC")
+EASjuly_less$Site <- c("EAS")
+FRYjuly_less$Site <- c("FRY")
+RICjuly_less$Site <- c("RIC")
 # August quarterly
 CROaug$Site <- c("CRO")
 EASaug$Site <- c("EAS")
@@ -168,6 +279,15 @@ RUTaug$Site <- c("RUT")
 LLWaug$Site <- c("LLW")
 LLCaug$Site <- c("LLC")
 RICaug$Site <- c("RIC")
+CROaug_less$Site <- c("CRO")
+EASaug_less$Site <- c("EAS")
+HCNaug_less$Site <- c("HCN")
+FRYaug_less$Site <- c("FRY")
+HURaug_less$Site <- c("HUR")
+RUTaug_less$Site <- c("RUT")
+LLWaug_less$Site <- c("LLW")
+LLCaug_less$Site <- c("LLC")
+RICaug_less$Site <- c("RIC")
 
 
 
@@ -176,6 +296,9 @@ RICaug$Site <- c("RIC")
 EASsept$Sample.Month <- c("September")
 FRYsept$Sample.Month <- c("September")
 RICsept$Sample.Month <- c("September")
+EASsept_less$Sample.Month <- c("September")
+FRYsept_less$Sample.Month <- c("September")
+RICsept_less$Sample.Month <- c("September")
 # October quarterly
 CROoct$Sample.Month <- c("October")
 EASoct$Sample.Month <- c("October")
@@ -186,18 +309,36 @@ RUToct$Sample.Month <- c("October")
 LLWoct$Sample.Month <- c("October")
 LLCoct$Sample.Month <- c("October")
 RICoct$Sample.Month <- c("October")
+CROoct_less$Sample.Month <- c("October")
+EASoct_less$Sample.Month <- c("October")
+HCNoct_less$Sample.Month <- c("October")
+FRYoct_less$Sample.Month <- c("October")
+HURoct_less$Sample.Month <- c("October")
+RUToct_less$Sample.Month <- c("October")
+LLWoct_less$Sample.Month <- c("October")
+LLCoct_less$Sample.Month <- c("October")
+RICoct_less$Sample.Month <- c("October")
 # November monthly
 EASnov$Sample.Month <- c("November")
 FRYnov$Sample.Month <- c("November")
 RICnov$Sample.Month <- c("November")
+EASnov_less$Sample.Month <- c("November")
+FRYnov_less$Sample.Month <- c("November")
+RICnov_less$Sample.Month <- c("November")
 # December monthly
 EASdec$Sample.Month <- c("December")
 FRYdec$Sample.Month <- c("December")
 RICdec$Sample.Month <- c("December")
+EASdec_less$Sample.Month <- c("December")
+FRYdec_less$Sample.Month <- c("December")
+RICdec_less$Sample.Month <- c("December")
 # January monthly
 EASjan$Sample.Month <- c("January")
 FRYjan$Sample.Month <- c("January")
 RICjan$Sample.Month <- c("January")
+EASjan_less$Sample.Month <- c("January")
+FRYjan_less$Sample.Month <- c("January")
+RICjan_less$Sample.Month <- c("January")
 # February quarterly
 CROfeb$Sample.Month <- c("February")
 EASfeb$Sample.Month <- c("February")
@@ -208,14 +349,29 @@ RUTfeb$Sample.Month <- c("February")
 LLWfeb$Sample.Month <- c("February")
 LLCfeb$Sample.Month <- c("February")
 RICfeb$Sample.Month <- c("February")
+CROfeb_less$Sample.Month <- c("February")
+EASfeb_less$Sample.Month <- c("February")
+HCNfeb_less$Sample.Month <- c("February")
+FRYfeb_less$Sample.Month <- c("February")
+HURfeb_less$Sample.Month <- c("February")
+RUTfeb_less$Sample.Month <- c("February")
+LLWfeb_less$Sample.Month <- c("February")
+LLCfeb_less$Sample.Month <- c("February")
+RICfeb_less$Sample.Month <- c("February")
 # March monthly
 EASmarch$Sample.Month <- c("March")
 FRYmarch$Sample.Month <- c("March")
 RICmarch$Sample.Month <- c("March")
+EASmarch_less$Sample.Month <- c("March")
+FRYmarch_less$Sample.Month <- c("March")
+RICmarch_less$Sample.Month <- c("March")
 # April monthly
 EASapril$Sample.Month <- c("April")
 FRYapril$Sample.Month <- c("April")
 RICapril$Sample.Month <- c("April")
+EASapril_less$Sample.Month <- c("April")
+FRYapril_less$Sample.Month <- c("April")
+RICapril_less$Sample.Month <- c("April")
 # May quarterly
 CROmay$Sample.Month <- c("May")
 EASmay$Sample.Month <- c("May")
@@ -226,14 +382,29 @@ RUTmay$Sample.Month <- c("May")
 LLWmay$Sample.Month <- c("May")
 LLCmay$Sample.Month <- c("May")
 RICmay$Sample.Month <- c("May")
+CROmay_less$Sample.Month <- c("May")
+EASmay_less$Sample.Month <- c("May")
+HCNmay_less$Sample.Month <- c("May")
+FRYmay_less$Sample.Month <- c("May")
+HURmay_less$Sample.Month <- c("May")
+RUTmay_less$Sample.Month <- c("May")
+LLWmay_less$Sample.Month <- c("May")
+LLCmay_less$Sample.Month <- c("May")
+RICmay_less$Sample.Month <- c("May")
 # June monthly
 EASjune$Sample.Month <- c("June")
 FRYjune$Sample.Month <- c("June")
 RICjune$Sample.Month <- c("June")
+EASjune_less$Sample.Month <- c("June")
+FRYjune_less$Sample.Month <- c("June")
+RICjune_less$Sample.Month <- c("June")
 # July monthly
 EASjuly$Sample.Month <- c("July")
 FRYjuly$Sample.Month <- c("July")
 RICjuly$Sample.Month <- c("July")
+EASjuly_less$Sample.Month <- c("July")
+FRYjuly_less$Sample.Month <- c("July")
+RICjuly_less$Sample.Month <- c("July")
 # August quarterly
 CROaug$Sample.Month <- c("August")
 EASaug$Sample.Month <- c("August")
@@ -244,6 +415,15 @@ RUTaug$Sample.Month <- c("August")
 LLWaug$Sample.Month <- c("August")
 LLCaug$Sample.Month <- c("August")
 RICaug$Sample.Month <- c("August")
+CROaug_less$Sample.Month <- c("August")
+EASaug_less$Sample.Month <- c("August")
+HCNaug_less$Sample.Month <- c("August")
+FRYaug_less$Sample.Month <- c("August")
+HURaug_less$Sample.Month <- c("August")
+RUTaug_less$Sample.Month <- c("August")
+LLWaug_less$Sample.Month <- c("August")
+LLCaug_less$Sample.Month <- c("August")
+RICaug_less$Sample.Month <- c("August")
 
 
 
@@ -253,6 +433,9 @@ RICaug$Sample.Month <- c("August")
 EASsept$SC.Level <- c("25")
 FRYsept$SC.Level <- c("402")
 RICsept$SC.Level <- c("1457")
+EASsept_less$SC.Level <- c("25")
+FRYsept_less$SC.Level <- c("402")
+RICsept_less$SC.Level <- c("1457")
 # October quarterly
 CROoct$SC.Level <- c("72")
 EASoct$SC.Level <- c("25")
@@ -263,18 +446,36 @@ RUToct$SC.Level <- c("594")
 LLWoct$SC.Level <- c("1119")
 LLCoct$SC.Level <- c("1242")
 RICoct$SC.Level <- c("1457")
+CROoct_less$SC.Level <- c("72")
+EASoct_less$SC.Level <- c("25")
+HCNoct_less$SC.Level <- c("78")
+FRYoct_less$SC.Level <- c("402")
+HURoct_less$SC.Level <- c("387")
+RUToct_less$SC.Level <- c("594")
+LLWoct_less$SC.Level <- c("1119")
+LLCoct_less$SC.Level <- c("1242")
+RICoct_less$SC.Level <- c("1457")
 # November monthly
 EASnov$SC.Level <- c("25")
 FRYnov$SC.Level <- c("402")
 RICnov$SC.Level <- c("1457")
+EASnov_less$SC.Level <- c("25")
+FRYnov_less$SC.Level <- c("402")
+RICnov_less$SC.Level <- c("1457")
 # December monthly
 EASdec$SC.Level <- c("25")
 FRYdec$SC.Level <- c("402")
 RICdec$SC.Level <- c("1457")
+EASdec_less$SC.Level <- c("25")
+FRYdec_less$SC.Level <- c("402")
+RICdec_less$SC.Level <- c("1457")
 # January monthly
 EASjan$SC.Level <- c("25")
 FRYjan$SC.Level <- c("402")
 RICjan$SC.Level <- c("1457")
+EASjan_less$SC.Level <- c("25")
+FRYjan_less$SC.Level <- c("402")
+RICjan_less$SC.Level <- c("1457")
 # February quarterly
 CROfeb$SC.Level <- c("72")
 EASfeb$SC.Level <- c("25")
@@ -285,14 +486,29 @@ RUTfeb$SC.Level <- c("594")
 LLWfeb$SC.Level <- c("1119")
 LLCfeb$SC.Level <- c("1242")
 RICfeb$SC.Level <- c("1457")
+CROfeb_less$SC.Level <- c("72")
+EASfeb_less$SC.Level <- c("25")
+HCNfeb_less$SC.Level <- c("78")
+FRYfeb_less$SC.Level <- c("402")
+HURfeb_less$SC.Level <- c("387")
+RUTfeb_less$SC.Level <- c("594")
+LLWfeb_less$SC.Level <- c("1119")
+LLCfeb_less$SC.Level <- c("1242")
+RICfeb_less$SC.Level <- c("1457")
 # March monthly
 EASmarch$SC.Level <- c("25")
 FRYmarch$SC.Level <- c("402")
 RICmarch$SC.Level <- c("1457")
+EASmarch_less$SC.Level <- c("25")
+FRYmarch_less$SC.Level <- c("402")
+RICmarch_less$SC.Level <- c("1457")
 # April monthly
 EASapril$SC.Level <- c("25")
 FRYapril$SC.Level <- c("402")
 RICapril$SC.Level <- c("1457")
+EASapril_less$SC.Level <- c("25")
+FRYapril_less$SC.Level <- c("402")
+RICapril_less$SC.Level <- c("1457")
 # May quarterly
 CROmay$SC.Level <- c("72")
 EASmay$SC.Level <- c("25")
@@ -303,14 +519,29 @@ RUTmay$SC.Level <- c("594")
 LLWmay$SC.Level <- c("1119")
 LLCmay$SC.Level <- c("1242")
 RICmay$SC.Level <- c("1457")
+CROmay_less$SC.Level <- c("72")
+EASmay_less$SC.Level <- c("25")
+HCNmay_less$SC.Level <- c("78")
+FRYmay_less$SC.Level <- c("402")
+HURmay_less$SC.Level <- c("387")
+RUTmay_less$SC.Level <- c("594")
+LLWmay_less$SC.Level <- c("1119")
+LLCmay_less$SC.Level <- c("1242")
+RICmay_less$SC.Level <- c("1457")
 # June monthly
 EASjune$SC.Level <- c("25")
 FRYjune$SC.Level <- c("402")
 RICjune$SC.Level <- c("1457")
+EASjune_less$SC.Level <- c("25")
+FRYjune_less$SC.Level <- c("402")
+RICjune_less$SC.Level <- c("1457")
 # July monthly
 EASjuly$SC.Level <- c("25")
 FRYjuly$SC.Level <- c("402")
 RICjuly$SC.Level <- c("1457")
+EASjuly_less$SC.Level <- c("25")
+FRYjuly_less$SC.Level <- c("402")
+RICjuly_less$SC.Level <- c("1457")
 # August quarterly
 CROaug$SC.Level <- c("72")
 EASaug$SC.Level <- c("25")
@@ -321,7 +552,15 @@ RUTaug$SC.Level <- c("594")
 LLWaug$SC.Level <- c("1119")
 LLCaug$SC.Level <- c("1242")
 RICaug$SC.Level <- c("1457")
-
+CROaug_less$SC.Level <- c("72")
+EASaug_less$SC.Level <- c("25")
+HCNaug_less$SC.Level <- c("78")
+FRYaug_less$SC.Level <- c("402")
+HURaug_less$SC.Level <- c("387")
+RUTaug_less$SC.Level <- c("594")
+LLWaug_less$SC.Level <- c("1119")
+LLCaug_less$SC.Level <- c("1242")
+RICaug_less$SC.Level <- c("1457")
 
 
 # Adding a column with SC Category bc once we merge we won't know
@@ -329,6 +568,9 @@ RICaug$SC.Level <- c("1457")
 EASsept$SC.Category <- c("REF")
 FRYsept$SC.Category <- c("MID")
 RICsept$SC.Category <- c("HIGH")
+EASsept_less$SC.Category <- c("REF")
+FRYsept_less$SC.Category <- c("MID")
+RICsept_less$SC.Category <- c("HIGH")
 # October quarterly
 CROoct$SC.Category <- c("REF")
 EASoct$SC.Category <- c("REF")
@@ -339,18 +581,36 @@ RUToct$SC.Category <- c("MID")
 LLWoct$SC.Category <- c("HIGH")
 LLCoct$SC.Category <- c("HIGH")
 RICoct$SC.Category <- c("HIGH")
+CROoct_less$SC.Category <- c("REF")
+EASoct_less$SC.Category <- c("REF")
+HCNoct_less$SC.Category <- c("REF")
+FRYoct_less$SC.Category <- c("MID")
+HURoct_less$SC.Category <- c("MID")
+RUToct_less$SC.Category <- c("MID")
+LLWoct_less$SC.Category <- c("HIGH")
+LLCoct_less$SC.Category <- c("HIGH")
+RICoct_less$SC.Category <- c("HIGH")
 # November monthly
 EASnov$SC.Category <- c("REF")
 FRYnov$SC.Category <- c("MID")
 RICnov$SC.Category <- c("HIGH")
+EASnov_less$SC.Category <- c("REF")
+FRYnov_less$SC.Category <- c("MID")
+RICnov_less$SC.Category <- c("HIGH")
 # December monthly
 EASdec$SC.Category <- c("REF")
 FRYdec$SC.Category <- c("MID")
 RICdec$SC.Category <- c("HIGH")
+EASdec_less$SC.Category <- c("REF")
+FRYdec_less$SC.Category <- c("MID")
+RICdec_less$SC.Category <- c("HIGH")
 # January monthly
 EASjan$SC.Category <- c("REF")
 FRYjan$SC.Category <- c("MID")
 RICjan$SC.Category <- c("HIGH")
+EASjan_less$SC.Category <- c("REF")
+FRYjan_less$SC.Category <- c("MID")
+RICjan_less$SC.Category <- c("HIGH")
 # February quarterly
 CROfeb$SC.Category <- c("REF")
 EASfeb$SC.Category <- c("REF")
@@ -361,14 +621,29 @@ RUTfeb$SC.Category <- c("MID")
 LLWfeb$SC.Category <- c("HIGH")
 LLCfeb$SC.Category <- c("HIGH")
 RICfeb$SC.Category <- c("HIGH")
+CROfeb_less$SC.Category <- c("REF")
+EASfeb_less$SC.Category <- c("REF")
+HCNfeb_less$SC.Category <- c("REF")
+FRYfeb_less$SC.Category <- c("MID")
+HURfeb_less$SC.Category <- c("MID")
+RUTfeb_less$SC.Category <- c("MID")
+LLWfeb_less$SC.Category <- c("HIGH")
+LLCfeb_less$SC.Category <- c("HIGH")
+RICfeb_less$SC.Category <- c("HIGH")
 # March monthly
 EASmarch$SC.Category <- c("REF")
 FRYmarch$SC.Category <- c("MID")
 RICmarch$SC.Category <- c("HIGH")
+EASmarch_less$SC.Category <- c("REF")
+FRYmarch_less$SC.Category <- c("MID")
+RICmarch_less$SC.Category <- c("HIGH")
 # April monthly
 EASapril$SC.Category <- c("REF")
 FRYapril$SC.Category <- c("MID")
 RICapril$SC.Category <- c("HIGH")
+EASapril_less$SC.Category <- c("REF")
+FRYapril_less$SC.Category <- c("MID")
+RICapril_less$SC.Category <- c("HIGH")
 # May quarterly
 CROmay$SC.Category <- c("REF")
 EASmay$SC.Category <- c("REF")
@@ -379,14 +654,29 @@ RUTmay$SC.Category <- c("MID")
 LLWmay$SC.Category <- c("HIGH")
 LLCmay$SC.Category <- c("HIGH")
 RICmay$SC.Category <- c("HIGH")
+CROmay_less$SC.Category <- c("REF")
+EASmay_less$SC.Category <- c("REF")
+HCNmay_less$SC.Category <- c("REF")
+FRYmay_less$SC.Category <- c("MID")
+HURmay_less$SC.Category <- c("MID")
+RUTmay_less$SC.Category <- c("MID")
+LLWmay_less$SC.Category <- c("HIGH")
+LLCmay_less$SC.Category <- c("HIGH")
+RICmay_less$SC.Category <- c("HIGH")
 # June monthly
 EASjune$SC.Category <- c("REF")
 FRYjune$SC.Category <- c("MID")
 RICjune$SC.Category <- c("HIGH")
+EASjune_less$SC.Category <- c("REF")
+FRYjune_less$SC.Category <- c("MID")
+RICjune_less$SC.Category <- c("HIGH")
 # July monthly
 EASjuly$SC.Category <- c("REF")
 FRYjuly$SC.Category <- c("MID")
 RICjuly$SC.Category <- c("HIGH")
+EASjuly_less$SC.Category <- c("REF")
+FRYjuly_less$SC.Category <- c("MID")
+RICjuly_less$SC.Category <- c("HIGH")
 # August quarterly
 CROaug$SC.Category <- c("REF")
 EASaug$SC.Category <- c("REF")
@@ -397,7 +687,15 @@ RUTaug$SC.Category <- c("MID")
 LLWaug$SC.Category <- c("HIGH")
 LLCaug$SC.Category <- c("HIGH")
 RICaug$SC.Category <- c("HIGH")
-
+CROaug_less$SC.Category <- c("REF")
+EASaug_less$SC.Category <- c("REF")
+HCNaug_less$SC.Category <- c("REF")
+FRYaug_less$SC.Category <- c("MID")
+HURaug_less$SC.Category <- c("MID")
+RUTaug_less$SC.Category <- c("MID")
+LLWaug_less$SC.Category <- c("HIGH")
+LLCaug_less$SC.Category <- c("HIGH")
+RICaug_less$SC.Category <- c("HIGH")
 
 
 # Let's re-arrange the columns so these new additions are at the front-------
@@ -409,6 +707,15 @@ FRYsept<- FRYsept %>%
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 RICsept<- RICsept %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASsept_less<- EASsept_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month", "Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYsept_less<- FRYsept_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICsept_less<- RICsept_less %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 # October quarterly
@@ -439,6 +746,33 @@ LLCoct <- LLCoct %>%
 LLWoct <- LLWoct %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
+CROoct_less <- CROoct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASoct_less <- EASoct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+HCNoct_less <- HCNoct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYoct_less <- FRYoct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+HURoct_less <- HURoct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RUToct_less <- RUToct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICoct_less <- RICoct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+LLCoct_less <- LLCoct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+LLWoct_less <- LLWoct_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
 # November monthly
 EASnov<- EASnov %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
@@ -447,6 +781,15 @@ FRYnov<- FRYnov %>%
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 RICnov<- RICnov %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASnov_less<- EASnov_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYnov_less<- FRYnov_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICnov_less<- RICnov_less %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 # December monthly
@@ -459,6 +802,15 @@ FRYdec<- FRYdec %>%
 RICdec<- RICdec %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
+EASdec_less<- EASdec_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYdec_less<- FRYdec_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICdec_less<- RICdec_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
 # January monthly
 EASjan<- EASjan %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
@@ -467,6 +819,15 @@ FRYjan<- FRYjan %>%
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 RICjan<- RICjan %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASjan_less<- EASjan_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYjan_less<- FRYjan_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICjan_less<- RICjan_less %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 # February quarterly
@@ -497,6 +858,33 @@ LLCfeb<- LLCfeb %>%
 RICfeb<- RICfeb %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
+CROfeb_less<- CROfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASfeb_less<- EASfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+HCNfeb_less<- HCNfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYfeb_less<- FRYfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+HURfeb_less<- HURfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RUTfeb_less<- RUTfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+LLWfeb_less<- LLWfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+LLCfeb_less<- LLCfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICfeb_less<- RICfeb_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
 # March monthly
 EASmarch<- EASmarch %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
@@ -507,6 +895,15 @@ FRYmarch<- FRYmarch %>%
 RICmarch<- RICmarch %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
+EASmarch_less<- EASmarch_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYmarch_less<- FRYmarch_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICmarch_less<- RICmarch_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
 # April monthly
 EASapril<- EASapril %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
@@ -515,6 +912,15 @@ FRYapril<- FRYapril %>%
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 RICapril<- RICapril %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASapril_less<- EASapril_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYapril_less<- FRYapril_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICapril_less<- RICapril_less %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 # May quarterly
@@ -545,6 +951,33 @@ LLCmay<- LLCmay %>%
 RICmay<- RICmay %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
+CROmay_less<- CROmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASmay_less<- EASmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+HCNmay_less<- HCNmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYmay_less<- FRYmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+HURmay_less<- HURmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RUTmay_less<- RUTmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+LLWmay_less<- LLWmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+LLCmay_less<- LLCmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICmay_less<- RICmay_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
 # June monthly
 EASjune<- EASjune %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
@@ -555,6 +988,16 @@ FRYjune<- FRYjune %>%
 RICjune<- RICjune %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
+
+EASjune_less<- EASjune_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYjune_less<- FRYjune_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICjune_less<- RICjune_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
 # July monthly
 EASjuly<- EASjuly %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
@@ -563,6 +1006,15 @@ FRYjuly<- FRYjuly %>%
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 RICjuly<- RICjuly %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASjuly_less<- EASjuly_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYjuly_less<- FRYjuly_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICjuly_less<- RICjuly_less %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 # August quarterly
@@ -593,7 +1045,33 @@ LLCaug<- LLCaug %>%
 RICaug<- RICaug %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
-
+CROaug_less<- CROaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+EASaug_less<- EASaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+HCNaug_less<- HCNaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+FRYaug_less<- FRYaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+HURaug_less<- HURaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RUTaug_less<- RUTaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+LLWaug_less<- LLWaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+LLCaug_less<- LLCaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
+RICaug_less<- RICaug_less %>% 
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
+           "Replicate","Order","Family","Genus"), everything())
 
 # Take out Totals columns (abundance, density, and biomass bc we will look at individual
 # taxon size classes, not all size classes totalled together), order and family 
@@ -603,6 +1081,9 @@ library(dplyr)
 EASsept <- EASsept %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 FRYsept <- FRYsept %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICsept <- RICsept %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASsept_less <- EASsept_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYsept_less <- FRYsept_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICsept_less <- RICsept_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # October quarterly
 CROoct <- CROoct %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 EASoct <- EASoct %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
@@ -613,18 +1094,36 @@ RUToct <- RUToct %>% select(-c("Order", "Family", "Biomass", "Density", "Abundan
 LLWoct <- LLWoct %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 LLCoct <- LLCoct %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICoct <- RICoct %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+CROoct_less <- CROoct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASoct_less <- EASoct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+HCNoct_less <- HCNoct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYoct_less <- FRYoct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+HURoct_less <- HURoct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RUToct_less <- RUToct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+LLWoct_less <- LLWoct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+LLCoct_less <- LLCoct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICoct_less <- RICoct_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # November monthly
 EASnov <- EASnov %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 FRYnov <- FRYnov %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICnov <- RICnov %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASnov_less <- EASnov_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYnov_less <- FRYnov_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICnov_less <- RICnov_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # December monthly
 EASdec <- EASdec %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 FRYdec <- FRYdec %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICdec <- RICdec %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASdec_less <- EASdec_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYdec_less <- FRYdec_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICdec_less <- RICdec_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # January monthly
 EASjan <- EASjan %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 FRYjan <- FRYjan %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICjan <- RICjan %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASjan_less <- EASjan_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYjan_less <- FRYjan_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICjan_less <- RICjan_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # February quarterly
 CROfeb <- CROfeb %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 EASfeb <- EASfeb %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
@@ -635,14 +1134,29 @@ RUTfeb <- RUTfeb %>% select(-c("Order", "Family", "Biomass", "Density", "Abundan
 LLWfeb <- LLWfeb %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 LLCfeb <- LLCfeb %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICfeb <- RICfeb %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+CROfeb_less <- CROfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASfeb_less <- EASfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+HCNfeb_less <- HCNfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYfeb_less <- FRYfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+HURfeb_less <- HURfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RUTfeb_less <- RUTfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+LLWfeb_less <- LLWfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+LLCfeb_less <- LLCfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICfeb_less <- RICfeb_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # March monthly
 EASmarch <- EASmarch %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 FRYmarch <- FRYmarch %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICmarch <- RICmarch %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASmarch_less <- EASmarch_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYmarch_less <- FRYmarch_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICmarch_less <- RICmarch_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # April monthly
 EASapril <- EASapril %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 FRYapril <- FRYapril %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICapril <- RICapril %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASapril_less <- EASapril_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYapril_less <- FRYapril_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICapril_less <- RICapril_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # May quarterly
 CROmay <- CROmay %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 EASmay <- EASmay %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
@@ -653,14 +1167,29 @@ RUTmay <- RUTmay %>% select(-c("Order", "Family", "Biomass", "Density", "Abundan
 LLWmay <- LLWmay %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 LLCmay <- LLCmay %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICmay <- RICmay %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+CROmay_less <- CROmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASmay_less <- EASmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+HCNmay_less <- HCNmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYmay_less <- FRYmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+HURmay_less <- HURmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RUTmay_less <- RUTmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+LLWmay_less <- LLWmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+LLCmay_less <- LLCmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICmay_less <- RICmay_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # June monthly
 EASjune <- EASjune %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 FRYjune <- FRYjune %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICjune <- RICjune %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASjune_less <- EASjune_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYjune_less <- FRYjune_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICjune_less <- RICjune_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # July monthly
 EASjuly <- EASjuly %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 FRYjuly <- FRYjuly %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICjuly <- RICjuly %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASjuly_less <- EASjuly_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYjuly_less <- FRYjuly_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICjuly_less <- RICjuly_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 # August quarterly
 CROaug <- CROaug %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 EASaug <- EASaug %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
@@ -671,7 +1200,15 @@ RUTaug <- RUTaug %>% select(-c("Order", "Family", "Biomass", "Density", "Abundan
 LLWaug <- LLWaug %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 LLCaug <- LLCaug %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 RICaug <- RICaug %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
-
+CROaug_less <- CROaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+EASaug_less <- EASaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+HCNaug_less <- HCNaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+FRYaug_less <- FRYaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+HURaug_less <- HURaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RUTaug_less <- RUTaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+LLWaug_less <- LLWaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+LLCaug_less <- LLCaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
+RICaug_less <- RICaug_less %>% select(-c("Order", "Family", "Biomass", "Density", "Abundance"))
 
 
 
@@ -692,6 +1229,21 @@ FRYsept <- FRYsept %>%
 RICsept <- RICsept %>%
   rename_with(
     .cols = (match("Genus", names(RICsept)) + 1):(match("BIOMASS.STARTS.HERE", names(RICsept)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASsept_less <- EASsept_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASsept_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASsept_less)) - 1), # Abundance columns begin after Genus is identified and goes until "BIOMASS STARTS HERE"
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYsept_less <- FRYsept_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYsept_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYsept_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICsept_less <- RICsept_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICsept_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICsept_less)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
 # October quarterly
@@ -740,6 +1292,51 @@ RICoct <- RICoct %>%
     .cols = (match("Genus", names(RICoct)) + 1):(match("BIOMASS.STARTS.HERE", names(RICoct)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
+CROoct_less <- CROoct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(CROoct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(CROoct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASoct_less <- EASoct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASoct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASoct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+HCNoct_less <- HCNoct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(HCNoct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(HCNoct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYoct_less <- FRYoct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYoct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYoct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+HURoct_less <- HURoct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(HURoct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(HURoct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RUToct_less <- RUToct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RUToct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RUToct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+LLWoct_less <- LLWoct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(LLWoct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(LLWoct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+LLCoct_less <- LLCoct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(LLCoct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(LLCoct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICoct_less <- RICoct_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICoct_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICoct_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
 
 # November monthly
 EASnov <- EASnov %>%
@@ -755,6 +1352,21 @@ FRYnov <- FRYnov %>%
 RICnov <- RICnov %>%
   rename_with(
     .cols = (match("Genus", names(RICnov)) + 1):(match("BIOMASS.STARTS.HERE", names(RICnov)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASnov_less <- EASnov_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASnov_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASnov_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYnov_less <- FRYnov_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYnov_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYnov_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICnov_less <- RICnov_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICnov_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICnov_less)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
 # December monthly
@@ -773,6 +1385,21 @@ RICdec <- RICdec %>%
     .cols = (match("Genus", names(RICdec)) + 1):(match("BIOMASS.STARTS.HERE", names(RICdec)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
+EASdec_less <- EASdec_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASdec_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASdec_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYdec_less <- FRYdec_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYdec_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYdec_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICdec_less <- RICdec_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICdec_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICdec_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
 # January monthly
 EASjan <- EASjan %>%
   rename_with(
@@ -787,6 +1414,21 @@ FRYjan <- FRYjan %>%
 RICjan <- RICjan %>%
   rename_with(
     .cols = (match("Genus", names(RICjan)) + 1):(match("BIOMASS.STARTS.HERE", names(RICjan)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASjan_less <- EASjan_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASjan_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASjan_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYjan_less <- FRYjan_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYjan_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYjan_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICjan_less <- RICjan_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICjan_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICjan_less)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
 # February quarterly
@@ -835,6 +1477,51 @@ RICfeb <- RICfeb %>%
     .cols = (match("Genus", names(RICfeb)) + 1):(match("BIOMASS.STARTS.HERE", names(RICfeb)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
+CROfeb_less <- CROfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(CROfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(CROfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASfeb_less <- EASfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+HCNfeb_less <- HCNfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(HCNfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(HCNfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYfeb_less <- FRYfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+HURfeb_less <- HURfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(HURfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(HURfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RUTfeb_less <- RUTfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RUTfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RUTfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+LLWfeb_less <- LLWfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(LLWfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(LLWfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+LLCfeb_less <- LLCfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(LLCfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(LLCfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICfeb_less <- RICfeb_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICfeb_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICfeb_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
 
 # March monthly
 EASmarch <- EASmarch %>%
@@ -852,6 +1539,21 @@ RICmarch <- RICmarch %>%
     .cols = (match("Genus", names(RICmarch)) + 1):(match("BIOMASS.STARTS.HERE", names(RICmarch)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
+EASmarch_less <- EASmarch_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASmarch_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASmarch_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYmarch_less <- FRYmarch_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYmarch_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYmarch_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICmarch_less <- RICmarch_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICmarch_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICmarch_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
 # April monthly
 EASapril <- EASapril %>%
   rename_with(
@@ -866,6 +1568,21 @@ FRYapril <- FRYapril %>%
 RICapril <- RICapril %>%
   rename_with(
     .cols = (match("Genus", names(RICapril)) + 1):(match("BIOMASS.STARTS.HERE", names(RICapril)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASapril_less <- EASapril_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASapril_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASapril_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYapril_less <- FRYapril_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYapril_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYapril_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICapril_less <- RICapril_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICapril_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICapril_less)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
 # May quarterly
@@ -914,7 +1631,51 @@ RICmay <- RICmay %>%
     .cols = (match("Genus", names(RICmay)) + 1):(match("BIOMASS.STARTS.HERE", names(RICmay)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
-
+CROmay_less <- CROmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(CROmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(CROmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASmay_less <- EASmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+HCNmay_less <- HCNmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(HCNmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(HCNmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYmay_less <- FRYmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+HURmay_less <- HURmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(HURmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(HURmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RUTmay_less <- RUTmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RUTmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RUTmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+LLWmay_less <- LLWmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(LLWmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(LLWmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+LLCmay_less <- LLCmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(LLCmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(LLCmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICmay_less <- RICmay_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICmay_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICmay_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
 # June monthly
 EASjune <- EASjune %>%
   rename_with(
@@ -931,6 +1692,21 @@ RICjune <- RICjune %>%
     .cols = (match("Genus", names(RICjune)) + 1):(match("BIOMASS.STARTS.HERE", names(RICjune)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
+EASjune_less <- EASjune_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASjune_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASjune_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYjune_less <- FRYjune_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYjune_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYjune_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICjune_less <- RICjune_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICjune_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICjune_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
 # July monthly
 EASjuly <- EASjuly %>%
   rename_with(
@@ -945,6 +1721,21 @@ FRYjuly <- FRYjuly %>%
 RICjuly <- RICjuly %>%
   rename_with(
     .cols = (match("Genus", names(RICjuly)) + 1):(match("BIOMASS.STARTS.HERE", names(RICjuly)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASjuly_less <- EASjuly_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASjuly_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASjuly_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYjuly_less <- FRYjuly_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYjuly_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYjuly_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICjuly_less <- RICjuly_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICjuly_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICjuly_less)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
 # August quarterly
@@ -993,6 +1784,51 @@ RICaug <- RICaug %>%
     .cols = (match("Genus", names(RICaug)) + 1):(match("BIOMASS.STARTS.HERE", names(RICaug)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
+CROaug_less <- CROaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(CROaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(CROaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+EASaug_less <- EASaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(EASaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(EASaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+HCNaug_less <- HCNaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(HCNaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(HCNaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+FRYaug_less <- FRYaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(FRYaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+HURaug_less <- HURaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(HURaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(HURaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RUTaug_less <- RUTaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RUTaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RUTaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+LLWaug_less <- LLWaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(LLWaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(LLWaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+LLCaug_less <- LLCaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(LLCaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(LLCaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
+RICaug_less <- RICaug_less %>%
+  rename_with(
+    .cols = (match("Genus", names(RICaug_less)) + 1):(match("BIOMASS.STARTS.HERE", names(RICaug_less)) - 1),
+    .fn = ~ paste0("Abundance.Length_", seq_along(.))
+  )
 
 
 
@@ -1013,6 +1849,21 @@ FRYsept <- FRYsept %>%
 RICsept <- RICsept %>%
   rename_with(
     .cols = (which(names(RICsept) == "BIOMASS.STARTS.HERE") + 1):ncol(RICsept),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASsept_less <- EASsept_less %>%
+  rename_with(
+    .cols = (which(names(EASsept_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASsept_less), # Biomass columbs begin after "BIOMASS STARTS HERE" column
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYsept_less <- FRYsept_less %>%
+  rename_with(
+    .cols = (which(names(FRYsept_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYsept_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICsept_less <- RICsept_less %>%
+  rename_with(
+    .cols = (which(names(RICsept_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICsept_less),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
 # October quarterly
@@ -1061,6 +1912,51 @@ RICoct <- RICoct %>%
     .cols = (which(names(RICoct) == "BIOMASS.STARTS.HERE") + 1):ncol(RICoct),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
+CROoct_less <- CROoct_less %>%
+  rename_with(
+    .cols = (which(names(CROoct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(CROoct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASoct_less <- EASoct_less %>%
+  rename_with(
+    .cols = (which(names(EASoct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASoct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+HCNoct_less <- HCNoct_less %>%
+  rename_with(
+    .cols = (which(names(HCNoct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(HCNoct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYoct_less <- FRYoct_less %>%
+  rename_with(
+    .cols = (which(names(FRYoct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYoct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+HURoct_less <- HURoct_less %>%
+  rename_with(
+    .cols = (which(names(HURoct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(HURoct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RUToct_less <- RUToct_less %>%
+  rename_with(
+    .cols = (which(names(RUToct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RUToct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+LLWoct_less <- LLWoct_less %>%
+  rename_with(
+    .cols = (which(names(LLWoct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(LLWoct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+LLCoct_less <- LLCoct_less %>%
+  rename_with(
+    .cols = (which(names(LLCoct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(LLCoct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICoct_less <- RICoct_less %>%
+  rename_with(
+    .cols = (which(names(RICoct_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICoct_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
 # November monthly
 EASnov <- EASnov %>%
   rename_with(
@@ -1075,6 +1971,21 @@ FRYnov <- FRYnov %>%
 RICnov <- RICnov %>%
   rename_with(
     .cols = (which(names(RICnov) == "BIOMASS.STARTS.HERE") + 1):ncol(RICnov),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASnov_less <- EASnov_less %>%
+  rename_with(
+    .cols = (which(names(EASnov_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASnov_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYnov_less <- FRYnov_less %>%
+  rename_with(
+    .cols = (which(names(FRYnov_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYnov_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICnov_less <- RICnov_less %>%
+  rename_with(
+    .cols = (which(names(RICnov_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICnov_less),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
 # December monthly
@@ -1093,6 +2004,21 @@ RICdec <- RICdec %>%
     .cols = (which(names(RICdec) == "BIOMASS.STARTS.HERE") + 1):ncol(RICdec),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
+EASdec_less <- EASdec_less %>%
+  rename_with(
+    .cols = (which(names(EASdec_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASdec_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYdec_less <- FRYdec_less %>%
+  rename_with(
+    .cols = (which(names(FRYdec_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYdec_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICdec_less <- RICdec_less %>%
+  rename_with(
+    .cols = (which(names(RICdec_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICdec_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
 # January monthly
 EASjan <- EASjan %>%
   rename_with(
@@ -1107,6 +2033,21 @@ FRYjan <- FRYjan %>%
 RICjan <- RICjan %>%
   rename_with(
     .cols = (which(names(RICjan) == "BIOMASS.STARTS.HERE") + 1):ncol(RICjan),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASjan_less <- EASjan_less %>%
+  rename_with(
+    .cols = (which(names(EASjan_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASjan_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYjan_less <- FRYjan_less %>%
+  rename_with(
+    .cols = (which(names(FRYjan_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYjan_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICjan_less <- RICjan_less %>%
+  rename_with(
+    .cols = (which(names(RICjan_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICjan_less),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
 # February quarterly
@@ -1155,6 +2096,51 @@ RICfeb <- RICfeb %>%
     .cols = (which(names(RICfeb) == "BIOMASS.STARTS.HERE") + 1):ncol(RICfeb),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
+CROfeb_less <- CROfeb_less %>%
+  rename_with(
+    .cols = (which(names(CROfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(CROfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASfeb_less <- EASfeb_less %>%
+  rename_with(
+    .cols = (which(names(EASfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+HCNfeb_less <- HCNfeb_less %>%
+  rename_with(
+    .cols = (which(names(HCNfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(HCNfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYfeb_less <- FRYfeb_less %>%
+  rename_with(
+    .cols = (which(names(FRYfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+HURfeb_less <- HURfeb_less %>%
+  rename_with(
+    .cols = (which(names(HURfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(HURfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RUTfeb_less <- RUTfeb_less %>%
+  rename_with(
+    .cols = (which(names(RUTfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RUTfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+LLWfeb_less <- LLWfeb_less %>%
+  rename_with(
+    .cols = (which(names(LLWfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(LLWfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+LLCfeb_less <- LLCfeb_less %>%
+  rename_with(
+    .cols = (which(names(LLCfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(LLCfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICfeb_less <- RICfeb_less %>%
+  rename_with(
+    .cols = (which(names(RICfeb_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICfeb_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
 # March monthly
 EASmarch <- EASmarch %>%
   rename_with(
@@ -1171,6 +2157,21 @@ RICmarch <- RICmarch %>%
     .cols = (which(names(RICmarch) == "BIOMASS.STARTS.HERE") + 1):ncol(RICmarch),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
+EASmarch_less <- EASmarch_less %>%
+  rename_with(
+    .cols = (which(names(EASmarch_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASmarch_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYmarch_less <- FRYmarch_less %>%
+  rename_with(
+    .cols = (which(names(FRYmarch_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYmarch_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICmarch_less <- RICmarch_less %>%
+  rename_with(
+    .cols = (which(names(RICmarch_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICmarch_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
 # April monthly
 EASapril <- EASapril %>%
   rename_with(
@@ -1185,6 +2186,21 @@ FRYapril <- FRYapril %>%
 RICapril <- RICapril %>%
   rename_with(
     .cols = (which(names(RICapril) == "BIOMASS.STARTS.HERE") + 1):ncol(RICapril),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASapril_less <- EASapri_lessl %>%
+  rename_with(
+    .cols = (which(names(EASapril_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASapril_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYapril_less <- FRYapril_less %>%
+  rename_with(
+    .cols = (which(names(FRYapril_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYapril_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICapril_less <- RICapril_less %>%
+  rename_with(
+    .cols = (which(names(RICapril_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICapril_less),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
 # May quarterly
@@ -1233,6 +2249,51 @@ RICmay <- RICmay %>%
     .cols = (which(names(RICmay) == "BIOMASS.STARTS.HERE") + 1):ncol(RICmay),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
+CROmay_less <- CROmay_less %>%
+  rename_with(
+    .cols = (which(names(CROmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(CROmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASmay_less <- EASmay_less %>%
+  rename_with(
+    .cols = (which(names(EASmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+HCNmay_less <- HCNmay_less %>%
+  rename_with(
+    .cols = (which(names(HCNmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(HCNmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYmay_less <- FRYmay_less %>%
+  rename_with(
+    .cols = (which(names(FRYmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+HURmay_less <- HURmay_less %>%
+  rename_with(
+    .cols = (which(names(HURmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(HURmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RUTmay_less <- RUTmay_less %>%
+  rename_with(
+    .cols = (which(names(RUTmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RUTmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+LLWmay_less <- LLWmay_less %>%
+  rename_with(
+    .cols = (which(names(LLWmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(LLWmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+LLCmay_less <- LLCmay_less %>%
+  rename_with(
+    .cols = (which(names(LLCmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(LLCmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICmay_less <- RICmay_less %>%
+  rename_with(
+    .cols = (which(names(RICmay_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICmay_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
 # June monthly
 EASjune <- EASjune %>%
   rename_with(
@@ -1249,6 +2310,21 @@ RICjune <- RICjune %>%
     .cols = (which(names(RICjune) == "BIOMASS.STARTS.HERE") + 1):ncol(RICjune),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
+EASjune_less <- EASjune_less %>%
+  rename_with(
+    .cols = (which(names(EASjune_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASjune_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYjune_less <- FRYjune_less %>%
+  rename_with(
+    .cols = (which(names(FRYjune_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYjune_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICjune_less <- RICjune_less %>%
+  rename_with(
+    .cols = (which(names(RICjune_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICjune_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
 # July monthly
 EASjuly <- EASjuly %>%
   rename_with(
@@ -1263,6 +2339,21 @@ FRYjuly <- FRYjuly %>%
 RICjuly <- RICjuly %>%
   rename_with(
     .cols = (which(names(RICjuly) == "BIOMASS.STARTS.HERE") + 1):ncol(RICjuly),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASjuly_less <- EASjuly_less %>%
+  rename_with(
+    .cols = (which(names(EASjuly_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASjuly_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYjuly_less <- FRYjuly_less %>%
+  rename_with(
+    .cols = (which(names(FRYjuly_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYjuly_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICjuly_less <- RICjuly_less %>%
+  rename_with(
+    .cols = (which(names(RICjuly_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICjuly_less),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
 # August quarterly
@@ -1311,7 +2402,51 @@ RICaug <- RICaug %>%
     .cols = (which(names(RICaug) == "BIOMASS.STARTS.HERE") + 1):ncol(RICaug),
     .fn = ~ paste0("Biomass.Length_", seq_along(.))
   )
-
+CROaug_less <- CROaug_less %>%
+  rename_with(
+    .cols = (which(names(CROaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(CROaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+EASaug_less <- EASaug_less %>%
+  rename_with(
+    .cols = (which(names(EASaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(EASaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+HCNaug_less <- HCNaug_less %>%
+  rename_with(
+    .cols = (which(names(HCNaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(HCNaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+FRYaug_less <- FRYaug_less %>%
+  rename_with(
+    .cols = (which(names(FRYaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(FRYaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+HURaug_less <- HURaug_less %>%
+  rename_with(
+    .cols = (which(names(HURaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(HURaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RUTaug_less <- RUTaug_less %>%
+  rename_with(
+    .cols = (which(names(RUTaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RUTaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+LLWaug_less <- LLWaug_less %>%
+  rename_with(
+    .cols = (which(names(LLWaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(LLWaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+LLCaug_less <- LLCaug_less %>%
+  rename_with(
+    .cols = (which(names(LLCaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(LLCaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
+RICaug_less <- RICaug_less %>%
+  rename_with(
+    .cols = (which(names(RICaug_less) == "BIOMASS.STARTS.HERE") + 1):ncol(RICaug_less),
+    .fn = ~ paste0("Biomass.Length_", seq_along(.))
+  )
 
 
 
@@ -1322,6 +2457,9 @@ RICaug <- RICaug %>%
 EASsept <- EASsept %>% select(-c("BIOMASS.STARTS.HERE"))
 FRYsept <- FRYsept %>% select(-c("BIOMASS.STARTS.HERE"))
 RICsept <- RICsept %>% select(-c("BIOMASS.STARTS.HERE"))
+EASsept_less <- EASsept_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYsept_less <- FRYsept_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICsept_less <- RICsept_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # October quarterly
 CROoct <- CROoct %>% select(-c("BIOMASS.STARTS.HERE"))
 EASoct <- EASoct %>% select(-c("BIOMASS.STARTS.HERE"))
@@ -1332,18 +2470,36 @@ RUToct <- RUToct %>% select(-c("BIOMASS.STARTS.HERE"))
 LLWoct <- LLWoct %>% select(-c("BIOMASS.STARTS.HERE"))
 LLCoct <- LLCoct %>% select(-c("BIOMASS.STARTS.HERE"))
 RICoct <- RICoct %>% select(-c("BIOMASS.STARTS.HERE"))
+CROoct_less <- CROoct_less %>% select(-c("BIOMASS.STARTS.HERE"))
+EASoct_less <- EASoct_less %>% select(-c("BIOMASS.STARTS.HERE"))
+HCNoct_less <- HCNoct_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYoct_less <- FRYoct_less %>% select(-c("BIOMASS.STARTS.HERE"))
+HURoct_less <- HURoct_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RUToct_less <- RUToct_less %>% select(-c("BIOMASS.STARTS.HERE"))
+LLWoct_less <- LLWoct_less %>% select(-c("BIOMASS.STARTS.HERE"))
+LLCoct_less <- LLCoct_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICoct_less <- RICoct_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # November monthly
 EASnov <- EASnov %>% select(-c("BIOMASS.STARTS.HERE"))
 FRYnov <- FRYnov %>% select(-c("BIOMASS.STARTS.HERE"))
 RICnov <- RICnov %>% select(-c("BIOMASS.STARTS.HERE"))
+EASnov_less <- EASnov_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYnov_less <- FRYnov_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICnov_less <- RICnov_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # December monthly
 EASdec <- EASdec %>% select(-c("BIOMASS.STARTS.HERE"))
 FRYdec <- FRYdec %>% select(-c("BIOMASS.STARTS.HERE"))
 RICdec <- RICdec %>% select(-c("BIOMASS.STARTS.HERE"))
+EASdec_less <- EASdec_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYdec_less <- FRYdec_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICdec_less <- RICdec_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # January monthly
 EASjan <- EASjan %>% select(-c("BIOMASS.STARTS.HERE"))
 FRYjan <- FRYjan %>% select(-c("BIOMASS.STARTS.HERE"))
 RICjan <- RICjan %>% select(-c("BIOMASS.STARTS.HERE"))
+EASjan_less <- EASjan_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYjan_less <- FRYjan_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICjan_less <- RICjan_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # February quarterly
 CROfeb <- CROfeb %>% select(-c("BIOMASS.STARTS.HERE"))
 EASfeb <- EASfeb %>% select(-c("BIOMASS.STARTS.HERE"))
@@ -1354,14 +2510,29 @@ RUTfeb <- RUTfeb %>% select(-c("BIOMASS.STARTS.HERE"))
 LLWfeb <- LLWfeb %>% select(-c("BIOMASS.STARTS.HERE"))
 LLCfeb <- LLCfeb %>% select(-c("BIOMASS.STARTS.HERE"))
 RICfeb <- RICfeb %>% select(-c("BIOMASS.STARTS.HERE"))
+CROfeb_less <- CROfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
+EASfeb_less <- EASfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
+HCNfeb_less <- HCNfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYfeb_less <- FRYfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
+HURfeb_less <- HURfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RUTfeb_less <- RUTfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
+LLWfeb_less <- LLWfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
+LLCfeb_less <- LLCfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICfeb_less <- RICfeb_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # March monthly
 EASmarch <- EASmarch %>% select(-c("BIOMASS.STARTS.HERE"))
 FRYmarch <- FRYmarch %>% select(-c("BIOMASS.STARTS.HERE"))
 RICmarch <- RICmarch %>% select(-c("BIOMASS.STARTS.HERE"))
+EASmarch_less <- EASmarch_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYmarch_less <- FRYmarch_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICmarch_less <- RICmarch_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # April monthly
 EASapril <- EASapril %>% select(-c("BIOMASS.STARTS.HERE"))
 FRYapril <- FRYapril %>% select(-c("BIOMASS.STARTS.HERE"))
 RICapril <- RICapril %>% select(-c("BIOMASS.STARTS.HERE"))
+EASapril_less <- EASapril_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYapril_less <- FRYapril_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICapril_less <- RICapril_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # May quarterly
 CROmay <- CROmay %>% select(-c("BIOMASS.STARTS.HERE"))
 EASmay <- EASmay %>% select(-c("BIOMASS.STARTS.HERE"))
@@ -1372,14 +2543,29 @@ RUTmay <- RUTmay %>% select(-c("BIOMASS.STARTS.HERE"))
 LLWmay <- LLWmay %>% select(-c("BIOMASS.STARTS.HERE"))
 LLCmay <- LLCmay %>% select(-c("BIOMASS.STARTS.HERE"))
 RICmay <- RICmay %>% select(-c("BIOMASS.STARTS.HERE"))
+CROmay_less <- CROmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
+EASmay_less <- EASmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
+HCNmay_less <- HCNmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYmay_less <- FRYmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
+HURmay_less <- HURmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RUTmay_less <- RUTmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
+LLWmay_less <- LLWmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
+LLCmay_less <- LLCmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICmay_less <- RICmay_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # June monthly
 EASjune <- EASjune %>% select(-c("BIOMASS.STARTS.HERE"))
 FRYjune <- FRYjune %>% select(-c("BIOMASS.STARTS.HERE"))
 RICjune <- RICjune %>% select(-c("BIOMASS.STARTS.HERE"))
+EASjune_less <- EASjune_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYjune_less <- FRYjune_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICjune_less <- RICjune_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # July monthly
 EASjuly <- EASjuly %>% select(-c("BIOMASS.STARTS.HERE"))
 FRYjuly <- FRYjuly %>% select(-c("BIOMASS.STARTS.HERE"))
 RICjuly <- RICjuly %>% select(-c("BIOMASS.STARTS.HERE"))
+EASjuly_less <- EASjuly_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYjuly_less <- FRYjuly_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICjuly_less <- RICjuly_less %>% select(-c("BIOMASS.STARTS.HERE"))
 # August quarterly
 CROaug <- CROaug %>% select(-c("BIOMASS.STARTS.HERE"))
 EASaug <- EASaug %>% select(-c("BIOMASS.STARTS.HERE"))
@@ -1390,7 +2576,15 @@ RUTaug <- RUTaug %>% select(-c("BIOMASS.STARTS.HERE"))
 LLWaug <- LLWaug %>% select(-c("BIOMASS.STARTS.HERE"))
 LLCaug <- LLCaug %>% select(-c("BIOMASS.STARTS.HERE"))
 RICaug <- RICaug %>% select(-c("BIOMASS.STARTS.HERE"))
-
+CROaug_less <- CROaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
+EASaug_less <- EASaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
+HCNaug_less <- HCNaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
+FRYaug_less <- FRYaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
+HURaug_less <- HURaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RUTaug_less <- RUTaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
+LLWaug_less <- LLWaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
+LLCaug_less <- LLCaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
+RICaug_less <- RICaug_less %>% select(-c("BIOMASS.STARTS.HERE"))
 
 # Transform the data frame so that I can see the abundance and biomass for each length class for each taxa------
 library(tidyr)
@@ -1419,6 +2613,31 @@ RICsept_long <- RICsept %>%
     names_pattern = "(.*)\\.Length_(\\d+)"  
   ) %>%
   mutate(Length = as.numeric(Length))     
+
+
+EASsept_less_long <- EASsept_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  # Select abundance and biomass columns and convert from wide to long
+    names_to = c(".value", "Length"),       # `.value` for abundance/biomass values, 'Length' for the lengths
+    names_pattern = "(.*)\\.Length_(\\d+)"  # Separate 'abundance'/'biomass' and the numeric length suffix
+  ) %>%
+  mutate(Length = as.numeric(Length))       # Convert Length column to numeric
+
+FRYsept_less_long <- FRYsept_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"), 
+    names_to = c(".value", "Length"),       
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))     
+
+RICsept_less_long <- RICsept_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
 
 # October quarterly
 CROoct_long <- CROoct %>% 
@@ -1493,6 +2712,78 @@ RICoct_long <- RICoct %>%
   ) %>%
   mutate(Length = as.numeric(Length)) 
 
+CROoct_less_long <- CROoct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))    
+
+EASoct_less_long <- EASoct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+HCNoct_less_long <- HCNoct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+FRYoct_less_long <- FRYoct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+HURoct_less_long <- HURoct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+RUToct_less_long <- RUToct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+LLWoct_less_long <- LLWoct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+LLCoct_less_long <- LLCoct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+RICoct_less_long <- RICoct_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
 # November monthly
 EASnov_long <- EASnov %>% 
   pivot_longer(
@@ -1516,7 +2807,31 @@ RICnov_long <- RICnov %>%
     names_to = c(".value", "Length"),      
     names_pattern = "(.*)\\.Length_(\\d+)"  
   ) %>%
-  mutate(Length = as.numeric(Length))    
+  mutate(Length = as.numeric(Length))  
+
+EASnov_less_long <- EASnov_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  #
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))       
+
+FRYnov_less_long <- FRYnov_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"), 
+    names_to = c(".value", "Length"),       
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))     
+
+RICnov_less_long <- RICnov_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))  
 
 # December monthly
 EASdec_long <- EASdec %>% 
@@ -1536,6 +2851,30 @@ FRYdec_long <- FRYdec %>%
   mutate(Length = as.numeric(Length))     
 
 RICdec_long <- RICdec %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))    
+
+EASdec_less_long <- EASdec_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  #
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))       
+
+FRYdec_less_long <- FRYdec_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"), 
+    names_to = c(".value", "Length"),       
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))     
+
+RICdec_less_long <- RICdec_less %>% 
   pivot_longer(
     cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
     names_to = c(".value", "Length"),      
@@ -1567,6 +2906,30 @@ RICjan_long <- RICjan %>%
     names_pattern = "(.*)\\.Length_(\\d+)"  
   ) %>%
   mutate(Length = as.numeric(Length))    
+
+EASjan_less_long <- EASjan_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  #
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))       
+
+FRYjan_less_long <- FRYjan_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"), 
+    names_to = c(".value", "Length"),       
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))     
+
+RICjan_less_long <- RICjan_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))   
 
 # February quarterly
 CROfeb_long <- CROfeb %>% 
@@ -1641,6 +3004,79 @@ RICfeb_long <- RICfeb %>%
   ) %>%
   mutate(Length = as.numeric(Length)) 
 
+
+CROfeb_less_long <- CROfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))    
+
+EASfeb_less_long <- EASfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+HCNfeb_less_long <- HCNfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+FRYfeb_less_long <- FRYfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+HURfeb_less_long <- HURfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+RUTfeb_less_long <- RUTfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+LLWfeb_less_long <- LLWfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+LLCfeb_less_long <- LLCfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+RICfeb_less_long <- RICfeb_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
 # March monthly
 EASmarch_long <- EASmarch %>% 
   pivot_longer(
@@ -1664,7 +3100,33 @@ RICmarch_long <- RICmarch %>%
     names_to = c(".value", "Length"),      
     names_pattern = "(.*)\\.Length_(\\d+)"  
   ) %>%
-  mutate(Length = as.numeric(Length))    
+  mutate(Length = as.numeric(Length))
+
+EASmarch_less_long <- EASmarch_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  #
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))       
+
+FRYmarch_less_long <- FRYmarch_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"), 
+    names_to = c(".value", "Length"),       
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))     
+
+RICmarch_less_long <- RICmarch_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))
+
+
 # April monthly
 EASapril_long <- EASapril %>% 
   pivot_longer(
@@ -1683,6 +3145,30 @@ FRYapril_long <- FRYapril %>%
   mutate(Length = as.numeric(Length))     
 
 RICapril_long <- RICapril %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))   
+
+EASapril_less_long <- EASapril_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  #
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))       
+
+FRYapril_less_long <- FRYapril_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"), 
+    names_to = c(".value", "Length"),       
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))     
+
+RICapril_less_long <- RICapril_less %>% 
   pivot_longer(
     cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
     names_to = c(".value", "Length"),      
@@ -1763,6 +3249,79 @@ RICmay_long <- RICmay %>%
   ) %>%
   mutate(Length = as.numeric(Length)) 
 
+
+CROmay_less_long <- CROmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))    
+
+EASmay_less_long <- EASmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+HCNmay_less_long <- HCNmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+FRYmay_less_long <- FRYmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+HURmay_less_long <- HURmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+RUTmay_less_long <- RUTmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+LLWmay_less_long <- LLWmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+LLCmay_less_long <- LLCmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+RICmay_less_long <- RICmay_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))
+
 # June monthly
 EASjune_long <- EASjune %>% 
   pivot_longer(
@@ -1788,6 +3347,30 @@ RICjune_long <- RICjune %>%
   ) %>%
   mutate(Length = as.numeric(Length))    
 
+EASjune_less_long <- EASjune_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  #
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))       
+
+FRYjune_less_long <- FRYjune_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"), 
+    names_to = c(".value", "Length"),       
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))     
+
+RICjune_less_long <- RICjune_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))    
+
 # July monthly
 EASjuly_long <- EASjuly %>% 
   pivot_longer(
@@ -1806,6 +3389,30 @@ FRYjuly_long <- FRYjuly %>%
   mutate(Length = as.numeric(Length))     
 
 RICjuly_long <- RICjuly %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))   
+
+EASjuly_less_long <- EASjuly_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  #
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))       
+
+FRYjuly_less_long <- FRYjuly_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"), 
+    names_to = c(".value", "Length"),       
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))     
+
+RICjuly_less_long <- RICjuly_less %>% 
   pivot_longer(
     cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
     names_to = c(".value", "Length"),      
@@ -1886,6 +3493,78 @@ RICaug_long <- RICaug %>%
   ) %>%
   mutate(Length = as.numeric(Length)) 
 
+CROaug_less_long <- CROaug_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length))    
+
+EASaug_less_long <- EASaug_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+HCNaug_less_long <- HCNaug_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+FRYaug_less_long <- FRYaug_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+HURaug_less_long <- HURaug_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+RUTaug_less_long <- RUTaug_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+LLWaug_less_long <- LLWaug_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+LLCaug_less_long <- LLCau_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
+RICaug_less_long <- RICaug_less %>% 
+  pivot_longer(
+    cols = starts_with("Abundance.Length") | starts_with("Biomass.Length"),  
+    names_to = c(".value", "Length"),      
+    names_pattern = "(.*)\\.Length_(\\d+)"  
+  ) %>%
+  mutate(Length = as.numeric(Length)) 
+
 
 # Merge data frames based on trimmed/transformed columns from above (lengths, abundance, etc.)
 list_of_greater_secprod <- list(EASsept_long, FRYsept_long, RICsept_long,
@@ -1903,6 +3582,29 @@ list_of_greater_secprod <- list(EASsept_long, FRYsept_long, RICsept_long,
                                EASjuly_long, FRYjuly_long, RICjuly_long, CROaug_long, 
                                EASaug_long, HCNaug_long, FRYaug_long, HURaug_long, RUTaug_long, 
                                LLWaug_long, LLCaug_long, RICaug_long) 
+
+list_of_less_secprod <- list(EASsept_less_long, FRYsept_less_long, RICsept_less_long,
+                                CROoct_less_long, EASoct_less_long,HCNoct_less_long, FRYoct_less_long,
+                                HURoct_less_long, RUToct_less_long, LLWoct_less_long, LLCoct_less_long,
+                                RICoct_less_long, EASnov_less_long, FRYnov_less_long, RICnov_less_long,
+                                EASdec_less_long, FRYdec_less_long,RICdec_less_long, EASjan_less_long, 
+                                FRYjan_less_long,RICjan_less_long, CROfeb_less_long, EASfeb_less_long,
+                                HCNfeb_less_long, FRYfeb_less_long, HURfeb_less_long, RUTfeb_less_long, 
+                                LLWfeb_less_long, LLCfeb_less_long, RICfeb_less_long, EASmarch_less_long, 
+                                FRYmarch_less_long, RICmarch_less_long, EASapril_less_long, FRYapril_less_long,
+                                RICapril_less_long, CROmay_less_long, EASmay_less_long, HCNmay_less_long, 
+                                FRYmay_less_long, HURmay_less_long, RUTmay_less_long, LLWmay_less_long,
+                                LLCmay_less_long, RICmay_less_long, EASjune_less_long, FRYjune_less_long,
+                                RICjune_less_long,EASjuly_less_long, FRYjuly_less_long, RICjuly_less_long,
+                                CROaug_less_long, EASaug_less_long, HCNaug_less_long, FRYaug_less_long, 
+                                HURaug_less_long, RUTaug_less_long,  LLWaug_less_long, LLCaug_less_long, RICaug_less_long) 
+
+# Combine the two lists into one
+combined_2Plists <- c(list_of_greater_secprod, list_of_less_secprod)
+
+# Combine all elements into a single data frame
+SECPROD <- do.call(rbind, combined_2Plists)
+
 
  SECPROD<- do.call(rbind, list_of_greater_secprod) #THIS WORKS
  
