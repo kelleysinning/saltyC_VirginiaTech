@@ -48,7 +48,7 @@ library(lubridate)
 library(ggridges)
 
 
-Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/2P sheets/SEC_PROD.csv")
+Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/2P sheets/SECPROD_greaterandless.csv")
 
 
 # FFGs
@@ -345,6 +345,7 @@ anova_result <- aov(Length ~ SC.Category, data = TotalLengths)
 summary(anova_result)
 tukey_result <- TukeyHSD(anova_result)
 print(tukey_result)
+
 plot(tukey_result)
 
 # Extract the result for SC.Category and convert to a data frame
@@ -366,10 +367,10 @@ tukey_result %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
 
 
-# Looking at everything but filter so nothing bigger than 20--------------------------------------------------------
+# Looking at everything but filter so nothing bigger than 20 on x-axis---------------------------------------------
 
 TotalLengths_slim<- Total_Lengths %>%
-  filter(Site %in% c("EAS", "FRY", "RIC") & Length <= 20 )  
+  filter(Site %in% c("EAS", "FRY", "RIC"))  
 
 # Fix length and count columns
 TotalLengths_slim$Length<-as.numeric(TotalLengths_slim$Length)
@@ -392,11 +393,12 @@ TotalLengths_slim$SC.Category <- factor(TotalLengths_slim$SC.Category, levels = 
 ggplot(TotalLengths_slim, aes(Length, y = Sample.Month, fill = after_stat(x))) +
   facet_wrap(~SC.Category)+
   geom_density_ridges_gradient(scale = 1.5, alpha=.4) +
+  scale_x_continuous(limits = c(0, 20)) +
   scale_y_discrete(limits = rev(levels(TotalLengths_slim$Sample.Month)))+
   scale_fill_gradient(name = "Length (mm)", low= "skyblue", high="darkgoldenrod1") +
   theme_classic()
 
-ggsave("ALLdensity_ridge_plot.jpeg", path="Graphs/ggridge", width = 12, height= 8, unit= "in")
+ggsave("SLIMdensity_ridge_plot.jpeg", path="Graphs/ggridge", width = 12, height= 8, unit= "in")
 
 # ANOVA
 anova_result <- aov(Length ~ SC.Category, data = TotalLengths_slim)
@@ -447,9 +449,11 @@ TotalLengths_FFG$SC.Category <- factor(TotalLengths_FFG$SC.Category, levels = c(
 ggplot(TotalLengths_FFG, aes(Length, y = Sample.Month, fill = after_stat(x))) + # after_stat let's you reference a computer variable (length) during plotting...maps length values to fill aesthetic
   facet_wrap(FFG~SC.Category)+
   geom_density_ridges_gradient(scale = 1.5, alpha=.4) + # computation of densities, kernal density estimations to get smoothed ridgelines
+  scale_x_continuous(limits = c(0, 20)) +
   scale_y_discrete(limits = rev(levels(TotalLengths_FFG$Sample.Month)))+ # reverses order of months so it read top to bottom easier
   scale_fill_gradient(name = "Length (mm)", low= "skyblue", high="darkgoldenrod1") +
   theme_classic()
+
 
 ggsave("FFGdensity_ridge_plot.jpeg", path="Graphs/ggridge", width = 12, height= 8, unit= "in")
 
@@ -461,7 +465,7 @@ print(tukey_result)
 plot(tukey_result)
 
 # Extract the result for SC.Category and convert to a data frame
-tukey_result <- as.data.frame(tukey_result$FFG)
+tukey_result <- as.data.frame(tukey_result$`FFG:SC.Category`)
 
 # Install and load kableExtra to make it pretty
 install.packages("kableExtra")

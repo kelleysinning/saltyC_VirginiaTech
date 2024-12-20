@@ -3634,6 +3634,10 @@ SECPROD <- do.call(rbind, combined_2Plists)
  SECPROD <-  SECPROD %>%
    mutate(Genus = ifelse(Genus == "Capniidae", "Paracapnia", Genus))
  SECPROD <-  SECPROD %>%
+   mutate(Genus = ifelse(Genus == "Ceratopogonidae", "Probezzia", Genus))
+ SECPROD <-  SECPROD %>%
+   mutate(Genus = ifelse(Genus == "Ceraptogoninae", "Probezzia", Genus))
+ SECPROD <-  SECPROD %>%
    mutate(Fraction = ifelse(Fraction == ">1", "> 1", Fraction))
  SECPROD <-  SECPROD %>%
    mutate(Genus = ifelse(Genus == "Allocapnia", "Paracapnia", Genus)) 
@@ -5314,4 +5318,120 @@ TOTALPROD <- TOTAL_PROD %>%
 TOTALPROD_sum <- TOTALPROD %>%
   group_by(Site) %>%
   summarise(Sum.Annual.Production = sum(Annual.Production, na.rm = TRUE), .groups = 'drop')
+
+
+
+sum(SECPROD$Abundance)
+
+
+
+# Comparing abundance and biomass for each taxa between core and non-core sites
+library(dplyr)
+
+
+TAXA_Comparisons <- SECPROD %>%
+  
+  # Arrange by site
+  arrange(factor(Site, levels = c(
+    "EAS", "CRO", "HCN","FRY","HUR", "RUT", "RIC", "LLW", "LLC"
+  )), Site) %>%
+
+    # Calculate Density
+    mutate(Density = Abundance / 0.0929) %>%
+    
+    # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
+    # This sums metrics for each genus for each replicate (sums length class metrics for each rep/taxa)
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate) %>%
+    summarise(
+      Sum.Abundance = sum(Abundance, na.rm = TRUE),     # Sum Abundance
+      Sum.Biomass = sum(Biomass, na.rm = TRUE),      # Sum Biomass
+      Sum.Density = sum(Density, na.rm = TRUE)  # Sum Density
+    ) %>%
+  
+    # Group by Site, Genus, Sample.Month, Sample.Date, Length
+    # This averages the replicates for each month, so there is one value per length class per sample month
+    group_by(Site, Genus, Sample.Month, Sample.Date) %>%
+    summarise(
+      Mean.Abundance = mean(Sum.Abundance, na.rm = TRUE),  # Average Abundance
+      Mean.Biomass = mean(Sum.Biomass, na.rm = TRUE),  # Average Biomass
+      Mean.Density = mean(Sum.Density, na.rm = TRUE) # Average Density
+    ) %>%
+    
+    # Group by Genus, Length, Site to calculate final densities and biomass per genus
+    # This sums values across months to get annual, decided to not include lengths for broad-stroke comparisons 
+    group_by(Genus, Site) %>%
+    summarise(
+      Abundance.Final = sum(Mean.Abundance, na.rm = TRUE),  # Final Abundance across the year
+      Biomass.Final = sum(Mean.Biomass, na.rm = TRUE),  # Final Mass across the year
+      Density.Final = sum(Mean.Density, na.rm = TRUE) # Final Density across the year
+      
+    ) %>%
+    
+  ungroup()
+
+REF_TAXA_Comparisons <- TAXA_Comparisons %>% filter(Site %in% c("EAS", "CRO", "HCN"))
+MID_TAXA_Comparisons <- TAXA_Comparisons %>% filter(Site %in% c("FRY", "HUR", "RUT"))
+HIGH_TAXA_Comparisons <- TAXA_Comparisons %>% filter(Site %in% c("RIC", "LLW", "LLC"))
+
+
+# Saving each of those to excel where each genus is it's own tab
+# REF
+REF_TAXA_Comparisons <- split(REF_TAXA_Comparisons, REF_TAXA_Comparisons$Genus)
+
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Sort the list of genus dataframes by sheet names (genus names) alphabetically
+sorted_genus_list <- REF_TAXA_Comparisons[order(names(REF_TAXA_Comparisons))]
+
+# Add each sorted genus dataframe to a separate sheet
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
+  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
+})
+
+# Save the workbook to an Excel file
+saveWorkbook(wb, "REF_TAXA_Comparisons.xlsx", overwrite = TRUE)
+
+
+# MID
+MID_TAXA_Comparisons <- split(MID_TAXA_Comparisons, MID_TAXA_Comparisons$Genus)
+
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+wb <- createWorkbook()
+
+sorted_genus_list <- MID_TAXA_Comparisons[order(names(MID_TAXA_Comparisons))]
+
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)  
+  writeData(wb, sheet_name, data)   
+})
+
+saveWorkbook(wb, "MID_TAXA_Comparisons.xlsx", overwrite = TRUE)
+
+
+# HIGH
+HIGH_TAXA_Comparisons <- split(HIGH_TAXA_Comparisons, HIGH_TAXA_Comparisons$Genus)
+
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+wb <- createWorkbook()
+
+sorted_genus_list <- HIGH_TAXA_Comparisons[order(names(HIGH_TAXA_Comparisons))]
+
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      
+  writeData(wb, sheet_name, data)  
+})
+
+saveWorkbook(wb, "HIGH_TAXA_Comparisons.xlsx", overwrite = TRUE)
 
