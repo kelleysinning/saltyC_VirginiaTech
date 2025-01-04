@@ -5435,3 +5435,9 @@ iwalk(sorted_genus_list, function(data, sheet_name) {
 
 saveWorkbook(wb, "HIGH_TAXA_Comparisons.xlsx", overwrite = TRUE)
 
+
+
+
+
+# Proportional FFG 2P 
+
