@@ -5573,7 +5573,7 @@ TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="RIC"] = "HIGH"
 
 
 
-TOTAL_PROD$Site <- factor(TOTAL_PROD$Site, levels = c("EAS", "CRO","HCN","FRY","HUR","RUT","LLC","LLW","RIC"))
+TOTAL_PROD$Site <- factor(TOTAL_PROD$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
 TOTAL_PROD$SC.Category <- factor(TOTAL_PROD$SC.Category, levels = c("REF","MID","HIGH"))
 TOTAL_PROD$SC.Level <- factor(TOTAL_PROD$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
 TOTAL_PROD$FFG <- factor(TOTAL_PROD$FFG, levels = c("Scraper","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
@@ -5618,7 +5618,7 @@ df_proportions_site <- TOTAL_PROD %>%
 # Plot with specific colors assigned to each FFG using hexadecimal codes
 propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = FFG)) +
   geom_bar(stat = "identity") +
-  labs(x = "Site", y = "Proportion of Total Productio", fill = "FFGs") +
+  labs(x = "Site", y = "Proportion of Total Production", fill = "FFGs") +
   scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
   theme_minimal()
 
