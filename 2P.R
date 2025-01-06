@@ -5438,6 +5438,281 @@ saveWorkbook(wb, "HIGH_TAXA_Comparisons.xlsx", overwrite = TRUE)
 
 
 
-
 # Proportional FFG 2P 
+
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Acerpenna"] ="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Acentrella"] = "Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Acroneuria"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Allocapnia"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Allognasta"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Alloperla"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Ameletus"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Amphinemura"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Antocha"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Atherix"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Attenella"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Baetidae"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Baetis"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Baetisca"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Boyeria"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Calopteryx"]=="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Capniidae"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Ceratopogonidae"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Cernotina"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Chauloides"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Chelifera"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Chimarra"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Cheumatopsyche"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Chironomidae"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Chironomini"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Circulionidae"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Collembola"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Cordulegaster"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Cyrnellus"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Dicranota"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Diplectrona"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Discocerina"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Dixa"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Dixella"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Dolophilodes"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Ectopria"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Eloeophila"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Epeorus"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Eriopterini"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Ephemera"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Ephemerellidae"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Eurylophella"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Gerris"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Glossosoma"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Goera"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Gomphus"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Gomphurus"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Gyrinus"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Helichus"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Hemiptera"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Heptageniidae"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Hetaerina"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Hexatoma"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Hydrachnia"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Hydatophylax"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Hydropsyche"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Isonychia"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Isoperla"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Langessa"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Lanthus"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Leptophlebiidae"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Lepidostoma"]= "Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Leuctra"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Leuctridae"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Limnephilidae"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Limnophila"]= "Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Limoniidae"]= "Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Lypodiversa"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Micrasema"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Microvelia"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Molophilus"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Neocleon"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Neophylax"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Neoplasta"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Nigronia"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Oligochaeta"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Optioservus"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Oreogeton"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Orthocladine"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Oulimnius"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Paracapnia"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Paraleptophlebia"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Polycentropodidae"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Polycentropus"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Probezzia"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Prodaticus"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Prosimulium"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Psephenus"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Pseudolimnophila"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Psychodini"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Pteronarcys"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Pycnopsyche"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Remenus"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Rhagovelia"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Rhyacophila"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Prostoia"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Sialis"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Simulium"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Stratiomyidae"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Stylogomphus"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Tallaperla"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Stenelmis"]="Scraper"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Stenonema"]="Scraper" 
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Taeniopteryx"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Tanypodinae"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Tanytarsini"]="Collector-Gatherer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Tipula"]="Shredder"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Triacanthagyna"]="Predator"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Wormaldia"]="Collector-Filterer"
+TOTAL_PROD$FFG[TOTAL_PROD$Genus=="Zoraena"]="Predator"
+
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="EAS"] = "25"
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="CRO"] = "72"
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="HCN"] = "78"
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="HUR"] = "387"
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="FRY"] = "402"
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="RUT"] = "594"
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="LLW"] = "1119"
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="LLC"] = "1242"
+TOTAL_PROD$SC.Level[TOTAL_PROD$Site =="RIC"] = "1457"
+
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="EAS"] = "REF"
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="CRO"] = "REF"
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="HCN"] = "REF"
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="HUR"] = "MID"
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="FRY"] = "MID"
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="RUT"] = "MID"
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="LLW"] = "HIGH"
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="LLC"] = "HIGH"
+TOTAL_PROD$SC.Category[TOTAL_PROD$Site =="RIC"] = "HIGH"
+
+
+
+TOTAL_PROD$Site <- factor(TOTAL_PROD$Site, levels = c("EAS", "CRO","HCN","FRY","HUR","RUT","LLC","LLW","RIC"))
+TOTAL_PROD$SC.Category <- factor(TOTAL_PROD$SC.Category, levels = c("REF","MID","HIGH"))
+TOTAL_PROD$SC.Level <- factor(TOTAL_PROD$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
+TOTAL_PROD$FFG <- factor(TOTAL_PROD$FFG, levels = c("Scraper","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
+
+
+
+install.packages("rcartocolor")# Colorblind color schemes
+library(rcartocolor)
+display_carto_all()
+
+# Define a custom palette with desired colors
+
+my_colors = carto_pal(7, "Geyser") # to get hexcodes for geyser to assign FFGS to, for 
+#consistency in graphs I'll use for SFS
+my_colors
+ffg_colors <- c("Scraper" = "#008080", 
+                "Shredder" = "#CA562C", 
+                "Predator" = "#F6EDBD", 
+                "Collector-Gatherer" = "#DE8A5A", 
+                "Collector-Filterer" = "#70A494")  
+
+
+
+
+
+install.packages("ggplot2")
+library(ggplot2)
+
+# Now to do actual proportions, scaling everything to 100% production for each site
+total_prod_site <- TOTAL_PROD %>%
+  group_by(Site) %>%
+  summarise(total_prod = sum(Annual.Production)) # summing the annual production for each site
+
+# Calculate proportions of total production for each FFG for each site
+df_proportions_site <- TOTAL_PROD %>%
+  left_join(total_prod_site, by = "Site") %>%
+  group_by(Site, FFG) %>%
+  summarise(Proportion = sum(Annual.Production) / first(total_prod)) # Summing annual production
+#for each FFG for each site and dividing it by summed annual production for each site
+
+
+# Plot with specific colors assigned to each FFG using hexadecimal codes
+propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = FFG)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Site", y = "Proportion of Total Productio", fill = "FFGs") +
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
+  theme_minimal()
+
+propgg_site 
+
+
+
+
+
+
+# For SC Category
+
+# Now to do actual proportions, scaling everything to 100% production for each SC Cat
+total_prod_cat <- TOTAL_PROD %>%
+  group_by(SC.Category) %>%
+  summarise(total_prod = sum(Annual.Production)) # summing the annual production for each SC Cat
+
+# Calculate proportions of total production for each FFG for each SC Cat
+df_proportions_cat <- TOTAL_PROD %>%
+  left_join(total_prod_cat, by = "SC.Category") %>%
+  group_by(SC.Category, FFG) %>%
+  summarise(Proportion = sum(Annual.Production) / first(total_prod)) # Summing annual production
+#for each FFG for each site and dividing it by summed annual production for each SC Cat
+
+
+# Plot with specific colors assigned to each FFG using hexadecimal codes
+propgg_cat = ggplot(df_proportions_cat, aes(x = SC.Category, y = Proportion, fill = FFG)) +
+  geom_bar(stat = "identity") +
+  labs(x = "SC Category", y = "Proportion of Total Productio", fill = "FFGs") +
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
+  theme_minimal()
+
+propgg_cat 
+
+
+# Now, just core sites since CPI havent been adjusted yet for quarterly bugs
+library(dplyr)
+
+TOTAL_PROD.core <- TOTAL_PROD %>%
+  filter((Site %in% c("EAS", "FRY", "RIC")))
+
+TOTAL_PROD.core$Site <- factor(TOTAL_PROD.core$Site, levels = c("EAS", "FRY","RIC"))
+TOTAL_PROD.core$SC.Category <- factor(TOTAL_PROD.core$SC.Category, levels = c("REF","MID","HIGH"))
+TOTAL_PROD.core$SC.Level <- factor(TOTAL_PROD.core$SC.Level, levels = c("25","402","1457"))
+TOTAL_PROD.core$FFG <- factor(TOTAL_PROD.core$FFG, levels = c("Scraper","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
+
+
+
+# Now to do actual proportions, scaling everything to 100% production for each site
+total_prod_site <- TOTAL_PROD.core %>%
+  group_by(Site) %>%
+  summarise(total_prod = sum(Annual.Production)) # summing the annual production for each site
+
+# Calculate proportions of total production for each FFG for each site
+df_proportions_site <- TOTAL_PROD.core %>%
+  left_join(total_prod_site, by = "Site") %>%
+  group_by(Site, FFG) %>%
+  summarise(Proportion = sum(Annual.Production) / first(total_prod)) # Summing annual production
+#for each FFG for each site and dividing it by summed annual production for each site
+
+
+# Plot with specific colors assigned to each FFG using hexadecimal codes
+propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = FFG)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Site", y = "Proportion of Total Productio", fill = "FFGs") +
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
+  theme_minimal()
+
+propgg_site 
+
+
+
+
+
+
+# boxplots to show that production isn't significantly different
+production_boxplot=ggplot(data=TOTALPROD_sum,aes(x=Site,y=(log(Sum.Annual.Production))))+ 
+  geom_boxplot()+
+  geom_point(aes(color=Site),size=2)+
+  ylab(expression(Biomass(g/m^2)))+
+  xlab("")+
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  theme_bw()+
+  theme(axis.title=element_text(size=23),
+        axis.text=element_text(size=15),
+        panel.grid = element_blank(), 
+        axis.line=element_line(),
+        axis.text.x = element_text(angle = 90, hjust = 1,face="italic"),
+        legend.position="top",
+        legend.title = element_blank(),
+        legend.text = element_text(size=20),
+        legend.background = element_blank(),
+        legend.key=element_rect(fill="white",color="white"))
+
+production_boxplot # Log to see better
+
 
