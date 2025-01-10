@@ -15,7 +15,7 @@ library(dplyr)
 library(purrr)
 
 # Setting the working directory to "SUMMARY SHEETS" where I store my biomass
-setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC/SUMMARY SHEETS")
+setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
 
 # Ok, bring in the csv summary sheets for each site and month
 # September monthly
@@ -2432,7 +2432,7 @@ TOPPlot <- ggplot() +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_x_continuous(name = "NMDS1", limits = c(-2, 2)) +
-  scale_y_continuous(name = "NMDS2", limits = c(-2, 2)) 
+  scale_y_continuous(name = "NMDS2", limits = c(-2, 3)) 
 
 # Display the plot
 print(TOPPlot)
@@ -2680,6 +2680,9 @@ library(vegan) # vegan to calculate distance matrices
 library(ggplot2) # ggplot for plotting
 library(tidyverse) 
 library(dplyr)
+install.packages("ggforce")
+library(ggforce)
+
 
 aggregated.ref.filter <- subset(greaterbiomass, 
                                      (Site == "EAS" & Sample.Month == "October") | 
@@ -2814,8 +2817,8 @@ REF.NMDS <- ggplot() +
   coord_equal() +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  scale_x_continuous(name = "NMDS1", limits = c(-2, 2)) +
-  scale_y_continuous(name = "NMDS2", limits = c(-2, 2)) 
+  scale_x_continuous(name = "NMDS1", limits = c(-1, 1)) +
+  scale_y_continuous(name = "NMDS2", limits = c(-1, 1)) 
 
 print(REF.NMDS)
 
@@ -2829,6 +2832,9 @@ library(vegan) # vegan to calculate distance matrices
 library(ggplot2) # ggplot for plotting
 library(tidyverse) 
 library(dplyr)
+install.packages("ggforce")
+library(ggforce)
+
 
 aggregated.mid.filter <- subset(greaterbiomass, 
                                 (Site == "FRY" & Sample.Month == "October") | 
@@ -2979,6 +2985,9 @@ library(vegan) # vegan to calculate distance matrices
 library(ggplot2) # ggplot for plotting
 library(tidyverse) 
 library(dplyr)
+install.packages("ggforce")
+library(ggforce)
+
 
 aggregated.high.filter <- subset(greaterbiomass, 
                                 (Site == "RIC" & Sample.Month == "October") | 
