@@ -5299,9 +5299,16 @@ library(dplyr)
 
 # One value per taxa, cleaning up CORE PROD. Right now the annual production value is assigned with each genera
 # length class, but I just want one, so averaging it will do that since they are the same
-COREPROD <- CORE_PROD %>%
+COREPROD_summary <- CORE_PROD %>%
   group_by(Site, Genus) %>%
-  summarise(Annual.Production = mean(Annual.Production, na.rm = TRUE), .groups = 'drop')
+  summarise(
+    Production.Uncorrected = mean(Production.Uncorrected, na.rm = TRUE),
+    CPI = mean(CPI, na.rm = TRUE),
+    Annual.Production = mean(Annual.Production, na.rm = TRUE),
+    AnnualP.B = mean(AnnualP.B, na.rm = TRUE),
+    Daily.Growth = mean(Daily.Growth, na.rm = TRUE),
+    .groups = 'drop' # Specify .groups only once
+  )
 
 # Ok, perfect. Now, I want to sum the production for all the taxa in each site
 COREPROD_sum <- COREPROD %>%
@@ -5325,7 +5332,7 @@ sum(SECPROD$Abundance)
 
 
 
-# Comparing abundance and biomass for each taxa between core and non-core sites
+# Comparing abundance, density, and biomass for each taxa between core and non-core sites
 library(dplyr)
 
 
@@ -5434,6 +5441,78 @@ iwalk(sorted_genus_list, function(data, sheet_name) {
 })
 
 saveWorkbook(wb, "HIGH_TAXA_Comparisons.xlsx", overwrite = TRUE)
+
+
+
+
+
+# Comparing abundance, density, production for core sites with variation for abundance and density
+# a more appropriate way to compare core variation for CPI------------------------------
+library(dplyr)
+
+
+CORE_Table <- SECPROD %>%
+  
+
+  # Filter for specific sites
+  filter(Site %in% c("EAS", "FRY", "RIC")) %>%
+  
+  # Arrange by site
+  arrange(factor(Site, levels = c(
+    "EAS", "FRY", "RIC")), Site) %>%
+  
+  # Calculate Density
+  mutate(Density = Abundance / 0.0929) %>%
+  
+  # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
+  # This sums metrics for each genus for each replicate (sums length class metrics for each rep/taxa)
+  group_by(Site, SC.Category, Genus, Sample.Month, Sample.Date, Replicate) %>%
+  summarise(
+    Sum.Biomass = sum(Biomass, na.rm = TRUE),      # Sum Biomass
+    Sum.Density = sum(Density, na.rm = TRUE)  # Sum Density
+  ) %>%
+  
+  # Group by Site, Genus, Sample.Month, Sample.Date, Length
+  group_by(Site,SC.Category, Genus, Sample.Month, Sample.Date) %>%
+  summarise(
+    Mean.Biomass = mean(Sum.Biomass, na.rm = TRUE),  # Average Biomass
+    Mean.Density = mean(Sum.Density, na.rm = TRUE) # Average Density
+  ) %>%
+  
+  # Group by Genus, Site to calculate final average densities and biomass per genus
+  # This averages values across months to get annual value
+  group_by(Genus,Site, SC.Category) %>%
+  summarise(
+    Biomass.Final = sum(Mean.Biomass, na.rm = TRUE),  # Average annual Mass across the year
+    Density.Final = sum(Mean.Density, na.rm = TRUE), #  Average annual Density across the year
+    Biomass.SD = sd(Mean.Biomass, na.rm = TRUE),            # Standard deviation of Biomass based on months
+    Density.SD = sd(Mean.Density, na.rm = TRUE)             # Standard deviation of Density based on months
+    
+  ) %>%
+  
+  ungroup()
+
+
+# Merging Core_Table with COREPROD_summary to add production numbers to density and biomass
+
+CORE_SummaryTable <- left_join(CORE_Table, COREPROD_summary, by = c("Site", "Genus"))
+
+CORE_SummaryTable <- CORE_SummaryTable %>% 
+  select(-source.x, -.id.x, -source.y, -.id.y)
+
+CORE_SummaryTable <- bind_cols(CORE_Table, COREPROD_summary)
+
+
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Save the data frame to an Excel file
+write.xlsx(CORE_SummaryTable, file = "CORE_SummaryTable.xlsx", overwrite = TRUE)
+
+
+
+
 
 
 
@@ -5839,7 +5918,7 @@ production_boxplot=ggplot(data=TOTALPROD,aes(x=Site,y=(log(Annual.Production))))
   geom_boxplot()+
   geom_point(aes(color=SC.Category),size=2)+
   facet_wrap(~FFG) +
-  ylab(expression(Biomass(g/m^2)))+
+  ylab(expression(ACSP(g/m^2/yr)))+
   xlab("")+
   scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
   theme_bw()+
