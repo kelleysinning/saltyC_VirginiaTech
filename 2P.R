@@ -4065,6 +4065,7 @@ SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
       Individual.Mass.Final = sum(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
     
+    
     # Arrange by Length for correct ordering of size classes
     arrange(Length)
 }
@@ -4072,9 +4073,9 @@ SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
 
 
 
-# Create a list of dataframes, one for each genus, for the "EAS" site
+# Create a list of dataframes, one for each genus, for the "FRY" site
 FRY_genus_2P <- SECPROD %>%
-  filter(Site == "FRY") %>%             # Filter for the "EAS" site
+  filter(Site == "FRY") %>%             # Filter for the "FRY" site
   distinct(Genus) %>%                   # Get distinct genera
   pull(Genus) %>%                       # Pull them as a vector
   set_names() %>%                       # Set genus names as list names
@@ -4300,143 +4301,6 @@ saveWorkbook(wb, "RIC_Genus_2PSummary.xlsx", overwrite = TRUE)
 
 
 
-
-
-
-
-# Automating 2P for every taxa in FRY---------
-# Function to calculate density and individual mass correctly for length classes
-SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
-  SECPROD %>%
-    # Filter by site
-    filter(Site == site_filter) %>%
-    
-    
-    # Arrange by month and Sample.Month factor order
-    arrange(factor(Sample.Month, levels = c(
-      "September", "October", "November", "December",
-      "January", "February", "March", "April",
-      "May", "June", "July", "August"
-    )), Sample.Month) %>%
-    
-    # Calculate Density
-    mutate(Density = Abundance / 0.0929) %>%
-    
-    # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
-    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
-    summarise(
-      Sum.Density = sum(Density, na.rm = TRUE),     # Sum Density
-      Sum.Biomass = sum(Biomass, na.rm = TRUE)      # Sum Biomass
-    ) %>%
-    
-    # Calculate Individual Mass
-    mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
-    
-    
-    # Group by Site, Genus, Sample.Month, Sample.Date, Length
-    group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
-    summarise(
-      Mean.Density = mean(Sum.Density, na.rm = TRUE),  # Average Density
-      Mean.Individual.Mass = mean(Individual.Mass, na.rm = TRUE)  # Average Individual Mass
-    ) %>%
-    
-    # Group by Genus, Length, Site to calculate final densities and biomass per genus
-    group_by(Genus, Length, Site) %>%
-    summarise(
-      Density.Final = sum(Mean.Density, na.rm = TRUE),  # Final Density across the year
-      Individual.Mass.Final = sum(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
-    ) %>%
-    
-    # Arrange by Length for correct ordering of size classes
-    arrange(Length)
-}
-
-
-
-
-# Create a list of dataframes, one for each genus, for the "EAS" site
-FRY_genus_2P <- SECPROD %>%
-  filter(Site == "FRY") %>%             # Filter for the "EAS" site
-  distinct(Genus) %>%                   # Get distinct genera
-  pull(Genus) %>%                       # Pull them as a vector
-  set_names() %>%                       # Set genus names as list names
-  map(~ SECPROD_FRY(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
-
-
-# Function to Add Additional Columns to Each Genus Dataframe
-Production_Columns <- function(SECPROD) {
-  SECPROD %>%
-    arrange(Length) %>%                       # Sort by Length
-    group_by(Genus) %>%                       # Group by Genus
-    
-    mutate(
-      No.Lost = if_else(
-        is.na(lead(Density.Final)),  # If the next value is NA (i.e., last row)
-        Density.Final / 1,           # Divide current value by 1 for the last row (same value)
-        (Density.Final - lead(Density.Final))),  # Subtract next row's density to get Number Lost
-      
-      Biomass = Density.Final * Individual.Mass.Final,  # Calculate Biomass
-      
-      # Modify Mass.at.Loss to divide the last value by itself
-      Mass.at.Loss = if_else(
-        is.na(lead(Individual.Mass.Final)),  # If the next value is NA (i.e., last row)
-        Individual.Mass.Final / 2,           # Divide current value by 2 for the last row
-        (Individual.Mass.Final + lead(Individual.Mass.Final)) / 2  # Average with the next value for others
-      ),
-      
-      Biomass.Lost = No.Lost * Mass.at.Loss,
-      
-      Times.No.Size.Classes = Biomass.Lost * n_distinct(Length),  # Multiply Biomass Lost by number of size classes
-      
-      Biomass.Sum = sum(Biomass), # 1 value for taxa
-      
-      Production.Uncorrected = sum(Times.No.Size.Classes[Times.No.Size.Classes > 0], na.rm = TRUE),
-      
-      CohortP.B = Production.Uncorrected/Biomass.Sum,
-      
-      CPI = 12/n_distinct(Length),
-      
-      Annual.Production = Production.Uncorrected/(12/n_distinct(Length)),
-      
-      AnnualP.B = Annual.Production/Biomass.Sum,
-      
-      # Calculate Daily Growth:
-      Largest.Mass = Individual.Mass.Final[which.max(Length)],  # Mass for the largest length class
-      Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
-      Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
-    ) %>%
-    select(-Largest.Mass, -Smallest.Mass)%>%  # Remove Largest.Mass and Smallest.Mass columns after using them
-    
-    ungroup()  # Ungroup after calculation
-}
-
-
-
-# Apply Production_Columns to each genus dataframe in the list
-
-FRY_genus_2P_Final <- map(FRY_genus_2P, ~Production_Columns(.x))
-
-
-
-# Saving it to excel where each genus is it's own tab
-library(dplyr)
-library(purrr)
-library(openxlsx)
-
-# Create a workbook
-wb <- createWorkbook()
-
-# Sort the list of genus dataframes by sheet names (genus names) alphabetically
-sorted_genus_list <- FRY_genus_2P_Final[order(names(FRY_genus_2P_Final))]
-
-# Add each sorted genus dataframe to a separate sheet
-iwalk(sorted_genus_list, function(data, sheet_name) {
-  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
-  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
-})
-
-# Save the workbook to an Excel file
-saveWorkbook(wb, "FRY_Genus_2PSummary.xlsx", overwrite = TRUE)
 
 
 
