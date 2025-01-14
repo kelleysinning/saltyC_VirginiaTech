@@ -1268,6 +1268,7 @@ FRYoct <- FRYoct %>%
     .cols = (match("Genus", names(FRYoct)) + 1):(match("BIOMASS.STARTS.HERE", names(FRYoct)) - 1),
     .fn = ~ paste0("Abundance.Length_", seq_along(.))
   )
+
 HURoct <- HURoct %>%
   rename_with(
     .cols = (match("Genus", names(HURoct)) + 1):(match("BIOMASS.STARTS.HERE", names(HURoct)) - 1),
@@ -3646,7 +3647,7 @@ SECPROD <- do.call(rbind, combined_2Plists)
                          "Paracapnia", # Allocapnia were actually paracapnia
                          Genus))
  
- # Taking out zeroes and P/A in biomass too
+ # Taking out zeroes and N/A in biomass too
  
  library(dplyr)
  library(stringr)
@@ -4047,6 +4048,8 @@ SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
       Sum.Biomass = sum(Biomass, na.rm = TRUE)      # Sum Biomass
     ) %>%
     
+    filter(Sum.Density > 0) %>%  # Remove zero-filled classes
+    
     # Calculate Individual Mass
     mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
     
@@ -4065,6 +4068,7 @@ SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
       Individual.Mass.Final = sum(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
     
+    filter(Density.Final > 0) %>%  # Ensure no zero-filled length classes
     
     # Arrange by Length for correct ordering of size classes
     arrange(Length)
@@ -4079,7 +4083,7 @@ FRY_genus_2P <- SECPROD %>%
   distinct(Genus) %>%                   # Get distinct genera
   pull(Genus) %>%                       # Pull them as a vector
   set_names() %>%                       # Set genus names as list names
-  map(~ SECPROD_FRY(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
+  map(~ SECPROD_FRY(SECPROD %>% filter(Genus == .x)))  # Apply the function per genus
 
 
 # Function to Add Additional Columns to Each Genus Dataframe
@@ -5180,11 +5184,18 @@ COREPROD_sum <- COREPROD %>%
   summarise(Sum.Annual.Production = sum(Annual.Production, na.rm = TRUE), .groups = 'drop')
 
 
-
+ 
 # Same as above but for all sites
-TOTALPROD <- TOTAL_PROD %>%
+TOTALPROD_Summary <- TOTAL_PROD %>%
   group_by(Site, Genus) %>%
-  summarise(Annual.Production = mean(Annual.Production, na.rm = TRUE), .groups = 'drop')
+  summarise(
+    Production.Uncorrected = mean(Production.Uncorrected, na.rm = TRUE),
+    CPI = mean(CPI, na.rm = TRUE),
+    Annual.Production = mean(Annual.Production, na.rm = TRUE),
+    AnnualP.B = mean(AnnualP.B, na.rm = TRUE),
+    Daily.Growth = mean(Daily.Growth, na.rm = TRUE),
+    .groups = 'drop' # Specify .groups only once
+  )
 
 TOTALPROD_sum <- TOTALPROD %>%
   group_by(Site) %>%
@@ -5344,16 +5355,19 @@ CORE_Table <- SECPROD %>%
   ) %>%
   
   # Group by Genus, Site to calculate final average densities and biomass per genus
-  # This averages values across months to get annual value
+  # This averages values across months to get annual value...different from above where I summed
   group_by(Genus,Site, SC.Category) %>%
   summarise(
     Biomass.Final = sum(Mean.Biomass, na.rm = TRUE),  # Average annual Mass across the year
     Density.Final = sum(Mean.Density, na.rm = TRUE), #  Average annual Density across the year
     Biomass.SD = sd(Mean.Biomass, na.rm = TRUE),            # Standard deviation of Biomass based on months
     Density.SD = sd(Mean.Density, na.rm = TRUE)             # Standard deviation of Density based on months
-    
   ) %>%
   
+  filter(Density.Final > 0) %>% # Still some zeroes from the SECPROD FRY weirdness
+  
+  mutate(across(where(is.numeric), ~ round(.x, 2))) %>% # Rounding numbers
+
   ungroup()
 
 
@@ -5361,11 +5375,18 @@ CORE_Table <- SECPROD %>%
 
 CORE_SummaryTable <- left_join(CORE_Table, COREPROD_summary, by = c("Site", "Genus"))
 
-CORE_SummaryTable <- CORE_SummaryTable %>% 
-  select(-source.x, -.id.x, -source.y, -.id.y)
+# Add a new column with the "biomass ± SD" format
+CORE_SummaryTable <- CORE_SummaryTable %>%
+  mutate(
+    Biomass = paste0(Biomass.Final, " ± ", Biomass.SD),
+    Density = paste0(Density.Final, " ± ", Density.SD),
+    across(where(is.numeric), ~ round(.x, 2))) %>%
+ select(Genus,Site, SC.Category,Density, Biomass, Production.Uncorrected,CPI, Annual.Production,
+        AnnualP.B, Daily.Growth
+ )
 
-CORE_SummaryTable <- bind_cols(CORE_Table, COREPROD_summary)
 
+# Cutting out genera with zeros in biomass, still some left over weirdness from FRY oct 
 
 library(dplyr)
 library(purrr)
@@ -5374,6 +5395,78 @@ library(openxlsx)
 # Save the data frame to an Excel file
 write.xlsx(CORE_SummaryTable, file = "CORE_SummaryTable.xlsx", overwrite = TRUE)
 
+
+
+
+# Now with non-core sites
+NONCORE_Table <- SECPROD %>%
+  
+  
+  # Filter for specific sites
+  filter(Site %in% c("CRO", "HCN", "HUR", "RUT", "LLW", "LLC")) %>%
+  
+  # Arrange by site
+  arrange(factor(Site, levels = c(
+    "CRO", "HCN", "HUR", "RUT", "LLW", "LLC")), Site) %>%
+  
+  # Calculate Density
+  mutate(Density = Abundance / 0.0929) %>%
+  
+  # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
+  # This sums metrics for each genus for each replicate (sums length class metrics for each rep/taxa)
+  group_by(Site, SC.Category, Genus, Sample.Month, Sample.Date, Replicate) %>%
+  summarise(
+    Sum.Biomass = sum(Biomass, na.rm = TRUE),      # Sum Biomass
+    Sum.Density = sum(Density, na.rm = TRUE)  # Sum Density
+  ) %>%
+  
+  # Group by Site, Genus, Sample.Month, Sample.Date, Length
+  # This averages the replicates
+  group_by(Site,SC.Category, Genus, Sample.Month, Sample.Date) %>%
+  summarise(
+    Mean.Biomass = mean(Sum.Biomass, na.rm = TRUE),  # Average Biomass
+    Mean.Density = mean(Sum.Density, na.rm = TRUE) # Average Density
+  ) %>%
+  
+  # Group by Genus, Site to calculate final average densities and biomass per genus
+  # This averages values across months to get annual value...different from above where I summed
+  group_by(Genus,Site, SC.Category) %>%
+  summarise(
+    Biomass.Final = sum(Mean.Biomass, na.rm = TRUE),  # Average annual Mass across the year
+    Density.Final = sum(Mean.Density, na.rm = TRUE), #  Average annual Density across the year
+    Biomass.SD = sd(Mean.Biomass, na.rm = TRUE),            # Standard deviation of Biomass based on months
+    Density.SD = sd(Mean.Density, na.rm = TRUE)             # Standard deviation of Density based on months
+  ) %>%
+  
+  filter(Density.Final > 0) %>% # Still some zeroes from the SECPROD FRY weirdness
+  
+  mutate(across(where(is.numeric), ~ round(.x, 2))) %>% # Rounding
+  
+  ungroup()
+
+
+# Merging NONCCORE_Table with TOTALPROD_summary to add production numbers to density and biomass
+
+NONCORE_SummaryTable <- left_join(NONCORE_Table, TOTALPROD_Summary, by = c("Site", "Genus"))
+
+# Add a new column with the "biomass ± SD" format
+NONCORE_SummaryTable <- NONCORE_SummaryTable %>%
+  filter(Site %in% c("CRO", "HCN", "HUR", "RUT", "LLW", "LLC")) %>% # bc TOTALPROD has core sites too
+  mutate(
+    Biomass = paste0(Biomass.Final, " ± ", Biomass.SD),
+    Density = paste0(Density.Final, " ± ", Density.SD),
+    across(where(is.numeric), ~ round(.x, 2)) # Rounding
+    ) %>%
+  select(Genus,Site, SC.Category,Density, Biomass, Production.Uncorrected,CPI, Annual.Production,
+         AnnualP.B, Daily.Growth
+  )
+
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Save the data frame to an Excel file
+write.xlsx(NONCORE_SummaryTable, file = "NONCORE_SummaryTable.xlsx", overwrite = TRUE)
 
 
 
