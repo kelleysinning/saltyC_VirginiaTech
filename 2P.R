@@ -5198,6 +5198,9 @@ TOTALPROD_Summary <- TOTAL_PROD_lengths %>%
     .groups = 'drop' # Specify .groups only once
   )
 
+
+
+
 TOTALPROD_sum <- TOTALPROD_Summary %>%
   group_by(Site) %>%
   summarise(Sum.Annual.Production = sum(Annual.Production, na.rm = TRUE), .groups = 'drop')
@@ -5492,7 +5495,7 @@ TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Baetidae"]="Collector-Gatherer"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Baetis"]="Collector-Gatherer"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Baetisca"]="Collector-Gatherer"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Boyeria"]="Predator"
-TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Calopteryx"]=="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Calopteryx"]="Predator"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Capniidae"]="Shredder"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Ceratopogonidae"]="Predator"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Cernotina"]="Predator"
@@ -5558,6 +5561,8 @@ TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Oreogeton"]="Predator"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Orthocladine"]="Collector-Gatherer"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Oulimnius"]="Scraper"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Paracapnia"]="Shredder"
+TOTALPROD_Summary <-  TOTALPROD_Summary %>%
+  mutate(Genus = ifelse(Genus == "Paraleptophlebiidae", "Paraleptophlebia", Genus))
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Paraleptophlebia"]="Collector-Gatherer"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Polycentropodidae"]="Collector-Filterer"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Polycentropus"]="Predator"
@@ -5587,6 +5592,9 @@ TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Tipula"]="Shredder"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Triacanthagyna"]="Predator"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Wormaldia"]="Collector-Filterer"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Zoraena"]="Predator"
+TOTALPROD_Summary <- TOTALPROD_Summary %>%
+  filter(!str_detect(Genus, "Hagenella|Stagnicola"))
+
 
 TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="EAS"] = "25"
 TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="CRO"] = "72"
@@ -5754,16 +5762,16 @@ production_boxplot # Log to see better
 library(ggplot2)
 library(dplyr)
 
-# Summarize the data to calculate the mean production per site and FFG
-TOTALPROD_Summary_Mean <- TOTALPROD_Summary %>%
-  group_by(Site, FFG) %>%
+# Summarize the data to calculate the total production per site and FFG
+TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>%
+  group_by(Site, FFG, SC.Level) %>%
   summarise(
-    Mean_Production = mean((Annual.Production), na.rm = TRUE),
+    Summed.Annual.Production = sum((Annual.Production), na.rm = TRUE),
     SC.Category = first(SC.Category)  # Include SC.Category for coloring
   )
 
 # Create the linear plot
-production_lineplot <- ggplot(data = TOTALPROD_Summary_Mean, aes(x = Site, y = log(Mean_Production), group = FFG, color = SC.Category)) +
+production_lineplot <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = Site, y =log(Summed.Annual.Production), group = FFG, color = SC.Category)) +
   geom_line(size = 1.2) +  # Add lines for each FFG
   geom_point(size = 3) +   # Add points for emphasis
   facet_wrap(~FFG) +       # Facet by FFG
@@ -5786,5 +5794,154 @@ production_lineplot <- ggplot(data = TOTALPROD_Summary_Mean, aes(x = Site, y = l
 
 # Display the plot
 production_lineplot
+
+
+# checking stuff
+TOTALPROD_Summary_ <- TOTALPROD_Summary %>%
+  group_by(Site,FFG) %>%
+  summarise(sum.prod = sum(Annual.Production))
+
+
+install.packages("ggpmisc")
+library(ggpmisc)
+
+
+production_lineplot_lm <- ggplot(
+  data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
+  aes(x = SC.Level, y = log(Summed.Annual.Production), group = FFG, color = SC.Category)
+) +
+  geom_point(size = 3) +   # Add points for emphasis
+  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label))), 
+    formula = y ~ x,  # Use x and y here
+    parse = TRUE,
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  # Add R^2 annotations
+  facet_wrap(~FFG) +       # Facet by FFG
+  ylab(expression(ACSP ~ (g/m^2/yr))) +
+  xlab("") +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 23),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+# Display the plot
+production_lineplot_lm
+
+
+
+
+production_lineplot_lm <- ggplot(
+  data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
+  aes(x = SC.Level, y = log(Summed.Annual.Production), group = FFG, color = SC.Category)
+) + 
+  geom_point(size = 3) +   # Add points for emphasis
+  geom_smooth(
+    method = "loess",       # Fit a LOESS smoother instead of a linear model
+    se = TRUE,              # Display standard error around the curve
+    aes(group = FFG),       # Separate smoothers by FFG group
+    linetype = "dashed"     # Make the LOESS line dashed for distinction
+  ) +  # Line of best fit
+  facet_wrap(~FFG) +       # Facet by FFG
+  ylab(expression(ACSP ~ (g/m^2/yr))) +
+  xlab("") +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 23),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+# Display the plot
+production_lineplot_lm
+
+
+
+
+
+library(ggplot2)
+library(ggpmisc)
+
+taxa_na_count <- TOTALPROD_Summary %>%
+  filter(is.na(FFG)) %>%
+  group_by(Genus)
+
+
+# Fit the Gamma GLM with log link
+TOTALPROD_Summary$Annual.Production2 <- rgamma(length(TOTALPROD_Summary$Annual.Production),shape=1,rate=1)
+gamma_glm <- glm(Annual.Production2 ~ SC.Level * FFG,  
+                 family = Gamma(link = "log"),  
+                 data = TOTALPROD_Summary)
+summary(gamma_glm)
+
+# Simulate residuals
+library(DHARMa)
+simulationOutput <- simulateResiduals(fittedModel = gamma_glm, plot = TRUE)
+
+library(emmeans)
+emmeans(gamma_glm, pairwise~SC.Level)
+emmeans(gamma_glm, pairwise~SC.Level, type="response")
+
+
+
+# Generate predictions from the fitted model
+TOTALPROD_Summary_Sum$predicted_values <- predict(gamma_glm, type = "response")
+
+
+# Create the plot with raw data and the fitted GLM model
+production_lineplot_gamma <- ggplot(
+  data = TOTALPROD_Summary_Sum,  # Data used for plotting
+  aes(x = SC.Level, y = Summed.Annual.Production, group = FFG, color = SC.Category)
+) + 
+  geom_point(size = 3) +  # Add points for raw data
+  geom_smooth(
+    method = "glm",  # Use GLM for smoothing
+    method.args = list(family = Gamma(link = "log")),  # Specify the family and link
+    se = TRUE,  # Show standard error bands
+    aes(group = FFG),  # Group by FFG for separate lines
+    linetype = "dashed"  # Dashed line for the model
+  ) + 
+  facet_wrap(~FFG) +  # Facet by FFG (if needed)
+  ylab(expression(ACSP ~ (g/m^2/yr))) +
+  xlab("SC.Level") +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) + 
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 23), 
+    axis.text = element_text(size = 15), 
+    panel.grid = element_blank(), 
+    axis.line = element_line(), 
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"), 
+    legend.position = "top", 
+    legend.title = element_blank(), 
+    legend.text = element_text(size = 20), 
+    legend.background = element_blank(), 
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+# Display the plot
+production_lineplot_gamma
+
+
 
 
