@@ -3655,9 +3655,9 @@ SECPROD <- do.call(rbind, combined_2Plists)
  SECPROD <- SECPROD %>%
    filter(
      Biomass != 0,  # Filter out rows where Biomass is zero
-     !str_detect(Genus, "Terrestrial|Pupa|Adult|\\(A\\)|\\(terrestrial\\)")  # Exclude rows with "Pupa", "Adult", or "(A)" in the Genus column
+     !str_detect(Genus, "Hagenella|Stagnicola|Terrestrial|Pupa|Adult|\\(A\\)|\\(terrestrial\\)")  # Exclude rows with "Pupa", "Adult", or "(A)", Stagnicola, Hagenella (only 1) in the Genus column
    )
- 
+
  # Realized i had decimal in wrong place and needed to move one spot to the left
  SECPROD$Biomass <- as.numeric(as.character(SECPROD$Biomass))
  
@@ -3677,6 +3677,180 @@ SECPROD <- do.call(rbind, combined_2Plists)
 
 # Saving as a CSV for geom_ridge code
 write.csv(SECPROD, "SEC_PROD.csv", row.names = FALSE)
+
+
+## Biomass across the year------------------------------------------------------
+
+
+SECPROD$FFG[SECPROD$Genus=="Acerpenna"] ="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Acentrella"] = "Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Acroneuria"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Allocapnia"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Allognasta"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Alloperla"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Ameletus"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Amphinemura"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Antocha"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Atherix"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Attenella"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Baetidae"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Baetis"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Baetisca"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Boyeria"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Calopteryx"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Capniidae"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Ceratopogonidae"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Cernotina"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Chauloides"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Chelifera"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Chimarra"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Cheumatopsyche"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Chironomidae"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Chironomini"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Circulionidae"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Collembola"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Cordulegaster"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Cyrnellus"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Dicranota"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Diplectrona"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Discocerina"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Dixa"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Dixella"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Dolophilodes"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Ectopria"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Eloeophila"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Epeorus"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Eriopterini"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Ephemera"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Ephemerellidae"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Eurylophella"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Gerris"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Glossosoma"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Goera"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Gomphus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Gomphurus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Gyrinus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Helichus"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Hemiptera"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Heptageniidae"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Hetaerina"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Hexatoma"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Hydrachnia"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Hydatophylax"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Hydropsyche"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Isonychia"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Isoperla"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Langessa"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Lanthus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Leptophlebiidae"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Lepidostoma"]= "Shredder"
+SECPROD$FFG[SECPROD$Genus=="Leuctra"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Leuctridae"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Limnephilidae"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Limnophila"]= "Predator"
+SECPROD$FFG[SECPROD$Genus=="Limoniidae"]= "Shredder"
+SECPROD$FFG[SECPROD$Genus=="Lypodiversa"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Micrasema"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Microvelia"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Molophilus"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Neocleon"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Neophylax"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Neoplasta"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Nigronia"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Oligochaeta"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Optioservus"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Oreogeton"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Orthocladine"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Oulimnius"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Paracapnia"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Paraleptophlebia"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Polycentropodidae"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Polycentropus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Probezzia"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Prodaticus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Prosimulium"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Psephenus"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Pseudolimnophila"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Psychodini"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Pteronarcys"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Pycnopsyche"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Remenus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Rhagovelia"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Rhyacophila"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Prostoia"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Sialis"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Simulium"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Stratiomyidae"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Stylogomphus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Tallaperla"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Stenelmis"]="Scraper"
+SECPROD$FFG[SECPROD$Genus=="Stenonema"]="Scraper" 
+SECPROD$FFG[SECPROD$Genus=="Taeniopteryx"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Tanypodinae"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Tanytarsini"]="Collector-Gatherer"
+SECPROD$FFG[SECPROD$Genus=="Tipula"]="Shredder"
+SECPROD$FFG[SECPROD$Genus=="Triacanthagyna"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Wormaldia"]="Collector-Filterer"
+SECPROD$FFG[SECPROD$Genus=="Zoraena"]="Predator"
+
+# For color scheme
+install.packages("rcartocolor")# Colorblind color schemes
+library(rcartocolor)
+display_carto_all()
+
+ffg_colors <- c("Scraper" = "#008080", 
+                "Shredder" = "#CA562C", 
+                "Predator" = "#F6EDBD", 
+                "Collector-Gatherer" = "#DE8A5A", 
+                "Collector-Filterer" = "#70A494")  
+
+# Summarizing means of each FFG in each replicate for each stream
+# Then, averaging the replicates from each stream--> 1 value per FFG per month
+biomass <- SECPROD %>%
+  group_by(Sample.Month, SC.Category,SC.Level,Site,Replicate,FFG ) %>% 
+  summarise(sum.biomass=sum(Biomass,na.rm=FALSE))  %>% 
+
+  group_by(Sample.Month,SC.Category,SC.Level,Site,FFG ) %>% 
+  summarise(mean.biomass=mean(sum.biomass,na.rm=FALSE))
+
+taxa_na_count <- SECPROD %>%
+  filter(is.na(FFG)) %>%
+  group_by(Genus)
+
+
+biomassmonthly <- biomass %>%
+  filter(Site %in% c("EAS", "FRY", "RIC"))
+
+
+# FFGs across month
+FFGgplot <- ggplot(data = biomassmonthly, aes(x = Sample.Month, y = (log(mean.biomass)))) +
+  facet_wrap(~FFG, ncol = 5, nrow = 5) +  
+  geom_boxplot(fill = "white") +  
+  geom_point(aes(color = FFG), size = 2) +  
+  ylab(expression(log(Biomass(g/m^2)))) +  
+  xlab("") +
+  scale_color_manual(values = ffg_colors, name = "FFG") +  
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 23),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+print(FFGgplot) # A hump in scrapers and collector-gatherers in spring,
+# collector-filterers and predators remain fairly consistent across time,
+# shredders increasing throughout the year. 
+
+
+
+
 
 
 # 2P FOR SPECIFIC TAXA----------------------------------------------------------
@@ -5199,8 +5373,6 @@ TOTALPROD_Summary <- TOTAL_PROD_lengths %>%
   )
 
 
-
-
 TOTALPROD_sum <- TOTALPROD_Summary %>%
   group_by(Site) %>%
   summarise(Sum.Annual.Production = sum(Annual.Production, na.rm = TRUE), .groups = 'drop')
@@ -5343,18 +5515,18 @@ CORE_Table <- SECPROD %>%
   # Calculate Density
   mutate(Density = Abundance / 0.0929) %>%
   
-  # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
+  # Group by Site, Genus, Sample.Month, Sample.Date, Replicate
   # This sums metrics for each genus for each replicate (sums length class metrics for each rep/taxa)
   group_by(Site, SC.Category, Genus, Sample.Month, Sample.Date, Replicate) %>%
   summarise(
-    Sum.Biomass = sum(Biomass, na.rm = TRUE),      # Sum Biomass
+    Sum.Biomass = sum(Biomass, na.rm = TRUE),      # Sum Biomass for replicate
     Sum.Density = sum(Density, na.rm = TRUE)  # Sum Density
   ) %>%
   
   # Group by Site, Genus, Sample.Month, Sample.Date, Length
   group_by(Site,SC.Category, Genus, Sample.Month, Sample.Date) %>%
   summarise(
-    Mean.Biomass = mean(Sum.Biomass, na.rm = TRUE),  # Average Biomass
+    Mean.Biomass = mean(Sum.Biomass, na.rm = TRUE),  # Average Biomass per month (avg replicates)
     Mean.Density = mean(Sum.Density, na.rm = TRUE) # Average Density
   ) %>%
   
@@ -5362,10 +5534,10 @@ CORE_Table <- SECPROD %>%
   # This averages values across months to get annual value...different from above where I summed
   group_by(Genus,Site, SC.Category) %>%
   summarise(
-    Biomass.Final = sum(Mean.Biomass, na.rm = TRUE),  # Average annual Mass across the year
-    Density.Final = sum(Mean.Density, na.rm = TRUE), #  Average annual Density across the year
+    Biomass.Final = mean(Mean.Biomass, na.rm = TRUE),  # Average annual Mass across the year
+    Density.Final = mean(Mean.Density, na.rm = TRUE), #  Average annual Density across the year
     Biomass.SD = sd(Mean.Biomass, na.rm = TRUE),            # Standard deviation of Biomass based on months
-    Density.SD = sd(Mean.Density, na.rm = TRUE)             # Standard deviation of Density based on months
+    Density.SD = sd(Mean.Biomass, na.rm = TRUE)             # Standard deviation of Density based on months
   ) %>%
   
   filter(Density.Final > 0) %>% # Still some zeroes from the SECPROD FRY weirdness
@@ -5436,8 +5608,8 @@ NONCORE_Table <- SECPROD %>%
   # This averages values across months to get annual value...different from above where I summed
   group_by(Genus,Site, SC.Category) %>%
   summarise(
-    Biomass.Final = sum(Mean.Biomass, na.rm = TRUE),  # Average annual Mass across the year
-    Density.Final = sum(Mean.Density, na.rm = TRUE), #  Average annual Density across the year
+    Biomass.Final = mean(Mean.Biomass, na.rm = TRUE),  # Average annual Mass across the year
+    Density.Final = mean(Mean.Density, na.rm = TRUE), #  Average annual Density across the year
     Biomass.SD = sd(Mean.Biomass, na.rm = TRUE),            # Standard deviation of Biomass based on months
     Density.SD = sd(Mean.Density, na.rm = TRUE)             # Standard deviation of Density based on months
   ) %>%
@@ -5461,7 +5633,7 @@ NONCORE_SummaryTable <- NONCORE_SummaryTable %>%
     Density = paste0(Density.Final, " ± ", Density.SD),
     across(where(is.numeric), ~ round(.x, 2)) # Rounding
     ) %>%
-  select(Genus,Site, SC.Category,Density, Biomass, Production.Uncorrected,CPI, Annual.Production,
+  select(Genus,Site, SC.Category.x,Density, Biomass, Production.Uncorrected,CPI, Annual.Production,
          AnnualP.B, Daily.Growth
   )
 
@@ -5478,7 +5650,7 @@ write.xlsx(NONCORE_SummaryTable, file = "NONCORE_SummaryTable.xlsx", overwrite =
 
 
 
-# Proportional FFG 2P 
+# Proportional FFG 2P-----------------------------------------------------------
 
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Acerpenna"] ="Collector-Gatherer"
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Acentrella"] = "Collector-Gatherer"
@@ -5725,8 +5897,7 @@ df_proportions_site <- TOTALPROD_Summary.core %>%
   summarise(Proportion = sum(Annual.Production) / first(TOTALPROD_Summary)) # Summing annual production
 #for each FFG for each site and dividing it by summed annual production for each site
 
-
-# Plot with specific colors assigned to each FFG using hexadecimal codes
+# Plot with specific colors assigned to each FFG 
 propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = FFG)) +
   geom_bar(stat = "identity") +
   labs(x = "Site", y = "Proportion of Total Productio", fill = "FFGs") +
@@ -5735,10 +5906,10 @@ propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = F
 
 propgg_site 
 
-# boxplots to show that production isn't significantly different
+
+# boxplots to show production 
 production_boxplot=ggplot(data=TOTALPROD_Summary,aes(x=Site,y=(log(Annual.Production))))+ 
   geom_boxplot()+
-  geom_point(aes(color=SC.Category),size=2)+
   facet_wrap(~FFG) +
   ylab(expression(ACSP(g/m^2/yr)))+
   xlab("")+
@@ -5757,7 +5928,11 @@ production_boxplot=ggplot(data=TOTALPROD_Summary,aes(x=Site,y=(log(Annual.Produc
 
 production_boxplot # Log to see better
 
-# trying something linear
+
+
+
+
+# Trying something linear
 
 library(ggplot2)
 library(dplyr)
@@ -5802,6 +5977,8 @@ TOTALPROD_Summary_ <- TOTALPROD_Summary %>%
   summarise(sum.prod = sum(Annual.Production))
 
 
+
+# Linear model with line of best fit
 install.packages("ggpmisc")
 library(ggpmisc)
 
@@ -5842,8 +6019,9 @@ production_lineplot_lm
 
 
 
+# Loess line
 
-production_lineplot_lm <- ggplot(
+production_lineplot_loess <- ggplot(
   data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
   aes(x = SC.Level, y = log(Summed.Annual.Production), group = FFG, color = SC.Category)
 ) + 
@@ -5873,14 +6051,12 @@ production_lineplot_lm <- ggplot(
   )
 
 # Display the plot
-production_lineplot_lm
+production_lineplot_loess
 
 
 
 
-
-library(ggplot2)
-library(ggpmisc)
+# Gamma games------------------------
 
 taxa_na_count <- TOTALPROD_Summary %>%
   filter(is.na(FFG)) %>%
@@ -5908,39 +6084,6 @@ emmeans(gamma_glm, pairwise~SC.Level, type="response")
 TOTALPROD_Summary_Sum$predicted_values <- predict(gamma_glm, type = "response")
 
 
-# Create the plot with raw data and the fitted GLM model
-production_lineplot_gamma <- ggplot(
-  data = TOTALPROD_Summary_Sum,  # Data used for plotting
-  aes(x = SC.Level, y = Summed.Annual.Production, group = FFG, color = SC.Category)
-) + 
-  geom_point(size = 3) +  # Add points for raw data
-  geom_smooth(
-    method = "glm",  # Use GLM for smoothing
-    method.args = list(family = Gamma(link = "log")),  # Specify the family and link
-    se = TRUE,  # Show standard error bands
-    aes(group = FFG),  # Group by FFG for separate lines
-    linetype = "dashed"  # Dashed line for the model
-  ) + 
-  facet_wrap(~FFG) +  # Facet by FFG (if needed)
-  ylab(expression(ACSP ~ (g/m^2/yr))) +
-  xlab("SC.Level") +
-  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) + 
-  theme_bw() + 
-  theme(
-    axis.title = element_text(size = 23), 
-    axis.text = element_text(size = 15), 
-    panel.grid = element_blank(), 
-    axis.line = element_line(), 
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"), 
-    legend.position = "top", 
-    legend.title = element_blank(), 
-    legend.text = element_text(size = 20), 
-    legend.background = element_blank(), 
-    legend.key = element_rect(fill = "white", color = "white")
-  )
-
-# Display the plot
-production_lineplot_gamma
 
 
 
