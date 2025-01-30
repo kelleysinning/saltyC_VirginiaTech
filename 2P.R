@@ -701,7 +701,7 @@ RICaug_less$SC.Category <- c("HIGH")
 # Let's re-arrange the columns so these new additions are at the front-------
 # September monthly
 EASsept<- EASsept %>% 
-  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month", "Fraction",
+  select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
            "Replicate","Order","Family","Genus"), everything())
 FRYsept<- FRYsept %>% 
   select(c("Site","SC.Category","SC.Level","Sample.Date","Sample.Month","Fraction",
@@ -3806,7 +3806,7 @@ ffg_colors <- c("Scraper" = "#008080",
                 "Collector-Gatherer" = "#DE8A5A", 
                 "Collector-Filterer" = "#70A494")  
 
-# Summarizing means of each FFG in each replicate for each stream
+# Summarizing each FFG in each replicate for each stream
 # Then, averaging the replicates from each stream--> 1 value per FFG per month
 biomass <- SECPROD %>%
   group_by(Sample.Month, SC.Category,SC.Level,Site,Replicate,FFG ) %>% 
@@ -4404,8 +4404,8 @@ SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
     group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
     summarise(
       Mean.Density = mean(Sum.Density, na.rm = TRUE),  # Average Density
-      Mean.Individual.Mass = mean(Individual.Mass, na.rm = TRUE)  # Average Individual Mass..avg reps together 
-    
+      Mean.Individual.Mass = mean(Individual.Mass, na.rm = TRUE) # Average Individual Mass..avg reps together 
+    ) %>%
     # Group by Genus, Length, Site to calculate final densities and biomass per genus
     group_by(Genus, Length, Site) %>%
     summarise(
@@ -5835,17 +5835,10 @@ COREPROD_Summary$SC.Category[COREPROD_Summary$Site =="LLW"] = "HIGH"
 COREPROD_Summary$SC.Category[COREPROD_Summary$Site =="LLC"] = "HIGH"
 COREPROD_Summary$SC.Category[COREPROD_Summary$Site =="RIC"] = "HIGH"
 
-
-
 COREPROD_Summary$Site <- factor(COREPROD_Summary$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
 COREPROD_Summary$SC.Category <- factor(COREPROD_Summary$SC.Category, levels = c("REF","MID","HIGH"))
 COREPROD_Summary$SC.Level <- factor(COREPROD_Summary$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
 COREPROD_Summary$FFG <- factor(COREPROD_Summary$FFG, levels = c("Scraper","Scraper - Coleoptera","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
-
-
-
-
-
 
 
 TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Acerpenna"] ="Collector-Gatherer"
@@ -6106,7 +6099,6 @@ saveWorkbook(wb, "HIGH_TAXA_Comparisons.xlsx", overwrite = TRUE)
 
 
 # Comparing abundance, density, production for core sites with variation for abundance and density
-
 # A more appropriate way to compare core variation for CPI------------------------------
 library(dplyr)
 
@@ -6158,7 +6150,7 @@ CORE_Table <- SECPROD %>%
 
 # Merging Core_Table with COREPROD_summary to add production numbers to density and biomass
 
-CORE_SummaryTable <- left_join(CORE_Table, COREPROD_summary, by = c("Site", "Genus"))
+CORE_SummaryTable <- left_join(CORE_Table, COREPROD_Summary, by = c("Site", "Genus"))
 
 # Add a new column with the "biomass ± SD" format
 CORE_SummaryTable <- CORE_SummaryTable %>%
@@ -6166,7 +6158,7 @@ CORE_SummaryTable <- CORE_SummaryTable %>%
     Biomass = paste0(Biomass.Final, " ± ", Biomass.SD),
     Density = paste0(Density.Final, " ± ", Density.SD),
     across(where(is.numeric), ~ round(.x, 2))) %>%
- select(Genus,Site, SC.Category,Density, Biomass, Production.Uncorrected,CPI, Annual.Production,
+ select(Genus,Site, SC.Category.x,Density, Biomass, Production.Uncorrected,CPI, Annual.Production,
         AnnualP.B, Daily.Growth
  )
 
@@ -6260,8 +6252,9 @@ write.xlsx(NONCORE_SummaryTable, file = "NONCORE_SummaryTable.xlsx", overwrite =
 
 
 
-# Proportional FFG 2P-----------------------------------------------------------
 
+
+# Proportional FFG 2P-----------------------------------------------------------
 
 install.packages("rcartocolor")# Colorblind color schemes
 library(rcartocolor)
@@ -6286,6 +6279,7 @@ ffg_colors <- c("Scraper" = "#008080",
 
 install.packages("ggplot2")
 library(ggplot2)
+
 
 # Now to do actual proportions, scaling everything to 100% production for each site
 TOTALPROD_Summary_site <- TOTALPROD_Summary %>%
@@ -6343,26 +6337,17 @@ propgg_cat
 # Now, just core sites since CPI havent been adjusted yet for quarterly bugs
 library(dplyr)
 
-TOTALPROD_Summary.core <- TOTALPROD_Summary %>%
-  filter((Site %in% c("EAS", "FRY", "RIC")))
-
-TOTALPROD_Summary.core$Site <- factor(TOTALPROD_Summary.core$Site, levels = c("EAS", "FRY","RIC"))
-TOTALPROD_Summary.core$SC.Category <- factor(TOTALPROD_Summary.core$SC.Category, levels = c("REF","MID","HIGH"))
-TOTALPROD_Summary.core$SC.Level <- factor(TOTALPROD_Summary.core$SC.Level, levels = c("25","402","1457"))
-TOTALPROD_Summary.core$FFG <- factor(TOTALPROD_Summary.core$FFG, levels = c("Scraper","Scraper - Coleoptera", "Collector-Gatherer","Shredder","Predator","Collector-Filterer"))
-
-
 
 # Now to do actual proportions, scaling everything to 100% production for each site
-TOTALPROD_Summary_site <- TOTALPROD_Summary.core %>%
+COREPROD_Summary_site <- COREPROD_Summary %>%
   group_by(Site) %>%
-  summarise(TOTALPROD_Summary = sum(Annual.Production)) # summing the annual production for each site
+  summarise(COREPROD_Summary = sum(Annual.Production)) # summing the annual production for each site
 
 # Calculate proportions of total production for each FFG for each site
-df_proportions_site <- TOTALPROD_Summary.core %>%
-  left_join(TOTALPROD_Summary_site, by = "Site") %>%
+df_proportions_site <- COREPROD_Summary %>%
+  left_join(COREPROD_Summary_site, by = "Site") %>%
   group_by(Site, FFG) %>%
-  summarise(Proportion = sum(Annual.Production) / first(TOTALPROD_Summary)) # Summing annual production
+  summarise(Proportion = sum(Annual.Production) / first(COREPROD_Summary)) # Summing annual production
 #for each FFG for each site and dividing it by summed annual production for each site
 
 # Plot with specific colors assigned to each FFG 
@@ -6375,69 +6360,7 @@ propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = F
 propgg_site 
 
 
-# boxplots to show production as absolute values
-production_boxplot=ggplot(data=TOTALPROD_Summary,aes(x=Site,y=(log(Annual.Production))))+ 
-  geom_boxplot()+
-  facet_wrap(~FFG) +
-  ylab(expression(ACSP(g/m^2/yr)))+
-  xlab("")+
-  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
-  theme_bw()+
-  theme(axis.title=element_text(size=23),
-        axis.text=element_text(size=15),
-        panel.grid = element_blank(), 
-        axis.line=element_line(),
-        axis.text.x = element_text(angle = 90, hjust = 1,face="italic"),
-        legend.position="top",
-        legend.title = element_blank(),
-        legend.text = element_text(size=20),
-        legend.background = element_blank(),
-        legend.key=element_rect(fill="white",color="white"))
-
-production_boxplot # Log to see better
-
-
-production_boxplot = ggplot(data = TOTALPROD_Summary.core, 
-                            aes(x = FFG, y = log(Annual.Production), color = SC.Category)) +
-  geom_boxplot() +
-  ylab(expression(log(ACSP~(g/m^2/yr)))) +
-  xlab("") +
-  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
-  theme_bw() +
-  theme(
-    axis.title = element_text(size = 23),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(),
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-    legend.position = "top",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 20),
-    legend.background = element_blank(),
-    legend.key = element_rect(fill = "white", color = "white")
-  ) 
-
-production_boxplot
-
-
-
-production_boxplot <- ggplot(data = TOTALPROD_Summary.core, aes(x = SC.Category, y = log(Annual.Production))) +
-  facet_wrap(~FFG, ncol = 3, nrow = 2) +  
-  geom_boxplot(aes(fill = FFG)) +  
-  ylab("log(ACSP (g/m2/yr))") +
-  xlab("") +
-  scale_fill_manual(values = ffg_colors, name = "FFG") +  
-  theme_bw() +
-  theme(
-    axis.title = element_text(size = 23),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(), 
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
-
-production_boxplot
-
-# Trying something linear
+# Production as absolute values----------------------
 
 library(ggplot2)
 library(dplyr)
@@ -6450,8 +6373,35 @@ TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>%
     SC.Category = first(SC.Category)  # Include SC.Category for coloring
   )
 
+COREPROD_Summary_Sum <- COREPROD_Summary %>%
+  group_by(Site, FFG, SC.Level) %>%
+  summarise(
+    Summed.Annual.Production = sum((Annual.Production), na.rm = TRUE),
+    SC.Category = first(SC.Category)  # Include SC.Category for coloring
+  )
+
+
+
+production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = SC.Category, y = (Summed.Annual.Production))) +
+  facet_wrap(~FFG, ncol = 3, nrow = 2) +  
+  geom_col(aes(fill = FFG)) +  #geom_boxplot if wanting to show variation for all sites but with just coresites bars are fine
+  ylab("ACSP (g/m2/yr)") +
+  xlab("") +
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 23),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(), 
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
+
+production_FFG
+
+# Trying something linear------
+
 # Create the linear plot
-production_lineplot <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = Site, y =log(Summed.Annual.Production), group = FFG, color = SC.Category)) +
+production_lineplot <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = Site, y =(Summed.Annual.Production), group = FFG, color = SC.Category)) +
   geom_line(size = 1.2) +  # Add lines for each FFG
   geom_point(size = 3) +   # Add points for emphasis
   facet_wrap(~FFG) +       # Facet by FFG
@@ -6476,12 +6426,6 @@ production_lineplot <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = Site, y =log
 production_lineplot
 
 
-# checking stuff
-TOTALPROD_Summary_ <- TOTALPROD_Summary %>%
-  group_by(Site,FFG) %>%
-  summarise(sum.prod = sum(Annual.Production))
-
-
 
 # Linear model with line of best fit
 install.packages("ggpmisc")
@@ -6490,7 +6434,7 @@ library(ggpmisc)
 
 production_lineplot_lm <- ggplot(
   data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
-  aes(x = SC.Level, y = log(Summed.Annual.Production), group = FFG, color = SC.Category)
+  aes(x = SC.Level, y = (log(Summed.Annual.Production)), group = FFG, color = SC.Category)
 ) +
   geom_point(size = 3) +   # Add points for emphasis
   geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed") +  # Line of best fit
@@ -6503,7 +6447,7 @@ production_lineplot_lm <- ggplot(
     label.y = 0.1
   ) +  # Add R^2 annotations
   facet_wrap(~FFG) +       # Facet by FFG
-  ylab(expression(ACSP ~ (g/m^2/yr))) +
+  ylab(expression(log(ACSP)~ (g/m^2/yr))) +
   xlab("") +
   scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
   theme_bw() +
@@ -6528,7 +6472,7 @@ production_lineplot_lm
 
 production_lineplot_loess <- ggplot(
   data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
-  aes(x = SC.Level, y = log(Summed.Annual.Production), group = FFG, color = SC.Category)
+  aes(x = SC.Level, y =(Summed.Annual.Production), group = FFG, color = SC.Category)
 ) + 
   geom_point(size = 3) +   # Add points for emphasis
   geom_smooth(
@@ -6561,40 +6505,209 @@ production_lineplot_loess
 
 
 
-# Gamma games------------------------
+# Gamma games--------------------------------------------------------------------
+str(TOTALPROD_Summary_Sum)
 
 taxa_na_count <- TOTALPROD_Summary %>%
   filter(is.na(FFG)) %>%
   group_by(Genus)
 
+taxa_zero_count_summary <- TOTALPROD_Summary_Sum %>%
+  filter(Summed.Annual.Production < 1) %>%
+  group_by(FFG) %>%
+  summarize(count = n())  # Count how many times each Genus has zero production
 
-# Fit the Gamma GLM with log link
-TOTALPROD_Summary$Annual.Production2 <- rgamma(length(TOTALPROD_Summary$Annual.Production),shape=1,rate=1)
-gamma_glm <- glm(Annual.Production2 ~ SC.Level * FFG,  
-                 family = Gamma(link = "log"),  
-                 data = TOTALPROD_Summary)
-summary(gamma_glm)
-
-# Simulate residuals
-library(DHARMa)
-simulationOutput <- simulateResiduals(fittedModel = gamma_glm, plot = TRUE)
-
-library(emmeans)
-emmeans(gamma_glm, pairwise~SC.Level)
-emmeans(gamma_glm, pairwise~SC.Level, type="response")
+str(TOTALPROD_Summary_Sum)
 
 
+# Inverse link model
+gamma_glm_inv <- glm(Summed.Annual.Production ~ SC.Level * FFG, 
+                     family = Gamma(link = "inverse"), 
+                     data = TOTALPROD_Summary_Sum)
 
-# Generate predictions from the fitted model
-TOTALPROD_Summary_Sum$predicted_values <- predict(gamma_glm, type = "response")
+
+inv_plot <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = Summed.Annual.Production, 
+                                                 y = fitted(gamma_glm_inv))) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, col = "red") +
+  labs(title = "Inverse Link: Observed vs Fitted", 
+       x = "Observed Annual Production", 
+       y = "Fitted Values")
+
+inv_plot
+
+inv_residuals <- residuals(gamma_glm_inv)
+inv_residuals_plot <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = fitted(gamma_glm_inv), y = inv_residuals)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Inverse Link: Residuals vs Fitted", 
+       x = "Fitted Values", 
+       y = "Residuals")
+
+inv_residuals_plot
+
+# Trying to test different models against each other for AIC 
+
+gamma_glm <- glm(Summed.Annual.Production ~ SC.Level, 
+                 family = Gamma(link = "inverse"),  
+                 data = TOTALPROD_Summary_Sum)
+
+gamma_glm1 <- glm(Summed.Annual.Production ~ FFG, 
+                 family = Gamma(link = "inverse"),  
+                 data = TOTALPROD_Summary_Sum)
+
+gamma_glm2 <- glm(Summed.Annual.Production ~ SC.Level * FFG, 
+                  family = Gamma(link = "inverse"),  
+                  data = TOTALPROD_Summary_Sum)
+
+gamma_glm3 <- glm(Summed.Annual.Production ~ SC.Level + FFG, 
+                  family = Gamma(link = "inverse"),  
+                  data = TOTALPROD_Summary_Sum)
+
+gamma_glmc <- glm(Summed.Annual.Production ~ 1, 
+                 family = Gamma(link = "inverse"),  
+                 data = TOTALPROD_Summary_Sum) # control
+
+AIC(gamma_glmc, gamma_glm, gamma_glm1,gamma_glm2, gamma_glm3)
+
+
+
+#for AICc
+n=nrow(TOTALPROD_Summary_Sum)#or whatever the length of your df is
+
+AICtab = AIC(gamma_glmc, gamma_glm, gamma_glm1,gamma_glm2, gamma_glm3)
+
+#it would be nice to have AICC for a dataset this small
+AICtab$k<-c(gamma_glmc$rank,gamma_glm$rank,gamma_glm1$rank,gamma_glm2$rank,gamma_glm3$rank)
+AICtab$AICc<-AICtab$AIC+((2*AICtab$k*(AICtab$k+1))/(n-AICtab$k-1))
+#now order from smallest to biggest
+AICtab=AICtab[order(AICtab$AICc),]
+#calculate delta AIC
+AICtab$dAIC = AICtab$AICc - min(AICtab$AICc)
+#you use the next two lines to get weights
+AICtab$edel<-exp(-0.5*AICtab$dAIC)  #easier way to interpret deltaAIC
+AICtab$wt<-AICtab$edel/sum(AICtab$edel)
+
+print(AICtab)
+
+# Extract AICc table as a data frame
+aic_c <- as.data.frame(AICtab)
+
+# Modify row names
+rownames(aic_c) <- c("Annual Production ~ SC Level*FFG","Annual Production ~ SC","Annual Production ~ SC Level+FFG","Annual Production ~ FFG","Annual Production ~ 1")
+
+# Print the modified data frame
+print(aic_c)
+
+
+install.packages("kableExtra")
+library(kableExtra)
+
+aic_c %>%
+  knitr::kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
 
 
 
 
-# Production across gradient
+# Mixed Model-----------------------------------------------------------------
+#install.packages("lme4")
+library("lme4")
+install.packages("lme4")  # Reinstall the package
 
-production_boxplot=ggplot(data=TOTALPROD_Summary,aes(x=Site,y=(log(Annual.Production))))+ 
-  geom_boxplot()+
+#install.packages("glmmTMB")
+library(glmmTMB)
+install.packages("glmmTMB")
+install.packages("Matrix")
+
+
+#lets take a look at the data
+library(ggplot2); theme_set(theme_bw())
+
+q0 <- (ggplot(TOTALPROD_Summary_Sum, aes(SC.Level, Summed.Annual.Production, colour = SC.Category))
+       + geom_point())  ## points only, use later
+
+print(q0+geom_line())
+
+#run models
+lm1 <- lmer(Summed.Annual.Production~SC.Level + (1|Site), data=TOTALPROD_Summary_Sum) 
+
+summary(lm1)
+
+library(lme4)
+VarCorr(gamma_glmm)
+
+library(car)
+vif(glm(Summed.Annual.Production ~ SC.Level + FFG, 
+        data = TOTALPROD_Summary_Sum, 
+        family = Gamma(link = "log")))
+
+
+gamma_glmm <- glmer(Summed.Annual.Production ~ SC.Level + (1 | FFG) + (1 | SC.Category), 
+                    data = TOTALPROD_Summary_Sum, 
+                    family = Gamma(link = "log")) # Site is too highly correlated so can't use that as a random effect
+summary(gamma_glmm)
+
+performance::check_model(gamma_glmm)
+
+overdisp_fun <- function(model) {
+  rdf <- df.residual(model)
+  rp <- residuals(model, type = "pearson")
+  pearson_chisq <- sum(rp^2)
+  ratio <- pearson_chisq / rdf
+  return(ratio)
+}
+
+overdisp_fun(gamma_glmm) # close to 1, gamma is fine. if > 2 would want to do neg. binomial
+
+
+
+# Non-linear mixed effects....not working atm
+library(nlme)
+
+# Example: Fitting a non-linear model with random effects
+model <- nlme(Summed.Annual.Production ~ a * exp(-b * SC.Level), 
+              data = TOTALPROD_Summary_Sum, 
+              fixed = a + b ~ 1, 
+              random = a ~ 1 | FFG, 
+              start = c(a = 1, b = 0.1))
+
+summary(model)
+
+# Production across gradient------------------------
+
+
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="EAS"] = "25"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="CRO"] = "72"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="HCN"] = "78"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="HUR"] = "387"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="FRY"] = "402"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="RUT"] = "594"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="LLW"] = "1119"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="LLC"] = "1242"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="RIC"] = "1457"
+
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="EAS"] = "REF"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="CRO"] = "REF"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="HCN"] = "REF"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="HUR"] = "MID"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="FRY"] = "MID"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="RUT"] = "MID"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="LLW"] = "HIGH"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="LLC"] = "HIGH"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="RIC"] = "HIGH"
+
+
+
+TOTALPROD_sum$Site <- factor(TOTALPROD_sum$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
+TOTALPROD_sum$SC.Category <- factor(TOTALPROD_sum$SC.Category, levels = c("REF","MID","HIGH"))
+TOTALPROD_sum$SC.Level <- factor(TOTALPROD_sum$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
+
+
+
+
+production_boxplot=ggplot(data=TOTALPROD_sum,aes(x=Site,y=(Sum.Annual.Production)))+ 
+  geom_point()+
   ylab(expression(ACSP(g/m^2/yr)))+
   xlab("")+
   scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
