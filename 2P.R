@@ -4159,7 +4159,7 @@ FFGgplot.quart <- ggplot(data = biomassquarterly, aes(x = Sample.Month, y = (log
 print(FFGgplot.quart) 
 
 
-FFGgplot1.quart <- ggplot(data = biomassquarterly, aes(x = SC.Level, y = (log(mean.biomass)))) +
+FFGgplot1.quart <- ggplot(data = biomassquarterly, aes(x = SC.Level, y = (mean.biomass))) +
   facet_wrap(~FFG, ncol = 5, nrow = 5) +  
   geom_boxplot(fill = "white") +  
   geom_point(aes(color = FFG), size = 2) +  
@@ -4371,7 +4371,8 @@ write_xlsx(IGM_leuctra.EAS, path = "IGM_leuctra.EAS.xlsx")
 
 
 
-# Automating 2P for every taxa in EAS---------
+
+# Automating 2P for every taxa in EAS--------------------------------------------
 # Function to calculate density and individual mass correctly for length classes
 
 
@@ -6382,7 +6383,7 @@ COREPROD_Summary_Sum <- COREPROD_Summary %>%
 
 
 
-production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = SC.Category, y = (Summed.Annual.Production))) +
+production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.Annual.Production))) +
   facet_wrap(~FFG, ncol = 3, nrow = 2) +  
   geom_col(aes(fill = FFG)) +  #geom_boxplot if wanting to show variation for all sites but with just coresites bars are fine
   ylab("ACSP (g/m2/yr)") +
