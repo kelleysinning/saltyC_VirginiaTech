@@ -6378,7 +6378,7 @@ COREPROD_Summary_Sum <- COREPROD_Summary %>%
 
 
 production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.Annual.Production))) +
-  facet_wrap(~FFG, ncol = 3, nrow = 2) +  
+  facet_wrap(~FFG, ncol = 4, nrow = 2) +  
   geom_col(aes(fill = FFG)) +  #geom_boxplot if wanting to show variation for all sites but with just coresites bars are fine
   ylab("ACSP (g/m2/yr)") +
   xlab("") +
@@ -6392,6 +6392,7 @@ production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.
     axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
 
 production_FFG
+
 
 # Trying something linear------
 
