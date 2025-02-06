@@ -1,7 +1,5 @@
 # Secondary production code for Kelley Sinning Salty Carbon Data
 
-# Updated >1 mm biomass data for Kelley Sinning Salty Carbon Data
-
 rm(list=ls())  # clears workspace                     
 
 #load important packages##
@@ -3609,10 +3607,12 @@ combined_2Plists <- c(list_of_greater_secprod, list_of_less_secprod)
 SECPROD <- do.call(rbind, combined_2Plists)
 
 
-# Cleaning up data sheet (typos, equations...)--------
+# Cleaning up data sheet typos--------------------------------------------------
 
 SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Stylogomphurus", "Stylogomphus", Genus))
+SECPROD <-  SECPROD %>%
+  mutate(Genus = ifelse(Genus == "Gomphurus", "Gomphus", Genus))
 SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Hydratophylax", "Hydatophylax", Genus))
 SECPROD <-  SECPROD %>%
@@ -3638,6 +3638,8 @@ SECPROD <-  SECPROD %>%
 SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Capniidae", "Paracapnia", Genus))
 SECPROD <-  SECPROD %>%
+  mutate(Genus = ifelse(Genus == "Leuctridae", "Leuctra", Genus))
+SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Ceratopogonidae", "Probezzia", Genus))
 SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Ceraptogoninae", "Probezzia", Genus))
@@ -3658,7 +3660,7 @@ library(stringr)
 SECPROD <- SECPROD %>%
   filter(
     Biomass != 0,  # Filter out rows where Biomass is zero
-    !str_detect(Genus, "Hagenella|Stagnicola|Terrestrial|Pupa|Adult|\\(A\\)|\\(terrestrial\\)")  # Exclude rows with "Pupa", "Adult", or "(A)", Stagnicola, Hagenella (only 1) in the Genus column
+    !str_detect(Genus, "Hydrachnia|Circulionidae|Oligochaeta|Stagnicola|Terrestrial|Pupa|Adult|\\(A\\)|\\(terrestrial\\)")  # Exclude rows with "Pupa", "Adult", or "(A)", Stagnicola, etc.
   )
 
 
@@ -3689,6 +3691,7 @@ SECPROD <- SECPROD %>%
       Genus == "Cheumatopsyche" ~ (0.0045 * (Length ^ 2.721)) * Abundance,
       Genus == "Chimarra" ~ (0.0044 * (Length ^ 2.652)) * Abundance,
       Genus == "Chironomini" ~ (0.0007 * (Length ^ 2.952)) * Abundance,
+      Genus == "Collembola" ~ (0.0024 * (Length ^ 3.676)) * Abundance,
       Genus == "Cordulegaster" ~ (0.0067 * (Length ^ 2.782)) * Abundance,
       Genus == "Cyrnellus" ~ (0.0071 * (Length ^ 2.531)) * Abundance,
       Genus == "Dicranota" ~ (0.0027 * (Length ^ 2.637)) * Abundance,
@@ -3708,7 +3711,10 @@ SECPROD <- SECPROD %>%
       Genus == "Goera" ~ (0.00156 * (Length ^ 2.75)) * Abundance,
       Genus == "Gomphus" ~ (00.044 * (Length ^ 3.124)) * Abundance,
       Genus == "Gyrinus" ~ (0.0531 * (Length ^ 2.586)) * Abundance, # Dineutes sp. from Benke
+      Genus == "Hagenella" ~ (0.0054 * (Length ^ 2.811)) * Abundance, # Ptilostomis from Benke
+      Genus == "Hemiptera" ~ (0.00836 * (Length ^ 3.075)) * Abundance,
       Genus == "Hetaerina" ~ (0.005 * (Length ^ 2.742)) * Abundance,
+      Genus == "Helichus" ~ (0.0011 * (Length ^ 3.1)) * Abundance,
       Genus == "Hexatoma" ~ (0.0042 * (Length ^ 2.596)) * Abundance,
       Genus == "Hydatophylax" ~ (0.0049 * (Length ^ 2.85)) * Abundance,
       Genus == "Hydropsyche" ~ (0.0051 * (Length ^ 2.824)) * Abundance,
@@ -3745,6 +3751,7 @@ SECPROD <- SECPROD %>%
       Genus == "Pseudolimnophila" ~ (0.0014 * (Length ^ 2.667)) * Abundance,
       Genus == "Pteronarcys" ~ (0.0064 * (Length ^ 2.845)) * Abundance,
       Genus == "Pycnopsyche" ~ (0.0049 * (Length ^ 2.85)) * Abundance,
+      Genus == "Psychodini" ~ (0.0007 * (Length ^ 2.592)) * Abundance, # Chironomini equation
       Genus == "Remenus" ~ (0.0119 * (Length ^ 2.695)) * Abundance,
       Genus == "Rhagovelia" ~ (0.0083 * (Length ^ 2.777)) * Abundance,
       Genus == "Rhyacophila" ~ (0.0099 * (Length ^ 2.48)) * Abundance,
@@ -3766,17 +3773,25 @@ SECPROD <- SECPROD %>%
     ))
   
 
-sum(is.na(SECPROD$Biomass)) # checking for NAs
+sum(is.na(SECPROD$Biomass)) # checking for NAs, should be zero!
+sum(is.na(SECPROD$Biomass.mg))
+
+SECPROD %>%
+  filter(is.na(Biomass.mg)) %>%
+  select(Genus) %>%
+  distinct()
+
+
 
 
 SECPROD <- SECPROD %>%
-  select(-column_name)  # Remove Biomass at some point
+  select(-Biomass)  # Remove Biomass (orignial data entry) 
 
 # Finally, let's add a new Density column, then use it to correct biomass by area
 SECPROD <- SECPROD %>% 
-  mutate(Density = Abundance / 0.0929) %>%
+  mutate(Density = Abundance / 0.0929) %>% # Making density column
   mutate(Biomass.g = Biomass.mg / 1000) %>% # Biomass was in mg bc of the length mass regressions, divide by 1000 to get to g
-  mutate(Biomass.Area.Corrected = Biomass.g*Density)
+  mutate(Biomass.Area.Corrected = Biomass.g*Density) # Making biomass.area.corrected column
 # Saving as a CSV for geom_ridge code
 write.csv(SECPROD, "SEC_PROD.csv", row.names = FALSE)
 
@@ -3784,7 +3799,7 @@ write.csv(SECPROD, "SEC_PROD.csv", row.names = FALSE)
 
 
 
-## Biomass across the year------------------------------------------------------
+# Adding FFGs------------------------------------------------------------------
 
 
 SECPROD$FFG[SECPROD$Genus=="Acerpenna"] ="Collector-Gatherer"
@@ -3835,6 +3850,7 @@ SECPROD$FFG[SECPROD$Genus=="Goera"]="Scraper"
 SECPROD$FFG[SECPROD$Genus=="Gomphus"]="Predator"
 SECPROD$FFG[SECPROD$Genus=="Gomphurus"]="Predator"
 SECPROD$FFG[SECPROD$Genus=="Gyrinus"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Hagenella"]="Shredder"
 SECPROD$FFG[SECPROD$Genus=="Helichus"]="Scraper"
 SECPROD$FFG[SECPROD$Genus=="Hemiptera"]="Predator"
 SECPROD$FFG[SECPROD$Genus=="Heptageniidae"]="Scraper"
@@ -3899,6 +3915,12 @@ SECPROD$FFG[SECPROD$Genus=="Wormaldia"]="Collector-Filterer"
 SECPROD$FFG[SECPROD$Genus=="Zoraena"]="Predator"
 
 
+SECPROD %>%
+  filter(is.na(FFG)) %>%
+  select(Genus) %>%
+  distinct()
+
+# Lookng at biomass across the year-------------------------------------------
 
 # For color scheme
 install.packages("ggplot2")
@@ -3913,14 +3935,22 @@ ffg_colors <- c("Scraper" = "#008080",
                 "Collector-Gatherer" = "#DE8A5A", 
                 "Collector-Filterer" = "#70A494")  
 
+
 # Summarizing each FFG in each replicate for each stream
 # Then, averaging the replicates from each stream--> 1 value per FFG per month
 biomass <- SECPROD %>%
   group_by(Sample.Month, SC.Category,SC.Level,Site,Replicate,FFG ) %>% 
-  summarise(sum.biomass=sum(Biomass.Area.Corrected,na.rm=FALSE))  %>% 
+  summarise(sum.biomass=sum(Biomass.Area.Corrected,na.rm=TRUE))  %>% #Summing the replicates
   
   group_by(Sample.Month,SC.Category,SC.Level,Site,FFG ) %>% 
-  summarise(mean.biomass=mean(sum.biomass,na.rm=FALSE))
+  summarise(mean.biomass = sum(sum.biomass, na.rm = TRUE) / 5)
+  #summarise(mean.biomass=mean(sum.biomass,na.rm=FALSE))
+
+# Yearly summed biomass
+biomass_sum <- biomass %>%
+  group_by(Site) %>%
+  summarise(sum.biomass = sum(mean.biomass, na.rm = TRUE), .groups = 'drop') # sum monthly averages
+
 
 # Checking for NAs in FFGs--have had weird things happen that cause annoyances later
 taxa_na_count <- SECPROD %>%
@@ -4041,7 +4071,10 @@ FFGgplot1.quart <- ggplot(data = biomassquarterly, aes(x = SC.Level, y = (mean.b
 
 print(FFGgplot1.quart) 
 
-# Okay, I want to run the same thing but make a new FFG category for scrapers that don't have tracheated gills----------------
+
+
+
+# Okay, I want to run the same thing but make a new FFG category for scrapers that are coleoptera---------------
 
 SECPROD_FFGadjusted <- SECPROD
 
@@ -4289,6 +4322,79 @@ FFGgplot1.quart <- ggplot(data = biomassquarterly, aes(x = SC.Level, y = (mean.b
 
 print(FFGgplot1.quart) 
 
+# 2P FOR SPECIFIC TAXA----------------------------------------------------------
+# Taxa filtering and arranging lengths from lowest to highest
+
+library(dplyr)
+
+# Filter for Leuctra taxa in EAS across the year and arrange by Length in ascending order, and add a column for density---
+
+SECPROD_leuctra.EAS <- SECPROD %>%
+  filter(Genus == "Leuctra", Site == "EAS") %>%        # Filter for Leuctra genus
+  arrange(factor(Sample.Month, levels = c("September", "October", "November", "December",
+                                          "January", "February", "March", "April", "May", "June", "July", "August")), Sample.Month) %>%                   # Arrange by Length in ascending order
+  mutate(Density = Abundance / 0.0929) # Add new column for Density
+
+# View the result
+SECPROD_leuctra.EAS
+
+
+# First, sum the density and biomass for each replicate for each size class
+# aka 1 density and biomass value for each length/stream/month
+# don't divide by abundance bc we already accounted for abundance when calculating density (note to self bc i got confused earlier)
+# Add a individual mass column that takes the average biomass / avg. density and then deletes the 
+# biomass column because we don't need it anymore
+
+leuctra.EAS <- SECPROD_leuctra.EAS %>% 
+  group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>% 
+  summarise(
+    Sum.Density = sum(Density, na.rm = TRUE),  # Summing density for each replicate for each length class
+    Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE)   # Summing biomass for each replicate for each length class
+  ) %>%
+  mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%  # Calculating individual mass
+  select(-Sum.Biomass) %>%  # Removing Sum.Biomass column after calculating individual mass
+  # Note to self: this is the same df as SECPROD_leuctra.EAS bc except that
+  # it makes the individual mass column. The SECPROD df is already arranged with
+  # each length class in each rep. I keep this code though for transparency of 
+  # how the data should be handled and avoiding confusing people (me) by leaving it out
+  
+  # Now, average replicates for each length class for each stream/month
+  # Note to self: you took sum of each replicate's density and mass first and now are averaging them...you get confused by this sometimes
+  group_by(Site, Genus,Sample.Month, Sample.Date, Length) %>%
+  summarise(
+   Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,  # Averaging the summed density by Sample.Month
+   Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5 ) %>%# Averaging the individual mass by Sample.Month
+
+
+  #  Mean.Density = mean(Sum.Density, na.rm = TRUE),  # improper handling of replicates
+    # Mean.Individual.Mass = mean(Individual.Mass, na.rm = TRUE) ) %>% 
+  
+  # Lastly, summing the density and individual mass for all length classes across the year, since the replicates for each site
+  # have been averaged in previous step. This step gives up the total across the year
+  # So, don't want to be categorized by site descriptor(s), just length class
+  # Note to self: we summed the reps for each stream for each length class. Then, averaged the reps to
+  # get one density and individual mass value for each length class for each stream. Now, we are
+  # summing across the whole year for each size class. Stop gaslighting yourself this makes sense
+  group_by(Genus, Length, Site) %>% 
+  summarise(
+    Density.Final = mean(Mean.Density, na.rm = TRUE),
+    Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+  ) %>% 
+  arrange(Length)
+
+
+
+# Plot a bell curve (density plot) for Length vs Biomass after averaging things...just for fun
+ggplot(leuctra.EAS, aes(x = Length, y = Individual.Mass.Final)) +
+  geom_point(alpha = 0.5) +  # Points to show individual values
+  geom_smooth(method = "loess", color = "blue", se = FALSE) +  # Smoothed line to approximate a bell curve
+  labs(x = "Length", y = "Individual Mass", title = "Biomass Distribution by Length for Leuctra Taxa") +
+  theme_minimal() # Doesn't look too bad 
+
+
+
+
+
 
 
 
@@ -4299,7 +4405,7 @@ print(FFGgplot1.quart)
 SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
   SECPROD %>%
     # Filter by site
-    filter(Site == site_filter) %>%
+   filter(Site == site_filter) %>%
     
     
     # Arrange by month and Sample.Month factor order
@@ -4313,9 +4419,9 @@ SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
     # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
     group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
     summarise(
-      Sum.Density = sum(Density, na.rm = TRUE),     # Sum Density
-      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE)      # Sum Biomass
-    ) %>%
+      Sum.Density = sum(Density, na.rm = TRUE), # Sum Density per replicate
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE) # Sum Biomass
+    )%>%
     
     # Calculate Individual Mass
     mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
@@ -4324,19 +4430,22 @@ SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
     # Group by Site, Genus, Sample.Month, Sample.Date, Length
     group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
     summarise(
-      Mean.Density = mean(Sum.Density, na.rm = TRUE),  # Average Density
-      Mean.Individual.Mass = mean(Individual.Mass, na.rm = TRUE) # Average Individual Mass..avg reps together 
-    ) %>%
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,  
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5  # Ensuring that even if a taxa doesn't have every length in every rep (which they don't, it will be averaged correctly)
+    )%>%
+  
+    
     # Group by Genus, Length, Site to calculate final densities and biomass per genus
     group_by(Genus, Length, Site) %>%
     summarise(
-      Density.Final = sum(Mean.Density, na.rm = TRUE),  # Final Density across the year
-      Individual.Mass.Final = sum(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
+      Density.Final = mean(Mean.Density, na.rm = TRUE),  # Final Density across the year
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
     
     # Arrange by Length for correct ordering of size classes
     arrange(Length)
 }
+
 
 
 # Create a list of dataframes, one for each genus, for the "EAS" site
@@ -4425,21 +4534,6 @@ saveWorkbook(wb, "EAS_Genus_2PSummary.xlsx", overwrite = TRUE)
 
 
 
-# Check results for one genus
-EAS_genus_2P_Final[["Diplectrona"]] %>% 
-  select(Genus, Length, No.Lost, Biomass, 
-         Mass.at.Loss, Biomass.Lost, Biomass.Sum) %>%
-  print()
-
-
-# Apply Production_Columns and print a preview
-Production_Columns(EAS_genus_2P[[1]]) %>%
-  select(Length, Density.Final, No.Lost) %>%
-  print()
-
-
-
-
 
 
 
@@ -4479,9 +4573,9 @@ SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
     # Group by Site, Genus, Sample.Month, Sample.Date, Length
     group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
     summarise(
-      Mean.Density = mean(Sum.Density, na.rm = TRUE),  # Average Density
-      Mean.Individual.Mass = mean(Individual.Mass, na.rm = TRUE)  # Average Individual Mass
-    ) %>%
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,  
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5  # Ensuring that even if a taxa doesn't have every length in every rep (which they don't, it will be averaged correctly)
+    )%>%
     
     # Group by Genus, Length, Site to calculate final densities and biomass per genus
     group_by(Genus, Length, Site) %>%
@@ -4568,6 +4662,7 @@ library(dplyr)
 library(purrr)
 library(openxlsx)
 
+
 # Create a workbook
 wb <- createWorkbook()
 
@@ -4619,9 +4714,9 @@ SECPROD_RIC <- function(SECPROD, site_filter = "RIC") {
     # Group by Site, Genus, Sample.Month, Sample.Date, Length
     group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
     summarise(
-      Mean.Density = mean(Sum.Density, na.rm = TRUE),  # Average Density
-      Mean.Individual.Mass = mean(Individual.Mass, na.rm = TRUE)  # Average Individual Mass
-    ) %>%
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,  
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5  # Ensuring that even if a taxa doesn't have every length in every rep (which they don't, it will be averaged correctly)
+    )%>%
     
     # Group by Genus, Length, Site to calculate final densities and biomass per genus
     group_by(Genus, Length, Site) %>%
@@ -4723,7 +4818,12 @@ iwalk(sorted_genus_list, function(data, sheet_name) {
 saveWorkbook(wb, "RIC_Genus_2PSummary.xlsx", overwrite = TRUE)
 
 
-# Combining df of production for EAS, FRY, RIC------------------
+
+
+
+
+
+# Combining df of production for EAS, FRY, RIC----------------------------------
 EAS_genus_2P_Final_df <- bind_rows(EAS_genus_2P_Final, .id = "source")
 FRY_genus_2P_Final_df <- bind_rows(FRY_genus_2P_Final, .id = "source")
 RIC_genus_2P_Final_df <- bind_rows(RIC_genus_2P_Final, .id = "source")
@@ -4933,7 +5033,7 @@ CORE_Table <- SECPROD %>%
     Density.SE = sd(Mean.Density, na.rm = TRUE) / sqrt(n()) # Standard error of Density based on months
   ) %>%
   
-  filter(Density.Final > 0) %>% # Still some zeroes from the SECPROD FRY weirdness
+  filter(Density.Final > 0) %>% # this will fix if still some zeroes from the SECPROD FRY weirdness
   
   mutate(across(where(is.numeric), ~ round(.x, 4)))%>% # Rounding numbers
   
@@ -4945,7 +5045,7 @@ CORE_Table <- SECPROD %>%
 
 CORE_SummaryTable <- left_join(CORE_Table, COREPROD_Summary, by = c("Site", "Genus"))
 
-# Add a new column with the "biomass ± SD" format
+# Add a new column with the "biomass ± SE" format
 CORE_SummaryTable <- CORE_SummaryTable %>%
   mutate(
     Biomass = paste0(Biomass.Final, " ± ", Biomass.SE),
@@ -5036,20 +5136,151 @@ COREPROD_Summary_Sum <- COREPROD_Summary %>%
 
 
 production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.Annual.Production))) +
-  facet_wrap(~FFG, ncol = 4, nrow = 2) +  
+  facet_wrap(~FFG, ncol = 3, nrow = 2) +  
   geom_col(aes(fill = FFG)) +  #geom_boxplot if wanting to show variation for all sites but with just coresites bars are fine
-  ylab("ACSP (g/m2/yr)") +
+  ylab("Secondary Production (g/m2/yr)") +
   xlab("") +
   scale_fill_manual(values = ffg_colors, name = "FFG") +  
   theme_bw() +
   theme(
-    axis.title = element_text(size = 23),
-    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 10),
     panel.grid = element_blank(), 
     axis.line = element_line(),
     axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
 
 production_FFG
+
+# Trying something linear--------------------------------------------------------
+
+# Linear model with line of best fit
+install.packages("ggpmisc")
+library(ggpmisc)
+
+
+production_lineplot_lm <- ggplot(
+  data = COREPROD_Summary_Sum, # The sum of production for each FFG at each site
+  aes(x = SC.Level, y = (Summed.Annual.Production), group = FFG, color = SC.Category)
+) +
+  geom_point(size = 3) +   # Add points for emphasis
+  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label))), # use different function to get p-value from model output
+    formula = y ~ x,  # Use x and y here
+    parse = TRUE,
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  # Add R^2 annotations
+  facet_wrap(~FFG) +       # Facet by FFG
+  ylab(SecondaryProduction~ (g/m^2/yr)) +
+  xlab("") +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+# Display the plot
+production_lineplot_lm 
+
+# may have to make model and run summary to get p-values and r2
+
+
+
+
+
+# Loess line
+
+production_lineplot_loess <- ggplot(
+  data = COREPROD_Summary_Sum, # The sum of production for each FFG at each site
+  aes(x = SC.Level, y =(Summed.Annual.Production), group = FFG, color = SC.Category)
+) + 
+  geom_point(size = 3) +   # Add points for emphasis
+  geom_smooth(
+    method = "loess",       # Fit a LOESS smoother instead of a linear model
+    se = TRUE,              # Display standard error around the curve
+    aes(group = FFG),       # Separate smoothers by FFG group
+    linetype = "dashed"     # Make the LOESS line dashed for distinction
+  ) +  # Line of best fit
+  facet_wrap(~FFG) +       # Facet by FFG
+  ylab(expression(SecondaryProduction ~ (g/m^2/yr))) +
+  xlab("") +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+# Display the plot
+production_lineplot_loess
+
+
+# Total Production across gradient-----------------------------------------------------
+
+
+COREPROD_sum$SC.Level[COREPROD_sum$Site =="EAS"] = "25"
+COREPROD_sum$SC.Level[COREPROD_sum$Site =="FRY"] = "402"
+COREPROD_sum$SC.Level[COREPROD_sum$Site =="RIC"] = "1457"
+
+COREPROD_sum$SC.Category[COREPROD_sum$Site =="EAS"] = "REF"
+COREPROD_sum$SC.Category[COREPROD_sum$Site =="FRY"] = "MID"
+COREPROD_sum$SC.Category[COREPROD_sum$Site =="RIC"] = "HIGH"
+
+
+
+COREPROD_sum$Site <- factor(COREPROD_sum$Site, levels = c("EAS","FRY","RIC"))
+COREPROD_sum$SC.Category <- factor(COREPROD_sum$SC.Category, levels = c("REF","MID","HIGH"))
+COREPROD_sum$SC.Level <- factor(COREPROD_sum$SC.Level, levels = c("25","402","1457"))
+
+
+
+
+
+# Summarize the data to calculate sum of production by Site (if not done already)
+library(dplyr)
+
+
+# Create the bar plot with the corrected fill aesthetic
+production_barplot = ggplot(data = COREPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, fill = SC.Category)) +
+  geom_bar(stat = "identity") +  # Use stat="identity" to plot actual data values
+  ylab(expression(SecondaryProduction ~ (g/m^2/yr))) +  # Label for the y-axis
+  xlab("") +
+  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +  # Fix: Use scale_fill_manual for fill color
+  theme_bw() + 
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 15),
+        panel.grid = element_blank(),
+        axis.line = element_line(),
+        axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+        legend.position = "top",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 20),
+        legend.background = element_blank(),
+        legend.key = element_rect(fill = "white", color = "white"))
+
+# Display the plot
+production_barplot
+
+
+
 
 
 

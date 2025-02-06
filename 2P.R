@@ -3631,7 +3631,9 @@ SECPROD <- do.call(rbind, combined_2Plists)
  SECPROD <-  SECPROD %>%
    mutate(Genus = ifelse(Genus == "Chironomidae", "Orthocladine", Genus))
  SECPROD <-  SECPROD %>%
-   mutate(Genus = ifelse(Genus == "Leptophlebiidae", "Paraleptophlebiidae", Genus))
+   mutate(Genus = ifelse(Genus == "Leptophlebiidae", "Paraleptophlebia", Genus))
+ SECPROD <-  SECPROD %>%
+   mutate(Genus = ifelse(Genus == "Paraleptophlebiidae", "Paraleptophlebia", Genus))
  SECPROD <-  SECPROD %>%
    mutate(Genus = ifelse(Genus == "Capniidae", "Paracapnia", Genus))
  SECPROD <-  SECPROD %>%
