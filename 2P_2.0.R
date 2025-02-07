@@ -3659,7 +3659,7 @@ library(stringr)
 
 SECPROD <- SECPROD %>%
   filter(
-    Biomass != 0,  # Filter out rows where Biomass is zero
+    #Biomass != 0,  # Filter out rows where Biomass is zero
     !str_detect(Genus, "Hydrachnia|Circulionidae|Oligochaeta|Stagnicola|Terrestrial|Pupa|Adult|\\(A\\)|\\(terrestrial\\)")  # Exclude rows with "Pupa", "Adult", or "(A)", Stagnicola, etc.
   )
 
@@ -4352,7 +4352,7 @@ leuctra.EAS <- SECPROD_leuctra.EAS %>%
     Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE)   # Summing biomass for each replicate for each length class
   ) %>%
   mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%  # Calculating individual mass
-  select(-Sum.Biomass) %>%  # Removing Sum.Biomass column after calculating individual mass
+  select(-Sum.Biomass) %>%   # Removing Sum.Biomass column after calculating individual mass
   # Note to self: this is the same df as SECPROD_leuctra.EAS bc except that
   # it makes the individual mass column. The SECPROD df is already arranged with
   # each length class in each rep. I keep this code though for transparency of 
@@ -4439,6 +4439,7 @@ SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
     group_by(Genus, Length, Site) %>%
     summarise(
       Density.Final = mean(Mean.Density, na.rm = TRUE),  # Final Density across the year
+      # CHANGED TO MEAN JUST TO TRY
       Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
     
@@ -4580,8 +4581,8 @@ SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
     # Group by Genus, Length, Site to calculate final densities and biomass per genus
     group_by(Genus, Length, Site) %>%
     summarise(
-      Density.Final = sum(Mean.Density, na.rm = TRUE),  # Final Density across the year
-      Individual.Mass.Final = sum(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
+      Density.Final = mean(Mean.Density, na.rm = TRUE),  # Final Density across the year
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
     
     filter(Density.Final > 0) %>%  # Ensure no zero-filled length classes
@@ -4721,8 +4722,8 @@ SECPROD_RIC <- function(SECPROD, site_filter = "RIC") {
     # Group by Genus, Length, Site to calculate final densities and biomass per genus
     group_by(Genus, Length, Site) %>%
     summarise(
-      Density.Final = sum(Mean.Density, na.rm = TRUE),  # Final Density across the year
-      Individual.Mass.Final = sum(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
+      Density.Final = mean(Mean.Density, na.rm = TRUE),  # Final Density across the year
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
     
     # Arrange by Length for correct ordering of size classes
