@@ -3616,6 +3616,8 @@ SECPROD <-  SECPROD %>%
 SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Hydratophylax", "Hydatophylax", Genus))
 SECPROD <-  SECPROD %>%
+  mutate(Genus = ifelse(Genus == "Chauloides", "Chauliodes", Genus))
+SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Oulimnius(L)", "Oulimnius", Genus))
 SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Optioservus(L)", "Optioservus", Genus))
@@ -3640,6 +3642,8 @@ SECPROD <-  SECPROD %>%
 SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Leuctridae", "Leuctra", Genus))
 SECPROD <-  SECPROD %>%
+  mutate(Genus = ifelse(Genus == "Leuctra ", "Leuctra", Genus))
+SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Ceratopogonidae", "Probezzia", Genus))
 SECPROD <-  SECPROD %>%
   mutate(Genus = ifelse(Genus == "Ceraptogoninae", "Probezzia", Genus))
@@ -3659,7 +3663,7 @@ library(stringr)
 
 SECPROD <- SECPROD %>%
   filter(
-    #Biomass != 0,  # Filter out rows where Biomass is zero
+    Biomass != 0,  # Filter out rows where Biomass is zero
     !str_detect(Genus, "Hydrachnia|Circulionidae|Oligochaeta|Stagnicola|Terrestrial|Pupa|Adult|\\(A\\)|\\(terrestrial\\)")  # Exclude rows with "Pupa", "Adult", or "(A)", Stagnicola, etc.
   )
 
@@ -3686,7 +3690,7 @@ SECPROD <- SECPROD %>%
       Genus == "Boyeria" ~ (0.0082 * (Length ^ 2.813)) * Abundance,
       Genus == "Calopteryx" ~ (0.005 * (Length ^ 2.742)) * Abundance,
       Genus == "Cernotina" ~ (0.0071 * (Length ^ 2.531)) * Abundance, # Polycentropodidae family
-      Genus == "Chauloides" ~ (0.0062 * (Length ^ 2.691)) * Abundance,
+      Genus == "Chauliodes" ~ (0.0062 * (Length ^ 2.691)) * Abundance,
       Genus == "Chelifera" ~ (0.004 * (Length ^ 2.655)) * Abundance,
       Genus == "Cheumatopsyche" ~ (0.0045 * (Length ^ 2.721)) * Abundance,
       Genus == "Chimarra" ~ (0.0044 * (Length ^ 2.652)) * Abundance,
@@ -3772,8 +3776,7 @@ SECPROD <- SECPROD %>%
       TRUE ~ NA_real_  # Assign NA for genera not specified
     ))
   
-
-sum(is.na(SECPROD$Biomass)) # checking for NAs, should be zero!
+ # checking for NAs, should be zero!
 sum(is.na(SECPROD$Biomass.mg))
 
 SECPROD %>%
@@ -3821,7 +3824,7 @@ SECPROD$FFG[SECPROD$Genus=="Calopteryx"]="Predator"
 SECPROD$FFG[SECPROD$Genus=="Capniidae"]="Shredder"
 SECPROD$FFG[SECPROD$Genus=="Ceratopogonidae"]="Predator"
 SECPROD$FFG[SECPROD$Genus=="Cernotina"]="Predator"
-SECPROD$FFG[SECPROD$Genus=="Chauloides"]="Predator"
+SECPROD$FFG[SECPROD$Genus=="Chauliodes"]="Predator"
 SECPROD$FFG[SECPROD$Genus=="Chelifera"]="Predator"
 SECPROD$FFG[SECPROD$Genus=="Chimarra"]="Collector-Filterer"
 SECPROD$FFG[SECPROD$Genus=="Cheumatopsyche"]="Collector-Filterer"
@@ -3920,6 +3923,11 @@ SECPROD %>%
   select(Genus) %>%
   distinct()
 
+SECPROD <- SECPROD %>%
+  filter(!is.na(FFG))  # anything without an FFG assigned
+
+
+
 # Lookng at biomass across the year-------------------------------------------
 
 # For color scheme
@@ -3996,7 +4004,32 @@ FFGgplot <- ggplot(data = biomassmonthly, aes(x = Sample.Month, y = (mean.biomas
     legend.key = element_rect(fill = "white", color = "white")
   )
 
-print(FFGgplot) 
+# scaled axes
+FFGgplot <- ggplot(data = biomassmonthly, aes(x = Sample.Month, y = mean.biomass)) +
+  facet_wrap(~FFG, ncol = 5, nrow = 5, scales = "free_y") +  # Allow different y-axis scales for each panel
+  geom_boxplot(fill = "white") +  
+  geom_point(aes(color = FFG), size = 2) +  
+  ylab(expression(Biomass (g/m^2))) +  
+  xlab("") +
+  scale_color_manual(values = ffg_colors, name = "FFG") +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 23),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+print(FFGgplot)
+
+
+
 
 
 # Now, SC on x
@@ -4024,7 +4057,7 @@ FFGgplot1 <- ggplot(data = biomassmonthly, aes(x = SC.Level, y = (mean.biomass))
 print(FFGgplot1) 
 
 # FFGs across quarterly months
-FFGgplot.quart <- ggplot(data = biomassquarterly, aes(x = Sample.Month, y = (log(mean.biomass)))) +
+FFGgplot.quart <- ggplot(data = biomassquarterly, aes(x = Sample.Month, y = (mean.biomass))) +
   facet_wrap(~FFG, ncol = 5, nrow = 5) +  
   geom_boxplot(fill = "white") +  
   geom_point(aes(color = FFG), size = 2) +  
@@ -4330,7 +4363,7 @@ library(dplyr)
 # Filter for Leuctra taxa in EAS across the year and arrange by Length in ascending order, and add a column for density---
 
 SECPROD_leuctra.EAS <- SECPROD %>%
-  filter(Genus == "Leuctra", Site == "EAS") %>%        # Filter for Leuctra genus
+  filter(Genus == "Leuctra", Site == "EAS") %>%  # Filter for Leuctra genus
   arrange(factor(Sample.Month, levels = c("September", "October", "November", "December",
                                           "January", "February", "March", "April", "May", "June", "July", "August")), Sample.Month) %>%                   # Arrange by Length in ascending order
   mutate(Density = Abundance / 0.0929) # Add new column for Density
@@ -4352,11 +4385,19 @@ leuctra.EAS <- SECPROD_leuctra.EAS %>%
     Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE)   # Summing biomass for each replicate for each length class
   ) %>%
   mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%  # Calculating individual mass
+  
+  # Expand grid to include missing length classes (ensuring zeros are accounted for)
+  complete(Site, Genus, Sample.Month, Length, fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+  
   select(-Sum.Biomass) %>%   # Removing Sum.Biomass column after calculating individual mass
   # Note to self: this is the same df as SECPROD_leuctra.EAS bc except that
   # it makes the individual mass column. The SECPROD df is already arranged with
   # each length class in each rep. I keep this code though for transparency of 
   # how the data should be handled and avoiding confusing people (me) by leaving it out
+  
+  
+  # Expand grid to include missing length classes (ensuring zeros are accounted for)
+  complete(Site, Genus, Sample.Month, Length, fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
   
   # Now, average replicates for each length class for each stream/month
   # Note to self: you took sum of each replicate's density and mass first and now are averaging them...you get confused by this sometimes
@@ -4380,6 +4421,7 @@ leuctra.EAS <- SECPROD_leuctra.EAS %>%
     Density.Final = mean(Mean.Density, na.rm = TRUE),
     Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
   ) %>% 
+  
   arrange(Length)
 
 
@@ -4395,11 +4437,62 @@ ggplot(leuctra.EAS, aes(x = Length, y = Individual.Mass.Final)) +
 
 
 
+str(SECPROD)
+
+ # code that'll make sure zeroes are accounted for, acting the same as previous code so i dont think that is the issue
+library(dplyr)
+library(tidyr)
+
+leuctra.EAS <- SECPROD_leuctra.EAS %>%
+  group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+  summarise(
+    Sum.Density = sum(Density, na.rm = TRUE),  # Summing density for each replicate for each length class
+    Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE)   # Summing biomass for each replicate for each length class
+ ) %>%
+  
+  # Calculate Individual Mass
+  mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
+  
+  # Remove Sum.Biomass after calculating individual mass
+  select(-Sum.Biomass) %>%
+  
+  # UNGROUP before using complete() to prevent errors
+  ungroup() %>%
+  
+  # Expand grid to include missing length classes (ensuring zeros are accounted for)
+  complete(Site, Genus, Sample.Month, Length, 
+           fill = list(Sum.Density = 0, Individual.Mass = 0)) %>%
+  
+  # Group again to average replicates for each length class for each stream/month
+  group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
+  summarise(
+    Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,  # Averaging the summed density by Sample.Month
+    Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,  # Averaging the individual mass by Sample.Month
+    .groups = "drop"  # Avoids unwanted grouping messages
+  ) %>%
+  
+  # Summing density and individual mass across the year for each size class
+  group_by(Genus, Length, Site) %>%
+  summarise(
+    Density.Final = mean(Mean.Density, na.rm = TRUE),
+    Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  
+  # Filter out lengths with zero density
+  filter(Density.Final > 0) %>%
+  
+  # Arrange by Length for proper ordering
+  arrange(Length)
+
+
+
 
 
 
 # Automating 2P for every taxa in EAS--------------------------------------------
 # Function to calculate density and individual mass correctly for length classes
+library(tidyr)
 
 
 SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
@@ -4415,6 +4508,9 @@ SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
       "May", "June", "July", "August"
     )), Sample.Month) %>%
     
+    # Expand grid to include missing length classes (ensuring zeros are accounted for)
+    #complete(Site, Genus, Sample.Month, Replicate, Length, 
+             #fill = list(Density = 0, Biomass.Area.Corrected = 0)) %>%
     
     # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
     group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
@@ -4426,6 +4522,12 @@ SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
     # Calculate Individual Mass
     mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
     
+    # UNGROUP before using complete() to prevent errors
+    #ungroup() %>%
+    
+    # Expand grid to include missing length classes (ensuring zeros are accounted for)
+    #complete(Site, Genus, Sample.Month, Length, 
+            # fill = list(Sum.Density = 0, Individual.Mass = 0)) %>%
     
     # Group by Site, Genus, Sample.Month, Sample.Date, Length
     group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
@@ -4439,14 +4541,188 @@ SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
     group_by(Genus, Length, Site) %>%
     summarise(
       Density.Final = mean(Mean.Density, na.rm = TRUE),  # Final Density across the year
-      # CHANGED TO MEAN JUST TO TRY
       Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
+    
+    # Remove rows where Density.Final is zero
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering of size classes
+    arrange(Length)
+
+}
+
+
+
+
+
+
+# Trying something new
+
+SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for proper sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "September", "October", "November", "December",
+      "January", "February", "March", "April",
+      "May", "June", "July", "August"
+    )), Sample.Month) %>%
+    
+    # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), # Sum Density per replicate
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE) # Sum Biomass
+    ) %>%
+    
+    # Calculate Individual Mass
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ungroup to properly expand within each month
+    ungroup() %>%
+    
+    # Expand grid to ensure missing replicates within months get zeros
+    complete(Site, Genus, Sample.Month, Sample.Date, Replicate, Length, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Group by Site, Genus, Sample.Month, Length to calculate monthly means
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,  
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a month
+    filter(Mean.Density > 0) %>%
+    
+    # Final grouping by Genus, Length, Site to calculate yearly values
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),  # Average across months where present
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE)
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
     
     # Arrange by Length for correct ordering of size classes
     arrange(Length)
 }
 
+
+# Something new again
+SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "September", "October", "November", "December",
+      "January", "February", "March", "April",
+      "May", "June", "July", "August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes (if length class is present in that month)
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    complete(Sample.Date, Replicate = 1:5, fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    
+    # Compute monthly means across replicates
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
+
+
+
+# last try
+SECPROD_EAS <- function(SECPROD, site_filter = "EAS") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "September", "October", "November", "December",
+      "January", "February", "March", "April",
+      "May", "June", "July", "August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # ✅ Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
 
 
 # Create a list of dataframes, one for each genus, for the "EAS" site
@@ -4507,7 +4783,6 @@ Production_Columns <- function(SECPROD) {
 }
 
 
-
 # Apply Production_Columns to each genus dataframe in the list
 
 EAS_genus_2P_Final <- map(EAS_genus_2P, ~Production_Columns(.x))
@@ -4565,10 +4840,15 @@ SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
       Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE)      # Sum Biomass
     ) %>%
     
-    filter(Sum.Density > 0) %>%  # Remove zero-filled classes
-    
     # Calculate Individual Mass
     mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
+    
+    # UNGROUP before using complete() to prevent errors
+    #ungroup() %>%
+    
+    # Expand grid to include missing length classes (ensuring zeros are accounted for)
+    #complete(Site, Genus, Sample.Month, Length, 
+            # fill = list(Sum.Density = 0, Individual.Mass = 0)) %>%
     
     
     # Group by Site, Genus, Sample.Month, Sample.Date, Length
@@ -4585,13 +4865,70 @@ SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
       Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
     
-    filter(Density.Final > 0) %>%  # Ensure no zero-filled length classes
+    # Remove rows where Density.Final is zero
+    filter(Density.Final > 0) %>%
     
     # Arrange by Length for correct ordering of size classes
     arrange(Length)
 }
 
 
+
+# Trying new way
+# last try
+SECPROD_FRY <- function(SECPROD, site_filter = "FRY") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "September", "October", "November", "December",
+      "January", "February", "March", "April",
+      "May", "June", "July", "August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # ✅ Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
 
 
 # Create a list of dataframes, one for each genus, for the "FRY" site
@@ -4711,6 +5048,12 @@ SECPROD_RIC <- function(SECPROD, site_filter = "RIC") {
     # Calculate Individual Mass
     mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
     
+    # UNGROUP before using complete() to prevent errors
+   # ungroup() %>%
+    
+    # Expand grid to include missing length classes (ensuring zeros are accounted for)
+   # complete(Site, Genus, Sample.Month, Length, 
+            # fill = list(Sum.Density = 0, Individual.Mass = 0)) %>%
     
     # Group by Site, Genus, Sample.Month, Sample.Date, Length
     group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
@@ -4726,11 +5069,74 @@ SECPROD_RIC <- function(SECPROD, site_filter = "RIC") {
       Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE)  # Final Mass across the year
     ) %>%
     
+  
+    # Remove rows where Density.Final is zero
+    filter(Density.Final > 0) %>%
+    
     # Arrange by Length for correct ordering of size classes
     arrange(Length)
 }
 
 
+
+
+
+
+# Trying new way 
+# last try
+SECPROD_RIC <- function(SECPROD, site_filter = "RIC") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "September", "October", "November", "December",
+      "January", "February", "March", "April",
+      "May", "June", "July", "August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # ✅ Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
 
 
 # Create a list of dataframes, one for each genus, for the "EAS" site
@@ -4820,17 +5226,949 @@ saveWorkbook(wb, "RIC_Genus_2PSummary.xlsx", overwrite = TRUE)
 
 
 
+### QUARTERLY 2P HERE-----------------------------------------------------------------------
+
+# Automating 2P for every taxa in CRO---------
+# Function to calculate density and individual mass correctly for length classes
+SECPROD_CRO <- function(SECPROD, site_filter = "CRO") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    
+    # Arrange by month and Sample.Month factor order
+    arrange(factor(Sample.Month, levels = c(
+      "October", "February", "May","August"
+    )), Sample.Month) %>%
+    
+    
+    # Group by Site, Genus, Sample.Month, Sample.Date, Replicate, Length
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE),     # Sum Density
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE)      # Sum Biomass
+    ) %>%
+    
+    # Calculate Individual Mass
+    mutate(Individual.Mass = Sum.Biomass / Sum.Density) %>%
+    
+    
+    # Group by Site, Genus, Sample.Month, Sample.Date, Length
+    group_by(Site, Genus, Sample.Month, Sample.Date, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,  # Average Density
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5 # Average Individual Mass
+    ) %>%
+    
+    # Group by Genus, Length, Site to calculate final densities and biomass per genus
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density[Mean.Density > 0], na.rm = TRUE),  # Final Density across the year
+      Individual.Mass.Final = mean(Mean.Individual.Mass[Mean.Individual.Mass > 0], na.rm = TRUE)  # Final Mass across the year
+    ) %>%
+    
+    # Arrange by Length for correct ordering of size classes
+    arrange(Length)
+}
+
+
+SECPROD_CRO <- function(SECPROD, site_filter = "CRO") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "October", "February", "May","August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
 
 
 
 
-# Combining df of production for EAS, FRY, RIC----------------------------------
+# Create a list of dataframes, one for each genus, for the "EAS" site
+CRO_genus_2P <- SECPROD %>%
+  filter(Site == "CRO") %>%             # Filter for the "EAS" site
+  distinct(Genus) %>%                   # Get distinct genera
+  pull(Genus) %>%                       # Pull them as a vector
+  set_names() %>%                       # Set genus names as list names
+  map(~ SECPROD_CRO(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
+
+
+# Function to Add Additional Columns to Each Genus Dataframe
+Production_Columns <- function(SECPROD) {
+  SECPROD %>%
+    arrange(Length) %>%                       # Sort by Length
+    group_by(Genus) %>%                       # Group by Genus
+    
+    mutate(
+      No.Lost = if_else(
+        is.na(lead(Density.Final)),  # If the next value is NA (i.e., last row)
+        Density.Final / 1,           # Divide current value by 1 for the last row (same value)
+        (Density.Final - lead(Density.Final))),  # Subtract next row's density to get Number Lost
+      
+      Biomass = Density.Final * Individual.Mass.Final,  # Calculate Biomass
+      
+      # Modify Mass.at.Loss to divide the last value by itself
+      Mass.at.Loss = if_else(
+        is.na(lead(Individual.Mass.Final)),  # If the next value is NA (i.e., last row)
+        Individual.Mass.Final / 2,           # Divide current value by 2 for the last row
+        (Individual.Mass.Final + lead(Individual.Mass.Final)) / 2  # Average with the next value for others
+      ),
+      
+      Biomass.Lost = No.Lost * Mass.at.Loss,
+      
+      Times.No.Size.Classes = Biomass.Lost * n_distinct(Length),  # Multiply Biomass Lost by number of size classes
+      
+      Biomass.Sum = sum(Biomass), # 1 value for taxa
+      
+      Production.Uncorrected = sum(Times.No.Size.Classes[Times.No.Size.Classes > 0], na.rm = TRUE),
+      
+      CohortP.B = Production.Uncorrected/Biomass.Sum,
+      
+      CPI = 12/n_distinct(Length),
+      
+      Annual.Production = Production.Uncorrected/(12/n_distinct(Length)),
+      
+      AnnualP.B = Annual.Production/Biomass.Sum,
+      
+      # Calculate Daily Growth:
+      Largest.Mass = Individual.Mass.Final[which.max(Length)],  # Mass for the largest length class
+      Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
+      Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
+    ) %>%
+    select(-Largest.Mass, -Smallest.Mass)%>%  # Remove Largest.Mass and Smallest.Mass columns after using them
+    
+    ungroup()  # Ungroup after calculation
+}
+
+
+
+# Apply Production_Columns to each genus dataframe in the list
+
+CRO_genus_2P_Final <- map(CRO_genus_2P, ~Production_Columns(.x))
+
+
+
+# Saving it to excel where each genus is it's own tab
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Sort the list of genus dataframes by sheet names (genus names) alphabetically
+sorted_genus_list <- CRO_genus_2P_Final[order(names(CRO_genus_2P_Final))]
+
+# Add each sorted genus dataframe to a separate sheet
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
+  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
+})
+
+# Save the workbook to an Excel file
+saveWorkbook(wb, "CRO_Genus_2PSummary.xlsx", overwrite = TRUE)
+
+
+
+
+
+
+
+
+# Automating 2P for every taxa in HCN---------
+# Function to calculate density and individual mass correctly for length classes
+SECPROD_HCN <- function(SECPROD, site_filter = "HCN") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "October", "February", "May","August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
+
+
+
+# Create a list of dataframes, one for each genus, for the "EAS" site
+HCN_genus_2P <- SECPROD %>%
+  filter(Site == "HCN") %>%             # Filter for the "EAS" site
+  distinct(Genus) %>%                   # Get distinct genera
+  pull(Genus) %>%                       # Pull them as a vector
+  set_names() %>%                       # Set genus names as list names
+  map(~ SECPROD_HCN(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
+
+
+# Function to Add Additional Columns to Each Genus Dataframe
+Production_Columns <- function(SECPROD) {
+  SECPROD %>%
+    arrange(Length) %>%                       # Sort by Length
+    group_by(Genus) %>%                       # Group by Genus
+    
+    mutate(
+      No.Lost = if_else(
+        is.na(lead(Density.Final)),  # If the next value is NA (i.e., last row)
+        Density.Final / 1,           # Divide current value by 1 for the last row (same value)
+        (Density.Final - lead(Density.Final))),  # Subtract next row's density to get Number Lost
+      
+      Biomass = Density.Final * Individual.Mass.Final,  # Calculate Biomass
+      
+      # Modify Mass.at.Loss to divide the last value by itself
+      Mass.at.Loss = if_else(
+        is.na(lead(Individual.Mass.Final)),  # If the next value is NA (i.e., last row)
+        Individual.Mass.Final / 2,           # Divide current value by 2 for the last row
+        (Individual.Mass.Final + lead(Individual.Mass.Final)) / 2  # Average with the next value for others
+      ),
+      
+      Biomass.Lost = No.Lost * Mass.at.Loss,
+      
+      Times.No.Size.Classes = Biomass.Lost * n_distinct(Length),  # Multiply Biomass Lost by number of size classes
+      
+      Biomass.Sum = sum(Biomass), # 1 value for taxa
+      
+      Production.Uncorrected = sum(Times.No.Size.Classes[Times.No.Size.Classes > 0], na.rm = TRUE),
+      
+      CohortP.B = Production.Uncorrected/Biomass.Sum,
+      
+      CPI = 12/n_distinct(Length),
+      
+      Annual.Production = Production.Uncorrected/(12/n_distinct(Length)),
+      
+      AnnualP.B = Annual.Production/Biomass.Sum,
+      
+      # Calculate Daily Growth:
+      Largest.Mass = Individual.Mass.Final[which.max(Length)],  # Mass for the largest length class
+      Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
+      Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
+    ) %>%
+    select(-Largest.Mass, -Smallest.Mass)%>%  # Remove Largest.Mass and Smallest.Mass columns after using them
+    
+    ungroup()  # Ungroup after calculation
+}
+
+
+
+# Apply Production_Columns to each genus dataframe in the list
+
+HCN_genus_2P_Final <- map(HCN_genus_2P, ~Production_Columns(.x))
+
+
+
+# Saving it to excel where each genus is it's own tab
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Sort the list of genus dataframes by sheet names (genus names) alphabetically
+sorted_genus_list <- HCN_genus_2P_Final[order(names(HCN_genus_2P_Final))]
+
+# Add each sorted genus dataframe to a separate sheet
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
+  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
+})
+
+# Save the workbook to an Excel file
+saveWorkbook(wb, "HCN_Genus_2PSummary.xlsx", overwrite = TRUE)
+
+
+
+
+
+
+
+# Automating 2P for every taxa in HUR---------
+# Function to calculate density and individual mass correctly for length classes
+SECPROD_HUR <- function(SECPROD, site_filter = "HUR") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "October", "February", "May","August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
+
+
+
+# Create a list of dataframes, one for each genus, for the "HUR" site
+HUR_genus_2P <- SECPROD %>%
+  filter(Site == "HUR") %>%             # Filter for the "HUR" site
+  distinct(Genus) %>%                   # Get distinct genera
+  pull(Genus) %>%                       # Pull them as a vector
+  set_names() %>%                       # Set genus names as list names
+  map(~ SECPROD_HUR(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
+
+
+# Function to Add Additional Columns to Each Genus Dataframe
+Production_Columns <- function(SECPROD) {
+  SECPROD %>%
+    arrange(Length) %>%                       # Sort by Length
+    group_by(Genus) %>%                       # Group by Genus
+    
+    mutate(
+      No.Lost = if_else(
+        is.na(lead(Density.Final)),  # If the next value is NA (i.e., last row)
+        Density.Final / 1,           # Divide current value by 1 for the last row (same value)
+        (Density.Final - lead(Density.Final))),  # Subtract next row's density to get Number Lost
+      
+      Biomass = Density.Final * Individual.Mass.Final,  # Calculate Biomass
+      
+      # Modify Mass.at.Loss to divide the last value by itself
+      Mass.at.Loss = if_else(
+        is.na(lead(Individual.Mass.Final)),  # If the next value is NA (i.e., last row)
+        Individual.Mass.Final / 2,           # Divide current value by 2 for the last row
+        (Individual.Mass.Final + lead(Individual.Mass.Final)) / 2  # Average with the next value for others
+      ),
+      
+      Biomass.Lost = No.Lost * Mass.at.Loss,
+      
+      Times.No.Size.Classes = Biomass.Lost * n_distinct(Length),  # Multiply Biomass Lost by number of size classes
+      
+      Biomass.Sum = sum(Biomass), # 1 value for taxa
+      
+      Production.Uncorrected = sum(Times.No.Size.Classes[Times.No.Size.Classes > 0], na.rm = TRUE),
+      
+      CohortP.B = Production.Uncorrected/Biomass.Sum,
+      
+      CPI = 12/n_distinct(Length),
+      
+      Annual.Production = Production.Uncorrected/(12/n_distinct(Length)),
+      
+      AnnualP.B = Annual.Production/Biomass.Sum,
+      
+      # Calculate Daily Growth:
+      Largest.Mass = Individual.Mass.Final[which.max(Length)],  # Mass for the largest length class
+      Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
+      Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
+    ) %>%
+    select(-Largest.Mass, -Smallest.Mass)%>%  # Remove Largest.Mass and Smallest.Mass columns after using them
+    
+    ungroup()  # Ungroup after calculation
+}
+
+
+
+# Apply Production_Columns to each genus dataframe in the list
+
+HUR_genus_2P_Final <- map(HUR_genus_2P, ~Production_Columns(.x))
+
+
+
+# Saving it to excel where each genus is it's own tab
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Sort the list of genus dataframes by sheet names (genus names) alphabetically
+sorted_genus_list <- HUR_genus_2P_Final[order(names(HUR_genus_2P_Final))]
+
+# Add each sorted genus dataframe to a separate sheet
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
+  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
+})
+
+# Save the workbook to an Excel file
+saveWorkbook(wb, "HUR_Genus_2PSummary.xlsx", overwrite = TRUE)
+
+
+
+
+
+
+# Automating 2P for every taxa in RUT---------
+# Function to calculate density and individual mass correctly for length classes
+SECPROD_RUT <- function(SECPROD, site_filter = "RUT") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "October", "February", "May","August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
+
+
+
+# Create a list of dataframes, one for each genus, for the "EAS" site
+RUT_genus_2P <- SECPROD %>%
+  filter(Site == "RUT") %>%             # Filter for the "EAS" site
+  distinct(Genus) %>%                   # Get distinct genera
+  pull(Genus) %>%                       # Pull them as a vector
+  set_names() %>%                       # Set genus names as list names
+  map(~ SECPROD_RUT(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
+
+
+# Function to Add Additional Columns to Each Genus Dataframe
+Production_Columns <- function(SECPROD) {
+  SECPROD %>%
+    arrange(Length) %>%                       # Sort by Length
+    group_by(Genus) %>%                       # Group by Genus
+    
+    mutate(
+      No.Lost = if_else(
+        is.na(lead(Density.Final)),  # If the next value is NA (i.e., last row)
+        Density.Final / 1,           # Divide current value by 1 for the last row (same value)
+        (Density.Final - lead(Density.Final))),  # Subtract next row's density to get Number Lost
+      
+      Biomass = Density.Final * Individual.Mass.Final,  # Calculate Biomass
+      
+      # Modify Mass.at.Loss to divide the last value by itself
+      Mass.at.Loss = if_else(
+        is.na(lead(Individual.Mass.Final)),  # If the next value is NA (i.e., last row)
+        Individual.Mass.Final / 2,           # Divide current value by 2 for the last row
+        (Individual.Mass.Final + lead(Individual.Mass.Final)) / 2  # Average with the next value for others
+      ),
+      
+      Biomass.Lost = No.Lost * Mass.at.Loss,
+      
+      Times.No.Size.Classes = Biomass.Lost * n_distinct(Length),  # Multiply Biomass Lost by number of size classes
+      
+      Biomass.Sum = sum(Biomass), # 1 value for taxa
+      
+      Production.Uncorrected = sum(Times.No.Size.Classes[Times.No.Size.Classes > 0], na.rm = TRUE),
+      
+      CohortP.B = Production.Uncorrected/Biomass.Sum,
+      
+      CPI = 12/n_distinct(Length),
+      
+      Annual.Production = Production.Uncorrected/(12/n_distinct(Length)),
+      
+      AnnualP.B = Annual.Production/Biomass.Sum,
+      
+      # Calculate Daily Growth:
+      Largest.Mass = Individual.Mass.Final[which.max(Length)],  # Mass for the largest length class
+      Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
+      Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
+    ) %>%
+    select(-Largest.Mass, -Smallest.Mass)%>%  # Remove Largest.Mass and Smallest.Mass columns after using them
+    
+    ungroup()  # Ungroup after calculation
+}
+
+
+
+# Apply Production_Columns to each genus dataframe in the list
+
+RUT_genus_2P_Final <- map(RUT_genus_2P, ~Production_Columns(.x))
+
+
+
+# Saving it to excel where each genus is it's own tab
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Sort the list of genus dataframes by sheet names (genus names) alphabetically
+sorted_genus_list <- RUT_genus_2P_Final[order(names(RUT_genus_2P_Final))]
+
+# Add each sorted genus dataframe to a separate sheet
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
+  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
+})
+
+# Save the workbook to an Excel file
+saveWorkbook(wb, "RUT_Genus_2PSummary.xlsx", overwrite = TRUE)
+
+
+
+
+
+
+
+# Automating 2P for every taxa in LLW---------
+# Function to calculate density and individual mass correctly for length classes
+SECPROD_LLW <- function(SECPROD, site_filter = "LLW") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "October", "February", "May","August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
+
+
+# Create a list of dataframes, one for each genus, for the "EAS" site
+LLW_genus_2P <- SECPROD %>%
+  filter(Site == "LLW") %>%             # Filter for the "EAS" site
+  distinct(Genus) %>%                   # Get distinct genera
+  pull(Genus) %>%                       # Pull them as a vector
+  set_names() %>%                       # Set genus names as list names
+  map(~ SECPROD_LLW(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
+
+
+# Function to Add Additional Columns to Each Genus Dataframe
+Production_Columns <- function(SECPROD) {
+  SECPROD %>%
+    arrange(Length) %>%                       # Sort by Length
+    group_by(Genus) %>%                       # Group by Genus
+    
+    mutate(
+      No.Lost = if_else(
+        is.na(lead(Density.Final)),  # If the next value is NA (i.e., last row)
+        Density.Final / 1,           # Divide current value by 1 for the last row (same value)
+        (Density.Final - lead(Density.Final))),  # Subtract next row's density to get Number Lost
+      
+      Biomass = Density.Final * Individual.Mass.Final,  # Calculate Biomass
+      
+      # Modify Mass.at.Loss to divide the last value by itself
+      Mass.at.Loss = if_else(
+        is.na(lead(Individual.Mass.Final)),  # If the next value is NA (i.e., last row)
+        Individual.Mass.Final / 2,           # Divide current value by 2 for the last row
+        (Individual.Mass.Final + lead(Individual.Mass.Final)) / 2  # Average with the next value for others
+      ),
+      
+      Biomass.Lost = No.Lost * Mass.at.Loss,
+      
+      Times.No.Size.Classes = Biomass.Lost * n_distinct(Length),  # Multiply Biomass Lost by number of size classes
+      
+      Biomass.Sum = sum(Biomass), # 1 value for taxa
+      
+      Production.Uncorrected = sum(Times.No.Size.Classes[Times.No.Size.Classes > 0], na.rm = TRUE),
+      
+      CohortP.B = Production.Uncorrected/Biomass.Sum,
+      
+      CPI = 12/n_distinct(Length),
+      
+      Annual.Production = Production.Uncorrected/(12/n_distinct(Length)),
+      
+      AnnualP.B = Annual.Production/Biomass.Sum,
+      
+      # Calculate Daily Growth:
+      Largest.Mass = Individual.Mass.Final[which.max(Length)],  # Mass for the largest length class
+      Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
+      Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
+    ) %>%
+    select(-Largest.Mass, -Smallest.Mass)%>%  # Remove Largest.Mass and Smallest.Mass columns after using them
+    
+    ungroup()  # Ungroup after calculation
+}
+
+
+
+# Apply Production_Columns to each genus dataframe in the list
+
+LLW_genus_2P_Final <- map(LLW_genus_2P, ~Production_Columns(.x))
+
+
+
+# Saving it to excel where each genus is it's own tab
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Sort the list of genus dataframes by sheet names (genus names) alphabetically
+sorted_genus_list <- LLW_genus_2P_Final[order(names(LLW_genus_2P_Final))]
+
+# Add each sorted genus dataframe to a separate sheet
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
+  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
+})
+
+# Save the workbook to an Excel file
+saveWorkbook(wb, "LLW_Genus_2PSummary.xlsx", overwrite = TRUE)
+
+
+
+
+
+
+
+
+# Automating 2P for every taxa in LLC---------
+# Function to calculate density and individual mass correctly for length classes
+SECPROD_LLC <- function(SECPROD, site_filter = "LLC") {
+  SECPROD %>%
+    # Filter by site
+    filter(Site == site_filter) %>%
+    
+    # Arrange by month order for correct sequencing
+    arrange(factor(Sample.Month, levels = c(
+      "October", "February", "May","August"
+    )), Sample.Month) %>%
+    
+    # Summarise by replicate
+    group_by(Site, Genus, Sample.Month, Sample.Date, Replicate, Length) %>%
+    summarise(
+      Sum.Density = sum(Density, na.rm = TRUE), 
+      Sum.Biomass = sum(Biomass.Area.Corrected, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Compute individual mass only where density is > 0
+    mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
+    
+    # Ensure missing replicates in a given month get zeroes
+    ungroup() %>%  # Make sure data is ungrouped before completing
+    complete(Site, Genus, Sample.Month, Length, Sample.Date, Replicate = 1:5, 
+             fill = list(Sum.Density = 0, Sum.Biomass = 0, Individual.Mass = 0)) %>%
+    
+    # Compute monthly means across replicates
+    group_by(Site, Genus, Sample.Month, Length) %>%
+    summarise(
+      Mean.Density = sum(Sum.Density, na.rm = TRUE) / 5,
+      Mean.Individual.Mass = sum(Individual.Mass, na.rm = TRUE) / 5,
+      .groups = "drop"
+    ) %>%
+    
+    # Remove length classes that are entirely absent in a given month
+    filter(Mean.Density > 0) %>%
+    
+    # Compute final yearly averages only from months where the length class was present
+    group_by(Genus, Length, Site) %>%
+    summarise(
+      Density.Final = mean(Mean.Density, na.rm = TRUE),
+      Individual.Mass.Final = mean(Mean.Individual.Mass, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    
+    # Ensure only length classes that exist at some point in the year are retained
+    filter(Density.Final > 0) %>%
+    
+    # Arrange by Length for correct ordering
+    arrange(Length)
+}
+
+
+
+# Create a list of dataframes, one for each genus, for the "EAS" site
+LLC_genus_2P <- SECPROD %>%
+  filter(Site == "LLC") %>%             # Filter for the "EAS" site
+  distinct(Genus) %>%                   # Get distinct genera
+  pull(Genus) %>%                       # Pull them as a vector
+  set_names() %>%                       # Set genus names as list names
+  map(~ SECPROD_LLC(SECPROD %>% filter(Genus == .x))) # Apply the function per genus
+
+
+# Function to Add Additional Columns to Each Genus Dataframe
+Production_Columns <- function(SECPROD) {
+  SECPROD %>%
+    arrange(Length) %>%                       # Sort by Length
+    group_by(Genus) %>%                       # Group by Genus
+    
+    mutate(
+      No.Lost = if_else(
+        is.na(lead(Density.Final)),  # If the next value is NA (i.e., last row)
+        Density.Final / 1,           # Divide current value by 1 for the last row (same value)
+        (Density.Final - lead(Density.Final))),  # Subtract next row's density to get Number Lost
+      
+      Biomass = Density.Final * Individual.Mass.Final,  # Calculate Biomass
+      
+      # Modify Mass.at.Loss to divide the last value by itself
+      Mass.at.Loss = if_else(
+        is.na(lead(Individual.Mass.Final)),  # If the next value is NA (i.e., last row)
+        Individual.Mass.Final / 2,           # Divide current value by 2 for the last row
+        (Individual.Mass.Final + lead(Individual.Mass.Final)) / 2  # Average with the next value for others
+      ),
+      
+      Biomass.Lost = No.Lost * Mass.at.Loss,
+      
+      Times.No.Size.Classes = Biomass.Lost * n_distinct(Length),  # Multiply Biomass Lost by number of size classes
+      
+      Biomass.Sum = sum(Biomass), # 1 value for taxa
+      
+      Production.Uncorrected = sum(Times.No.Size.Classes[Times.No.Size.Classes > 0], na.rm = TRUE),
+      
+      CohortP.B = Production.Uncorrected/Biomass.Sum,
+      
+      CPI = 12/n_distinct(Length),
+      
+      Annual.Production = Production.Uncorrected/(12/n_distinct(Length)),
+      
+      AnnualP.B = Annual.Production/Biomass.Sum,
+      
+      # Calculate Daily Growth:
+      Largest.Mass = Individual.Mass.Final[which.max(Length)],  # Mass for the largest length class
+      Smallest.Mass = Individual.Mass.Final[which.min(Length)], # Mass for the smallest length class
+      Daily.Growth = log(Largest.Mass / Smallest.Mass) / sum(unique(Length))
+    ) %>%
+    select(-Largest.Mass, -Smallest.Mass)%>%  # Remove Largest.Mass and Smallest.Mass columns after using them
+    
+    ungroup()  # Ungroup after calculation
+}
+
+
+
+# Apply Production_Columns to each genus dataframe in the list
+
+LLC_genus_2P_Final <- map(LLC_genus_2P, ~Production_Columns(.x))
+
+
+
+# Saving it to excel where each genus is it's own tab
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Sort the list of genus dataframes by sheet names (genus names) alphabetically
+sorted_genus_list <- LLC_genus_2P_Final[order(names(LLC_genus_2P_Final))]
+
+# Add each sorted genus dataframe to a separate sheet
+iwalk(sorted_genus_list, function(data, sheet_name) {
+  addWorksheet(wb, sheet_name)      # Add a new worksheet with the genus name
+  writeData(wb, sheet_name, data)   # Write the dataframe to the worksheet
+})
+
+# Save the workbook to an Excel file
+saveWorkbook(wb, "LLC_Genus_2PSummary.xlsx", overwrite = TRUE)
+
+
+
+
+
+
+
+
+
+# Combining df of production for all sites----------------------------------
 EAS_genus_2P_Final_df <- bind_rows(EAS_genus_2P_Final, .id = "source")
 FRY_genus_2P_Final_df <- bind_rows(FRY_genus_2P_Final, .id = "source")
 RIC_genus_2P_Final_df <- bind_rows(RIC_genus_2P_Final, .id = "source")
+CRO_genus_2P_Final_df <- bind_rows(CRO_genus_2P_Final, .id = "source")
+HCN_genus_2P_Final_df <- bind_rows(HCN_genus_2P_Final, .id = "source")
+HUR_genus_2P_Final_df <- bind_rows(HUR_genus_2P_Final, .id = "source")
+RUT_genus_2P_Final_df <- bind_rows(RUT_genus_2P_Final, .id = "source")
+LLW_genus_2P_Final_df <- bind_rows(LLW_genus_2P_Final, .id = "source")
+LLC_genus_2P_Final_df <- bind_rows(LLC_genus_2P_Final, .id = "source")
 
 # Core sites with everything including length by length values
 CORE_PROD_lengths<- rbind(EAS_genus_2P_Final_df, FRY_genus_2P_Final_df, RIC_genus_2P_Final_df)
+
+# All sites with everything including length by length values
+TOTAL_PROD_lengths <- rbind(EAS_genus_2P_Final_df, FRY_genus_2P_Final_df, RIC_genus_2P_Final_df,
+                            CRO_genus_2P_Final_df, HCN_genus_2P_Final_df, HUR_genus_2P_Final_df,
+                            RUT_genus_2P_Final_df, LLW_genus_2P_Final_df, LLC_genus_2P_Final_df) 
+
+
 
 library(dplyr)
 
@@ -4996,6 +6334,165 @@ COREPROD_Summary$SC.Level <- factor(COREPROD_Summary$SC.Level, levels = c("25","
 COREPROD_Summary$FFG <- factor(COREPROD_Summary$FFG, levels = c("Scraper","Scraper - Coleoptera","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
 
 
+# Same as above but for all sites
+TOTALPROD_Summary <- TOTAL_PROD_lengths %>%
+  group_by(Site, Genus) %>%
+  summarise(
+    Production.Uncorrected = mean(Production.Uncorrected, na.rm = TRUE),
+    CPI = mean(CPI, na.rm = TRUE),
+    Annual.Production = mean(Annual.Production, na.rm = TRUE),
+    AnnualP.B = mean(AnnualP.B, na.rm = TRUE),
+    Daily.Growth = mean(Daily.Growth, na.rm = TRUE),
+    .groups = 'drop' # Specify .groups only once
+  )
+
+
+TOTALPROD_sum <- TOTALPROD_Summary %>%
+  group_by(Site) %>%
+  summarise(Sum.Annual.Production = sum(Annual.Production, na.rm = TRUE), .groups = 'drop')
+
+
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Acerpenna"] ="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Acentrella"] = "Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Acroneuria"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Allocapnia"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Allognasta"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Alloperla"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Ameletus"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Amphinemura"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Antocha"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Atherix"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Attenella"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Baetidae"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Baetis"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Baetisca"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Boyeria"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Calopteryx"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Capniidae"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Ceratopogonidae"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Cernotina"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Chauloides"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Chelifera"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Chimarra"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Cheumatopsyche"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Chironomidae"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Chironomini"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Circulionidae"]="Scraper"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Collembola"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Cordulegaster"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Cyrnellus"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Dicranota"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Diplectrona"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Discocerina"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Dixa"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Dixella"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Dolophilodes"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Ectopria"]="Scraper - Coleoptera"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Eloeophila"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Epeorus"]="Scraper"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Eriopterini"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Ephemera"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Ephemerellidae"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Eurylophella"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Gerris"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Glossosoma"]="Scraper"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Goera"]="Scraper"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Gomphus"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Gomphurus"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Gyrinus"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Helichus"]="Scraper"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Hemiptera"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Heptageniidae"]="Scraper"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Hetaerina"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Hexatoma"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Hydrachnia"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Hydatophylax"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Hydropsyche"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Isonychia"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Isoperla"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Langessa"]="Scraper"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Lanthus"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Leptophlebiidae"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Lepidostoma"]= "Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Leuctra"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Leuctridae"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Limnephilidae"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Limnophila"]= "Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Limoniidae"]= "Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Lypodiversa"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Micrasema"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Microvelia"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Molophilus"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Neocleon"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Neophylax"]="Scraper"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Neoplasta"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Nigronia"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Oligochaeta"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Optioservus"]="Scraper - Coleoptera"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Oreogeton"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Orthocladine"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Oulimnius"]="Scraper - Coleoptera"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Paracapnia"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Paraleptophlebia"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Polycentropodidae"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Polycentropus"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Probezzia"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Prodaticus"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Prosimulium"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Psephenus"]="Scraper - Coleoptera"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Pseudolimnophila"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Psychodini"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Pteronarcys"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Pycnopsyche"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Remenus"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Rhagovelia"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Rhyacophila"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Prostoia"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Sialis"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Simulium"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Stratiomyidae"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Stylogomphus"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Tallaperla"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Stenelmis"]="Scraper - Coleoptera"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Stenonema"]="Scraper" 
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Taeniopteryx"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Tanypodinae"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Tanytarsini"]="Collector-Gatherer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Tipula"]="Shredder"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Triacanthagyna"]="Predator"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Wormaldia"]="Collector-Filterer"
+TOTALPROD_Summary$FFG[TOTALPROD_Summary$Genus=="Zoraena"]="Predator"
+TOTALPROD_Summary <- TOTALPROD_Summary %>%
+  filter(!str_detect(Genus, "Hagenella|Stagnicola"))
+
+
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="EAS"] = "25"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="CRO"] = "72"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="HCN"] = "78"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="HUR"] = "387"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="FRY"] = "402"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="RUT"] = "594"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="LLW"] = "1119"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="LLC"] = "1242"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="RIC"] = "1457"
+
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="EAS"] = "REF"
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="CRO"] = "REF"
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="HCN"] = "REF"
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="HUR"] = "MID"
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="FRY"] = "MID"
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="RUT"] = "MID"
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="LLW"] = "HIGH"
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="LLC"] = "HIGH"
+TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="RIC"] = "HIGH"
+
+
+
+TOTALPROD_Summary$Site <- factor(TOTALPROD_Summary$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
+TOTALPROD_Summary$SC.Category <- factor(TOTALPROD_Summary$SC.Category, levels = c("REF","MID","HIGH"))
+TOTALPROD_Summary$SC.Level <- factor(TOTALPROD_Summary$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
+TOTALPROD_Summary$FFG <- factor(TOTALPROD_Summary$FFG, levels = c("Scraper","Scraper - Coleoptera","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
+
 
 
 # A more appropriate way to compare core variation for CPI------------------------------
@@ -5051,7 +6548,7 @@ CORE_SummaryTable <- CORE_SummaryTable %>%
   mutate(
     Biomass = paste0(Biomass.Final, " ± ", Biomass.SE),
     Density = paste0(Density.Final, " ± ", Density.SE),
-    across(where(is.numeric), ~ round(.x, 2))) %>%
+    across(where(is.numeric), ~ round(.x, 4))) %>%
   select(Genus,Site, SC.Category.x,Density, Biomass, Production.Uncorrected,CPI, Annual.Production,
          AnnualP.B, Daily.Growth
   )
@@ -5066,6 +6563,10 @@ write.xlsx(CORE_SummaryTable, file = "CORE_SummaryTable.xlsx", overwrite = TRUE)
 
 
 # Proportional FFG 2P-----------------------------------------------------------
+
+COREPROD_Summary <- COREPROD_Summary %>%
+  filter(!is.na(FFG))  # anything without an FFG assigned
+
 
 install.packages("rcartocolor")# Colorblind color schemes
 library(rcartocolor)
@@ -5120,6 +6621,29 @@ propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = F
 propgg_site 
 
 
+
+# Quarterly
+# Now to do actual proportions, scaling everything to 100% production for each site
+TOTALPROD_Summary_site <- TOTALPROD_Summary %>%
+  group_by(Site) %>%
+  summarise(TOTALPROD_Summary = sum(Annual.Production)) # summing the annual production for each site
+
+# Calculate proportions of total production for each FFG for each site
+df_proportions_site <- TOTALPROD_Summary %>%
+  left_join(TOTALPROD_Summary_site, by = "Site") %>%
+  group_by(Site, FFG) %>%
+  summarise(Proportion = sum(Annual.Production) / first(TOTALPROD_Summary)) # Summing annual production
+#for each FFG for each site and dividing it by summed annual production for each site
+
+# Plot with specific colors assigned to each FFG 
+propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = FFG)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Site", y = "Proportion of Total Production", fill = "FFGs") +
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
+  theme_minimal()
+
+propgg_site 
+ 
 # Production as absolute values------------------------------------------------
 
 library(ggplot2)
@@ -5151,6 +6675,35 @@ production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.
     axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
 
 production_FFG
+
+
+
+
+TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>%
+  group_by(Site, FFG, SC.Level) %>%
+  summarise(
+    Summed.Annual.Production = sum((Annual.Production), na.rm = TRUE),
+    SC.Category = first(SC.Category)  # Include SC.Category for coloring
+  )
+
+
+
+production_FFG <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = Site, y = (Summed.Annual.Production))) +
+  facet_wrap(~FFG, ncol = 4, nrow = 2) +  
+  geom_col(aes(fill = FFG)) +  #geom_boxplot if wanting to show variation for all sites but with just coresites bars are fine
+  ylab("Secondary Production (g/m2/yr)") +
+  xlab("") +
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 10),
+    panel.grid = element_blank(), 
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
+
+production_FFG
+
 
 # Trying something linear--------------------------------------------------------
 
@@ -5190,12 +6743,47 @@ production_lineplot_lm <- ggplot(
     legend.background = element_blank(),
     legend.key = element_rect(fill = "white", color = "white")
   )
-# Display the plot
+
+
 production_lineplot_lm 
 
 # may have to make model and run summary to get p-values and r2
 
+# With all sites
+production_lineplot_lm <- ggplot(
+  data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
+  aes(x = SC.Level, y = (Summed.Annual.Production), group = FFG, color = SC.Category)
+) +
+  geom_point(size = 3) +   # Add points for emphasis
+  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label))), # use different function to get p-value from model output
+    formula = y ~ x,  # Use x and y here
+    parse = TRUE,
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  # Add R^2 annotations
+  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
+  ylab(SecondaryProduction~ (g/m^2/yr)) +
+  xlab("") +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
 
+
+production_lineplot_lm 
 
 
 
@@ -5283,6 +6871,48 @@ production_barplot
 
 
 
+# CPI things---------------------------------------------------------------------
 
+
+# Create a reference dataset with unique CohortP.B values per Genus & Reference Site
+reference_CPB <- TOTAL_PROD_lengths %>%
+  filter(Site %in% c("EAS", "FRY", "RIC")) %>%
+  group_by(Genus, Site) %>%
+  summarise(COREpb = mean(CohortP.B, na.rm = TRUE), .groups = "drop") %>%
+  rename(Reference.Site = Site)
+
+# Define mapping of target sites to reference sites
+site_mapping <- tibble(
+  Site = c("CRO", "HCN", "RUT", "HUR", "LLW", "LLC"),
+  Reference.Site = c("EAS", "EAS", "FRY", "FRY", "RIC", "RIC")
+)
+
+# Compute summaries and merge reference values
+TOTALPROD_CPI <- TOTAL_PROD_lengths %>%
+  group_by(Site, Genus) %>%
+  summarise(
+    Biomass.Sum = mean(Biomass.Sum, na.rm = TRUE),
+    Production.Uncorrected = mean(Production.Uncorrected, na.rm = TRUE),
+    CohortP.B = mean(CohortP.B, na.rm = TRUE),
+    CPI = mean(CPI, na.rm = TRUE),
+    Annual.Production = mean(Annual.Production, na.rm = TRUE),
+    AnnualP.B = mean(AnnualP.B, na.rm = TRUE),
+    Daily.Growth = mean(Daily.Growth, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>%
+  # Merge site mapping
+  left_join(site_mapping, by = "Site") %>%
+  # Merge reference CohortP.B values with unique genus-site combinations
+  left_join(reference_CPB, by = c("Genus", "Reference.Site")) %>%
+  # Compute the difference
+  mutate(Difference_COREpb = CohortP.B - COREpb)
+
+ 
+library(dplyr)
+library(purrr)
+library(openxlsx)
+
+# Save the data frame to an Excel file
+write.xlsx(TOTALPROD_CPI, file = "TOTALPROD_CPB.xlsx", overwrite = TRUE)
 
 
