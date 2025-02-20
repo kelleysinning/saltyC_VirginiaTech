@@ -6493,7 +6493,10 @@ TOTALPROD_Summary$SC.Category <- factor(TOTALPROD_Summary$SC.Category, levels = 
 TOTALPROD_Summary$SC.Level <- factor(TOTALPROD_Summary$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
 TOTALPROD_Summary$FFG <- factor(TOTALPROD_Summary$FFG, levels = c("Scraper","Scraper - Coleoptera","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
 
-
+TOTALPROD_Summary <- TOTALPROD_Summary %>%
+  filter(!is.na(FFG))  # anything without an FFG assigned
+COREPROD_Summary <- COREPROD_Summary %>%
+  filter(!is.na(FFG))  # anything without an FFG assigned
 
 # A more appropriate way to compare core variation for CPI------------------------------
 library(dplyr)
@@ -6661,7 +6664,7 @@ COREPROD_Summary_Sum <- COREPROD_Summary %>%
 
 
 production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.Annual.Production))) +
-  facet_wrap(~FFG, ncol = 3, nrow = 2) +  
+  facet_wrap(~FFG, ncol = 4, nrow = 2) +  
   geom_col(aes(fill = FFG)) +  #geom_boxplot if wanting to show variation for all sites but with just coresites bars are fine
   ylab("Secondary Production (g/m2/yr)") +
   xlab("") +
@@ -6824,23 +6827,31 @@ production_lineplot_loess
 
 # Total Production across gradient-----------------------------------------------------
 
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="EAS"] = "25"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="CRO"] = "72"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="HCN"] = "78"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="HUR"] = "387"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="FRY"] = "402"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="RUT"] = "594"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="LLW"] = "1119"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="LLC"] = "1242"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="RIC"] = "1457"
 
-COREPROD_sum$SC.Level[COREPROD_sum$Site =="EAS"] = "25"
-COREPROD_sum$SC.Level[COREPROD_sum$Site =="FRY"] = "402"
-COREPROD_sum$SC.Level[COREPROD_sum$Site =="RIC"] = "1457"
-
-COREPROD_sum$SC.Category[COREPROD_sum$Site =="EAS"] = "REF"
-COREPROD_sum$SC.Category[COREPROD_sum$Site =="FRY"] = "MID"
-COREPROD_sum$SC.Category[COREPROD_sum$Site =="RIC"] = "HIGH"
-
-
-
-COREPROD_sum$Site <- factor(COREPROD_sum$Site, levels = c("EAS","FRY","RIC"))
-COREPROD_sum$SC.Category <- factor(COREPROD_sum$SC.Category, levels = c("REF","MID","HIGH"))
-COREPROD_sum$SC.Level <- factor(COREPROD_sum$SC.Level, levels = c("25","402","1457"))
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="EAS"] = "REF"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="CRO"] = "REF"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="HCN"] = "REF"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="HUR"] = "MID"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="FRY"] = "MID"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="RUT"] = "MID"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="LLW"] = "HIGH"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="LLC"] = "HIGH"
+TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="RIC"] = "HIGH"
 
 
 
+TOTALPROD_sum$Site <- factor(TOTALPROD_sum$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
+TOTALPROD_sum$SC.Category <- factor(TOTALPROD_sum$SC.Category, levels = c("REF","MID","HIGH"))
+TOTALPROD_sum$SC.Level <- factor(TOTALPROD_sum$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
 
 
 # Summarize the data to calculate sum of production by Site (if not done already)
@@ -6848,7 +6859,7 @@ library(dplyr)
 
 
 # Create the bar plot with the corrected fill aesthetic
-production_barplot = ggplot(data = COREPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, fill = SC.Category)) +
+production_barplot = ggplot(data = TOTALPROD_sum, aes(x = Site, y = Sum.Annual.Production, fill = SC.Category)) +
   geom_bar(stat = "identity") +  # Use stat="identity" to plot actual data values
   ylab(expression(SecondaryProduction ~ (g/m^2/yr))) +  # Label for the y-axis
   xlab("") +
@@ -6868,6 +6879,77 @@ production_barplot = ggplot(data = COREPROD_sum, aes(x = SC.Level, y = Sum.Annua
 # Display the plot
 production_barplot
 
+
+production_lineplot_lm <- ggplot(
+  data = TOTALPROD_sum, # The sum of production for each FFG at each site
+  aes(x = SC.Level, y = (Sum.Annual.Production), group = Site, color = SC.Category)
+) +
+  geom_point(size = 3) +   # Add points for emphasis
+  geom_smooth(method = "lm", se = TRUE, aes(group = Site), linetype = "dashed") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label))), # use different function to get p-value from model output
+    formula = y ~ x,  # Use x and y here
+    parse = TRUE,
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  # Add R^2 annotations
+  ylab(SecondaryProduction~ (g/m^2/yr)) +
+  xlab("") +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+
+production_lineplot_lm 
+
+
+
+
+
+# With all sites
+production_lineplot_lm <- ggplot(
+  data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
+  aes(x = SC.Level, y = (Summed.Annual.Production), group = FFG, color = SC.Category)
+) +
+  geom_point(size = 3) +   # Add points for emphasis
+  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label))), # use different function to get p-value from model output
+    formula = y ~ x,  # Use x and y here
+    parse = TRUE,
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  # Add R^2 annotations
+  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
+  ylab(SecondaryProduction~ (g/m^2/yr)) +
+  xlab("") +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 20),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
 
 
 
@@ -6915,4 +6997,39 @@ library(openxlsx)
 # Save the data frame to an Excel file
 write.xlsx(TOTALPROD_CPI, file = "TOTALPROD_CPB.xlsx", overwrite = TRUE)
 
+
+
+
+
+filtered_df <- SECPROD[SECPROD$Genus == "Cheumatopsyche" & SECPROD$Site == "LLW", ]
+
+
+
+
+
+
+# Adding in standing stock
+
+
+CBOM=read.csv("CBOM.Year1Summary.csv")
+FBOM=read.csv("FBOM.Year1Summary.csv")
+
+str(food)
+
+food <- cbind(CBOM,FBOM)
+
+food <- left_join(CBOM,FBOM, by = c("Site", "Replicate", "Sample.Month"))
+
+
+food <- food %>%
+  group_by(Site, Sample.Month ) %>% 
+  filter(CBOM.AFDM.g.m2. == ifelse(CBOM.AFDM.g.m2. > 0)) %>%
+  filter(FBOM.AFDM.g.m2. == ifelse(FBOM.AFDM.g.m2.> 0)) %>%
+  summarise(mean.CBOM=mean(CBOM.AFDM.g.m2.,na.rm=TRUE)) %>%
+  summarise(mean.FBOM=mean(FBOM.AFDM.g.m2.,na.rm=TRUE))  #Summing the replicates
+  
+  group_by(Sample.Month,SC.Category,SC.Level,Site,FFG ) %>% 
+  summarise(mean.biomass = sum(sum.biomass, na.rm = TRUE) / 5)
+  
+  mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
 
