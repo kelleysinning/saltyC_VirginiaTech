@@ -7021,15 +7021,26 @@ food <- cbind(CBOM,FBOM)
 food <- left_join(CBOM,FBOM, by = c("Site", "Replicate", "Sample.Month"))
 
 
-food <- food %>%
-  group_by(Site, Sample.Month ) %>% 
-  filter(CBOM.AFDM.g.m2. == ifelse(CBOM.AFDM.g.m2. > 0)) %>%
-  filter(FBOM.AFDM.g.m2. == ifelse(FBOM.AFDM.g.m2.> 0)) %>%
-  summarise(mean.CBOM=mean(CBOM.AFDM.g.m2.,na.rm=TRUE)) %>%
-  summarise(mean.FBOM=mean(FBOM.AFDM.g.m2.,na.rm=TRUE))  #Summing the replicates
-  
-  group_by(Sample.Month,SC.Category,SC.Level,Site,FFG ) %>% 
-  summarise(mean.biomass = sum(sum.biomass, na.rm = TRUE) / 5)
-  
-  mutate(Individual.Mass = ifelse(Sum.Density > 0, Sum.Biomass / Sum.Density, 0)) %>%
 
+
+food <- food %>%
+  mutate(
+    CBOM.AFDM.g.m2. = as.numeric(ifelse(CBOM.AFDM.g.m2. == "" | is.na(CBOM.AFDM.g.m2.), 0, CBOM.AFDM.g.m2.)),
+    FBOM.AFDM.g.m2. = as.numeric(ifelse(FBOM.AFDM.g.m2. == "" | is.na(FBOM.AFDM.g.m2.), 0, FBOM.AFDM.g.m2.))
+  )
+
+
+food <- food %>%
+  
+  # Filter out replicates where CBOM or FBOM are 0 or NA
+  filter(!is.na(CBOM.AFDM.g.m2.), CBOM.AFDM.g.m2. > 0,
+         !is.na(FBOM.AFDM.g.m2.), FBOM.AFDM.g.m2. > 0) %>%
+  
+  # Group by Site and Sample.Month, then calculate means
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.CBOM = mean(CBOM.AFDM.g.m2., na.rm = TRUE),
+    mean.FBOM = mean(FBOM.AFDM.g.m2., na.rm = TRUE),
+    .groups = "drop"  # Ensures no lingering grouping issues
+  ) 
+  
