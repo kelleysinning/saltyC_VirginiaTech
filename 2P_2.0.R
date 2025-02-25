@@ -6171,6 +6171,8 @@ TOTAL_PROD_lengths <- rbind(EAS_genus_2P_Final_df, FRY_genus_2P_Final_df, RIC_ge
 
 
 library(dplyr)
+install.packages("stringr")  
+library(stringr)  
 
 # I want one value per taxa, cleaning up CORE_PROD_lengths. Right now the annual production value is assigned with each genera
 # length class, though its the same number for each since there's just one value for each site
@@ -6664,7 +6666,7 @@ COREPROD_Summary_Sum <- COREPROD_Summary %>%
 
 
 production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.Annual.Production))) +
-  facet_wrap(~FFG, ncol = 4, nrow = 2) +  
+  facet_wrap(~FFG, ncol = 3 , nrow = 2) +  
   geom_col(aes(fill = FFG)) +  #geom_boxplot if wanting to show variation for all sites but with just coresites bars are fine
   ylab("Secondary Production (g/m2/yr)") +
   xlab("") +
@@ -6680,7 +6682,7 @@ production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.
 production_FFG
 
 
-
+# all sites
 
 TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>%
   group_by(Site, FFG, SC.Level) %>%
@@ -6691,8 +6693,8 @@ TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>%
 
 
 
-production_FFG <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = Site, y = (Summed.Annual.Production))) +
-  facet_wrap(~FFG, ncol = 4, nrow = 2) +  
+production_FFG <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = SC.Level, y = (Summed.Annual.Production))) +
+  facet_wrap(~FFG, ncol = 3, nrow = 2, scales = "free_y") +  
   geom_col(aes(fill = FFG)) +  #geom_boxplot if wanting to show variation for all sites but with just coresites bars are fine
   ylab("Secondary Production (g/m2/yr)") +
   xlab("") +
@@ -6708,69 +6710,35 @@ production_FFG <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = Site, y = (Summed
 production_FFG
 
 
-# Trying something linear--------------------------------------------------------
+# Trying something linear with discrete values------------------------------------------
 
 # Linear model with line of best fit
 install.packages("ggpmisc")
 library(ggpmisc)
 
-
-production_lineplot_lm <- ggplot(
-  data = COREPROD_Summary_Sum, # The sum of production for each FFG at each site
-  aes(x = SC.Level, y = (Summed.Annual.Production), group = FFG, color = SC.Category)
-) +
-  geom_point(size = 3) +   # Add points for emphasis
-  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed") +  # Line of best fit
-  stat_poly_eq(
-    aes(label = paste(after_stat(eq.label))), # use different function to get p-value from model output
-    formula = y ~ x,  # Use x and y here
-    parse = TRUE,
-    size = 3,
-    label.x = 0.1,  # Left alignment
-    label.y = 0.1
-  ) +  # Add R^2 annotations
-  facet_wrap(~FFG) +       # Facet by FFG
-  ylab(SecondaryProduction~ (g/m^2/yr)) +
-  xlab("") +
-  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
-  theme_bw() +
-  theme(
-    axis.title = element_text(size = 15),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(),
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-    legend.position = "top",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 20),
-    legend.background = element_blank(),
-    legend.key = element_rect(fill = "white", color = "white")
-  )
-
-
-production_lineplot_lm 
-
-# may have to make model and run summary to get p-values and r2
-
 # With all sites
+# With p-values and r-squared
+
 production_lineplot_lm <- ggplot(
-  data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
-  aes(x = SC.Level, y = (Summed.Annual.Production), group = FFG, color = SC.Category)
+  data = TOTALPROD_Summary_Sum, 
+  aes(x = SC.Level, y = Summed.Annual.Production, group = FFG, color = SC.Category)
 ) +
   geom_point(size = 3) +   # Add points for emphasis
-  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed") +  # Line of best fit
+  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed", color = "grey37") +  # Line of best fit
   stat_poly_eq(
-    aes(label = paste(after_stat(eq.label))), # use different function to get p-value from model output
-    formula = y ~ x,  # Use x and y here
+    aes(label = paste(after_stat(eq.label), 
+                      after_stat(rr.label), 
+                      after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,  
     parse = TRUE,
     size = 3,
-    label.x = 0.1,  # Left alignment
-    label.y = 0.1
-  ) +  # Add R^2 annotations
-  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
-  ylab(SecondaryProduction~ (g/m^2/yr)) +
+    label.x.npc = "left",  # Align text to left
+    label.y.npc = 0.1  # Position the label at 10% of y range
+  ) +  
+  facet_wrap(~FFG, scales = "free") +  # Facet by FFG
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  # Fixing y-axis label formatting
   xlab("") +
-  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +  
   theme_bw() +
   theme(
     axis.title = element_text(size = 15),
@@ -6785,9 +6753,7 @@ production_lineplot_lm <- ggplot(
     legend.key = element_rect(fill = "white", color = "white")
   )
 
-
-production_lineplot_lm 
-
+print(production_lineplot_lm)
 
 
 # Loess line
@@ -6825,7 +6791,8 @@ production_lineplot_loess <- ggplot(
 production_lineplot_loess
 
 
-# Total Production across gradient-----------------------------------------------------
+
+# Total Production across gradient, continuous instead of discrete --------------------------------------
 
 TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="EAS"] = "25"
 TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="CRO"] = "72"
@@ -6854,10 +6821,6 @@ TOTALPROD_sum$SC.Category <- factor(TOTALPROD_sum$SC.Category, levels = c("REF",
 TOTALPROD_sum$SC.Level <- factor(TOTALPROD_sum$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
 
 
-# Summarize the data to calculate sum of production by Site (if not done already)
-library(dplyr)
-
-
 # Create the bar plot with the corrected fill aesthetic
 production_barplot = ggplot(data = TOTALPROD_sum, aes(x = Site, y = Sum.Annual.Production, fill = SC.Category)) +
   geom_bar(stat = "identity") +  # Use stat="identity" to plot actual data values
@@ -6876,9 +6839,12 @@ production_barplot = ggplot(data = TOTALPROD_sum, aes(x = Site, y = Sum.Annual.P
         legend.background = element_blank(),
         legend.key = element_rect(fill = "white", color = "white"))
 
-# Display the plot
 production_barplot
 
+# Linear model
+
+str(TOTALPROD_sum)
+TOTALPROD_sum$SC.Level <- as.numeric(as.character(TOTALPROD_sum$SC.Level))
 
 production_lineplot_lm <- ggplot(
   data = TOTALPROD_sum, # The sum of production for each FFG at each site
@@ -6910,29 +6876,70 @@ production_lineplot_lm <- ggplot(
     legend.background = element_blank(),
     legend.key = element_rect(fill = "white", color = "white")
   )
-
-
 production_lineplot_lm 
 
+# pretty linear model
+# Ensure SC.Level is numeric
+TOTALPROD_sum$SC.Level <- as.numeric(as.character(TOTALPROD_sum$SC.Level))
+
+# Create a categorical variable for site type
+TOTALPROD_sum$Site.Type <- ifelse(TOTALPROD_sum$Site %in% c("EAS", "FRY", "RIC"), 
+                                  "Core Sites", "Quarterly Streams")
+
+# Convert Site.Type to a factor for proper legend display
+TOTALPROD_sum$Site.Type <- factor(TOTALPROD_sum$Site.Type, levels = c("Quarterly Streams", "Core Sites"))
+
+# Plot
+ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Black linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3  
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("") +  
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  # Continuous color scale
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Sites" = 8)) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+
+library(ggplot2)
+library(ggpmisc)
 
 
 
+# With FFGs
+TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))
 
-# With all sites
 production_lineplot_lm <- ggplot(
   data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
   aes(x = SC.Level, y = (Summed.Annual.Production), group = FFG, color = SC.Category)
 ) +
   geom_point(size = 3) +   # Add points for emphasis
-  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed") +  # Line of best fit
+  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed", color = "gray45") +  # Line of best fit
   stat_poly_eq(
-    aes(label = paste(after_stat(eq.label))), # use different function to get p-value from model output
-    formula = y ~ x,  # Use x and y here
-    parse = TRUE,
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
     size = 3,
     label.x = 0.1,  # Left alignment
     label.y = 0.1
-  ) +  # Add R^2 annotations
+  ) +  
   facet_wrap(~FFG, scales = "free") +       # Facet by FFG
   ylab(SecondaryProduction~ (g/m^2/yr)) +
   xlab("") +
@@ -6950,7 +6957,126 @@ production_lineplot_lm <- ggplot(
     legend.background = element_blank(),
     legend.key = element_rect(fill = "white", color = "white")
   )
+production_lineplot_lm
 
+
+# pretty FFG linear model
+
+TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))
+
+TOTALPROD_Summary_Sum$Site.Type <- ifelse(TOTALPROD_Summary_Sum$Site %in% c("EAS", "FRY", "RIC"), 
+                                          "Core Sites", "Quarterly Sites")
+
+TOTALPROD_Summary_Sum$Site.Type <- factor(TOTALPROD_Summary_Sum$Site.Type, levels = c("Quarterly Sites", "Core Sites"))
+
+production_lineplot_lm <- ggplot(
+  data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
+  aes(x = SC.Level, y = Summed.Annual.Production, group = FFG, color = SC.Level) # or SC.Category
+) +
+  geom_point(aes(shape = Site.Type), size = 3) +   # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed", color = "gray45") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),
+    formula = y ~ x,  
+    parse = TRUE,   
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  
+  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +
+  xlab("") +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +
+  #scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +  # Define shapes for the legend
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+production_lineplot_lm
+
+
+
+
+# Fit a GLM model
+install.packages("MuMIn")
+library(MuMIn)
+
+glm_model <- glm(Sum.Annual.Production ~ SC.Level, family = "Gamma", data = TOTALPROD_sum)
+
+# Get summary statistics
+summary(glm_model)
+
+
+# Extract R² (pseudo R²) 
+
+pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance)
+print(pseudo_r2)
+
+
+# Extract p-value
+p_value <- summary(glm_model)$coefficients[2, 4]
+
+# Plot with annotation
+ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "Gamma"), se = TRUE) +
+  annotate("text", x = min(TOTALPROD_sum$SC.Level), y = max(TOTALPROD_sum$Sum.Annual.Production),
+           label = paste("R² =", round(pseudo_r2, 3), "\nP =", round(p_value, 3)),
+           hjust = 0, size = 5)
+
+
+
+# Testing normal distributions
+shapiro.test(TOTALPROD_sum$Sum.Annual.Production) # normally distributed
+shapiro.test(TOTALPROD_Summary_Sum$FFG)
+
+
+
+
+# Testing normality within FFG
+TOTALPROD_Summary_Sum$FFG <- as.numeric(TOTALPROD_Summary_Sum$FFG)
+str(TOTALPROD_Summary_Sum)
+
+
+
+# Scraper = 1
+# Scraper-Coleoptera = 2
+# Shredder = 3
+# Predator = 4
+# Collector-Gatherer = 5
+# Collector-Filterer = 6
+
+subset_FFG <- subset(TOTALPROD_Summary_Sum, FFG == "5")
+
+# Run the Shapiro-Wilk test on the biomass column (assumed to be Sum.Annual.Production)
+shapiro.test(subset_FFG$Summed.Annual.Production)
+
+# Scraper not normal p = .002133
+# Scraper-Coleoptera not normal p = .05883
+# Shredder normal p = .1051
+# CG not normal p = .001535
+# CF not normal p = .01409
+
+# checking residuals, those are normal so lm should still be appropriate for FFGs
+lm_model <- lm(Summed.Annual.Production ~ SC.Level, data = subset_FFG)
+plot(lm_model) # Check residual plots
+shapiro.test(resid(lm_model)) # Test residuals for normality, looking good for ffgs
+
+
+glm_model <- glm(Summed.Annual.Production ~ SC.Level, data = TOTALPROD_Summary_Sum, family = Gamma(link = "inverse"))
+summary(glm_model)
+plot(glm_model)
 
 
 # CPI things---------------------------------------------------------------------
@@ -7008,18 +7134,38 @@ filtered_df <- SECPROD[SECPROD$Genus == "Cheumatopsyche" & SECPROD$Site == "LLW"
 
 
 
-# Adding in standing stock
+# Adding in standing stock----------------------------------------------------------
 
 
 CBOM=read.csv("CBOM.Year1Summary.csv")
 FBOM=read.csv("FBOM.Year1Summary.csv")
 
-str(food)
-
 food <- cbind(CBOM,FBOM)
 
 food <- left_join(CBOM,FBOM, by = c("Site", "Replicate", "Sample.Month"))
 
+str(food)
+
+food <- food %>%
+  mutate(
+    CBOM.AFDM.g.m2. = as.numeric(ifelse(grepl("[^0-9.-]", gsub(",", "", as.character(CBOM.AFDM.g.m2.))), NA, gsub(",", "", as.character(CBOM.AFDM.g.m2.)))),
+    FBOM.AFDM.g.m2. = as.numeric(ifelse(grepl("[^0-9.-]", gsub(",", "", as.character(FBOM.AFDM.g.m2.))), NA, gsub(",", "", as.character(FBOM.AFDM.g.m2.)))))
+
+
+bad_rows_fbom <- food %>%
+  filter(is.na(FBOM.AFDM.g.m2.))
+
+View(bad_rows_fbom)
+
+
+food <- food %>%
+  mutate(
+    CBOM.AFDM.g.m2. = as.numeric(gsub(",", "", as.character(CBOM.AFDM.g.m2.))),
+    FBOM.AFDM.g.m2. = as.numeric(gsub(",", "", as.character(FBOM.AFDM.g.m2.)))
+  )
+
+
+food$FBOM.AFDM.g.m2. <- as.numeric(food$FBOM.AFDM.g.m2.)
 
 
 
@@ -7029,12 +7175,15 @@ food <- food %>%
     FBOM.AFDM.g.m2. = as.numeric(ifelse(FBOM.AFDM.g.m2. == "" | is.na(FBOM.AFDM.g.m2.), 0, FBOM.AFDM.g.m2.))
   )
 
+sum(is.na(food$FBOM.AFDM.g.m2.))  # Count NA values
+str(food$FBOM.AFDM.g.m2.)
+
 
 food <- food %>%
   
   # Filter out replicates where CBOM or FBOM are 0 or NA
-  filter(!is.na(CBOM.AFDM.g.m2.), CBOM.AFDM.g.m2. > 0,
-         !is.na(FBOM.AFDM.g.m2.), FBOM.AFDM.g.m2. > 0) %>%
+  filter(CBOM.AFDM.g.m2. > 0,
+        FBOM.AFDM.g.m2. > 0) %>%
   
   # Group by Site and Sample.Month, then calculate means
   group_by(Site, Sample.Month) %>%
