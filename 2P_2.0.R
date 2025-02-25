@@ -6627,7 +6627,7 @@ propgg_site
 
 
 
-# Quarterly
+# All sites
 # Now to do actual proportions, scaling everything to 100% production for each site
 TOTALPROD_Summary_site <- TOTALPROD_Summary %>%
   group_by(Site) %>%
@@ -6648,7 +6648,102 @@ propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = F
   theme_minimal()
 
 propgg_site 
+
+# bars side by side
+propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = FFG)) + 
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +  # Adjust bar width for better spacing
+  labs(x = "Site", y = "Proportion of Total Production", fill = "FFG") + 
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
+  theme_minimal()
+
+propgg_site
+
+propgg_site <- ggplot(df_proportions_site, aes(x = Site, y = Proportion, color = FFG, group = FFG)) +
+  geom_line(size = 1) +  # Add lines for each FFG
+  geom_point(size = 3) +  # Add points for emphasis
+  labs(x = "Site", y = "Proportion of Total Production", color = "FFG") +
+  scale_color_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
+  theme_minimal()
+
+propgg_site
+
+df_proportions_site$Site <- as.factor(df_proportions_site$Site)
+df_proportions_site$FFG <- as.factor(df_proportions_site$FFG)
+
+# Run two-way ANOVA for Proportion as the dependent variable, with Site and FFG as independent variables
+aov_model <- aov(Proportion ~ FFG * Site, data = df_proportions_site)
+
+# View the summary of the model
+summary(aov_model)
+
+
+
+# Combine results into a data frame
+results_df <- data.frame(FFG = ffgs, p_value = unlist(anova_results))
+print(results_df)
+
+# Run pairwise comparisons or ANOVA (as appropriate)
+# For example, using pairwise comparisons with t-test for Site and FFG
+install.packages("ggsignif")
+library(ggsignif)
+
+
+# Fit the ANOVA model
+aov_model <- aov(Proportion ~ FFG*Site, data = df_proportions_site)
+
+# Display the summary of the model
+summary(aov_model)
+
+
+# All sites SC category
+# Now to do actual proportions, scaling everything to 100% production for each site
+TOTALPROD_Summary_site <- TOTALPROD_Summary %>%
+  group_by(SC.Category) %>%
+  summarise(TOTALPROD_Summary = sum(Annual.Production)) # summing the annual production for each site
+
+# Calculate proportions of total production for each FFG for each site
+df_proportions_site <- TOTALPROD_Summary %>%
+  left_join(TOTALPROD_Summary_site, by = "SC.Category") %>%
+  group_by(SC.Category, FFG) %>%
+  summarise(Proportion = sum(Annual.Production) / first(TOTALPROD_Summary)) # Summing annual production
+#for each FFG for each site and dividing it by summed annual production for each site
+
+# Plot with specific colors assigned to each FFG 
+propgg_site = ggplot(df_proportions_site, aes(x = SC.Category, y = Proportion, fill = FFG)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Site", y = "Proportion of Total Production", fill = "FFGs") +
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
+  theme_minimal()
+
+propgg_site 
+
+# bars side by side
+propgg_site = ggplot(df_proportions_site, aes(x = SC.Category, y = Proportion, fill = FFG)) + 
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +  # Adjust bar width for better spacing
+  labs(x = "Site", y = "Proportion of Total Production", fill = "FFG") + 
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
+  theme_minimal()
+
+propgg_site
  
+
+
+# Fit the ANOVA model
+aov_model <- aov(Proportion ~ FFG*SC.Category, data = df_proportions_site)
+
+# Display the summary of the model
+summary(aov_model)
+
+# Subset data for Scraper FFG and the two sites you're comparing
+scraper_data <- df_proportions_site %>%
+  filter(FFG == "Scraper", SC.Category %in% c("REF", "MID"))
+
+# Run t-test between the two sites for Scraper FFG
+t_test_result <- t.test(Proportion ~ SC.Category, data = scraper_data)
+
+# View the result
+t_test_result
+
 # Production as absolute values------------------------------------------------
 
 library(ggplot2)
