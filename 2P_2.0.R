@@ -6567,7 +6567,8 @@ write.xlsx(CORE_SummaryTable, file = "CORE_SummaryTable.xlsx", overwrite = TRUE)
 
 
 
-# Proportional FFG 2P-----------------------------------------------------------
+
+# PROPORTION PARTYY FFG 2P-----------------------------------------------------------
 
 COREPROD_Summary <- COREPROD_Summary %>%
   filter(!is.na(FFG))  # anything without an FFG assigned
@@ -6600,10 +6601,8 @@ ffg_colors <- c("Scraper" = "#008080",
 install.packages("ggplot2")
 library(ggplot2)
 
-# Just core sites since CPI havent been adjusted yet for quarterly bugs
 
-
-
+# Core sites
 # Now to do actual proportions, scaling everything to 100% production for each site
 COREPROD_Summary_site <- COREPROD_Summary %>%
   group_by(Site) %>%
@@ -6624,7 +6623,6 @@ propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = F
   theme_minimal()
 
 propgg_site 
-
 
 
 # All sites
@@ -6658,41 +6656,19 @@ propgg_site = ggplot(df_proportions_site, aes(x = Site, y = Proportion, fill = F
 
 propgg_site
 
-propgg_site <- ggplot(df_proportions_site, aes(x = Site, y = Proportion, color = FFG, group = FFG)) +
-  geom_line(size = 1) +  # Add lines for each FFG
-  geom_point(size = 3) +  # Add points for emphasis
-  labs(x = "Site", y = "Proportion of Total Production", color = "FFG") +
-  scale_color_manual(values = ffg_colors, name = "FFG") +  # Assign specific colors
-  theme_minimal()
 
-propgg_site
+# Pie chart
+propgg_pie <- ggplot(df_proportions_site, aes(x = "", y = Proportion, fill = FFG)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +  # Create the bar chart
+  coord_polar(theta = "y") +  # Convert to a pie chart
+  facet_wrap(~ Site) +  # Create separate pie charts for each site
+  labs(x = NULL, y = NULL, fill = "FFG") +  # Remove axis labels
+  scale_fill_manual(values = ffg_colors, name = "FFG") +  # Assign colors
+  theme_void() +  # Clean up background
+  theme(legend.position = "right")  # Adjust legend position
 
-df_proportions_site$Site <- as.factor(df_proportions_site$Site)
-df_proportions_site$FFG <- as.factor(df_proportions_site$FFG)
+propgg_pie
 
-# Run two-way ANOVA for Proportion as the dependent variable, with Site and FFG as independent variables
-aov_model <- aov(Proportion ~ FFG * Site, data = df_proportions_site)
-
-# View the summary of the model
-summary(aov_model)
-
-
-
-# Combine results into a data frame
-results_df <- data.frame(FFG = ffgs, p_value = unlist(anova_results))
-print(results_df)
-
-# Run pairwise comparisons or ANOVA (as appropriate)
-# For example, using pairwise comparisons with t-test for Site and FFG
-install.packages("ggsignif")
-library(ggsignif)
-
-
-# Fit the ANOVA model
-aov_model <- aov(Proportion ~ FFG*Site, data = df_proportions_site)
-
-# Display the summary of the model
-summary(aov_model)
 
 
 # All sites SC category
@@ -6751,6 +6727,7 @@ library(dplyr)
 
 # Summarize the data to calculate the total production per site and FFG
 
+# Core sites
 COREPROD_Summary_Sum <- COREPROD_Summary %>%
   group_by(Site, FFG, SC.Level) %>%
   summarise(
@@ -6777,7 +6754,7 @@ production_FFG <- ggplot(data = COREPROD_Summary_Sum, aes(x = Site, y = (Summed.
 production_FFG
 
 
-# all sites
+# All sites
 
 TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>%
   group_by(Site, FFG, SC.Level) %>%
@@ -6916,62 +6893,6 @@ TOTALPROD_sum$SC.Category <- factor(TOTALPROD_sum$SC.Category, levels = c("REF",
 TOTALPROD_sum$SC.Level <- factor(TOTALPROD_sum$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
 
 
-# Create the bar plot with the corrected fill aesthetic
-production_barplot = ggplot(data = TOTALPROD_sum, aes(x = Site, y = Sum.Annual.Production, fill = SC.Category)) +
-  geom_bar(stat = "identity") +  # Use stat="identity" to plot actual data values
-  ylab(expression(SecondaryProduction ~ (g/m^2/yr))) +  # Label for the y-axis
-  xlab("") +
-  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +  # Fix: Use scale_fill_manual for fill color
-  theme_bw() + 
-  theme(axis.title = element_text(size = 15),
-        axis.text = element_text(size = 15),
-        panel.grid = element_blank(),
-        axis.line = element_line(),
-        axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-        legend.position = "top",
-        legend.title = element_blank(),
-        legend.text = element_text(size = 20),
-        legend.background = element_blank(),
-        legend.key = element_rect(fill = "white", color = "white"))
-
-production_barplot
-
-# Linear model
-
-str(TOTALPROD_sum)
-TOTALPROD_sum$SC.Level <- as.numeric(as.character(TOTALPROD_sum$SC.Level))
-
-production_lineplot_lm <- ggplot(
-  data = TOTALPROD_sum, # The sum of production for each FFG at each site
-  aes(x = SC.Level, y = (Sum.Annual.Production), group = Site, color = SC.Category)
-) +
-  geom_point(size = 3) +   # Add points for emphasis
-  geom_smooth(method = "lm", se = TRUE, aes(group = Site), linetype = "dashed") +  # Line of best fit
-  stat_poly_eq(
-    aes(label = paste(after_stat(eq.label))), # use different function to get p-value from model output
-    formula = y ~ x,  # Use x and y here
-    parse = TRUE,
-    size = 3,
-    label.x = 0.1,  # Left alignment
-    label.y = 0.1
-  ) +  # Add R^2 annotations
-  ylab(SecondaryProduction~ (g/m^2/yr)) +
-  xlab("") +
-  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
-  theme_bw() +
-  theme(
-    axis.title = element_text(size = 15),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(),
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-    legend.position = "top",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 20),
-    legend.background = element_blank(),
-    legend.key = element_rect(fill = "white", color = "white")
-  )
-production_lineplot_lm 
 
 # pretty linear model
 # Ensure SC.Level is numeric
@@ -6984,8 +6905,7 @@ TOTALPROD_sum$Site.Type <- ifelse(TOTALPROD_sum$Site %in% c("EAS", "FRY", "RIC")
 # Convert Site.Type to a factor for proper legend display
 TOTALPROD_sum$Site.Type <- factor(TOTALPROD_sum$Site.Type, levels = c("Quarterly Streams", "Core Sites"))
 
-# Plot
-ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Level)) +  
+prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
   geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Black linear regression line
   stat_poly_eq(
@@ -6995,7 +6915,7 @@ ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Le
     size = 3  
   ) +  
   ylab(expression(Secondary~Production~(g/m^2/yr))) +  
-  xlab("") +  
+  xlab("Specific Conductivity (µS/cm)") +  
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +  # Continuous color scale
   scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Sites" = 8)) +  # Define shapes properly
   theme_bw() +  
@@ -7012,7 +6932,7 @@ ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Le
     legend.key = element_rect(fill = "white", color = "white")
   )
 
-
+prod
 library(ggplot2)
 library(ggpmisc)
 
@@ -7055,7 +6975,7 @@ production_lineplot_lm <- ggplot(
 production_lineplot_lm
 
 
-# pretty FFG linear model
+# same as above but scale bar instead of SC categories
 
 TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))
 
@@ -7080,7 +7000,7 @@ production_lineplot_lm <- ggplot(
   ) +  
   facet_wrap(~FFG, scales = "free") +       # Facet by FFG
   ylab(expression(Secondary~Production~(g/m^2/yr))) +
-  xlab("") +
+  xlab("Specific Conductivity (µS/cm)") +
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +
   #scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
   scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +  # Define shapes for the legend
@@ -7230,61 +7150,287 @@ filtered_df <- SECPROD[SECPROD$Genus == "Cheumatopsyche" & SECPROD$Site == "LLW"
 
 
 # Adding in standing stock----------------------------------------------------------
-
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(ggpmisc)
+library(readr)
 
 CBOM=read.csv("CBOM.Year1Summary.csv")
 FBOM=read.csv("FBOM.Year1Summary.csv")
 
-food <- cbind(CBOM,FBOM)
-
-food <- left_join(CBOM,FBOM, by = c("Site", "Replicate", "Sample.Month"))
-
-str(food)
-
-food <- food %>%
-  mutate(
-    CBOM.AFDM.g.m2. = as.numeric(ifelse(grepl("[^0-9.-]", gsub(",", "", as.character(CBOM.AFDM.g.m2.))), NA, gsub(",", "", as.character(CBOM.AFDM.g.m2.)))),
-    FBOM.AFDM.g.m2. = as.numeric(ifelse(grepl("[^0-9.-]", gsub(",", "", as.character(FBOM.AFDM.g.m2.))), NA, gsub(",", "", as.character(FBOM.AFDM.g.m2.)))))
-
-
-bad_rows_fbom <- food %>%
-  filter(is.na(FBOM.AFDM.g.m2.))
-
-View(bad_rows_fbom)
-
-
-food <- food %>%
-  mutate(
-    CBOM.AFDM.g.m2. = as.numeric(gsub(",", "", as.character(CBOM.AFDM.g.m2.))),
-    FBOM.AFDM.g.m2. = as.numeric(gsub(",", "", as.character(FBOM.AFDM.g.m2.)))
-  )
-
-
-food$FBOM.AFDM.g.m2. <- as.numeric(food$FBOM.AFDM.g.m2.)
-
-
-
-food <- food %>%
-  mutate(
-    CBOM.AFDM.g.m2. = as.numeric(ifelse(CBOM.AFDM.g.m2. == "" | is.na(CBOM.AFDM.g.m2.), 0, CBOM.AFDM.g.m2.)),
-    FBOM.AFDM.g.m2. = as.numeric(ifelse(FBOM.AFDM.g.m2. == "" | is.na(FBOM.AFDM.g.m2.), 0, FBOM.AFDM.g.m2.))
-  )
-
-sum(is.na(food$FBOM.AFDM.g.m2.))  # Count NA values
-str(food$FBOM.AFDM.g.m2.)
-
-
-food <- food %>%
-  
-  # Filter out replicates where CBOM or FBOM are 0 or NA
-  filter(CBOM.AFDM.g.m2. > 0,
-        FBOM.AFDM.g.m2. > 0) %>%
-  
-  # Group by Site and Sample.Month, then calculate means
+CBOM <- CBOM %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
   group_by(Site, Sample.Month) %>%
   summarise(
-    mean.CBOM = mean(CBOM.AFDM.g.m2., na.rm = TRUE),
-    mean.FBOM = mean(FBOM.AFDM.g.m2., na.rm = TRUE),
-    .groups = "drop"  # Ensures no lingering grouping issues
-  ) 
-  
+    mean.CBOM = mean(CBOM.AFDM.g.m2., na.rm = TRUE)
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.CBOM = mean(mean.CBOM, na.rm = TRUE)  # Use mean.CBOM to get the annual mean
+  )
+
+str(FBOM)
+
+FBOM <- FBOM %>%
+  mutate(FBOM.AFDM.g.m2. = parse_number(FBOM.AFDM.g.m2.))
+
+
+FBOM <- FBOM %>%
+  mutate(
+    Site = str_trim(Site),  # Remove extra spaces
+    FBOM.AFDM.g.m2. = as.numeric(FBOM.AFDM.g.m2.)  # Convert to numeric if needed
+  ) %>%
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.FBOM = mean(FBOM.AFDM.g.m2., na.rm = TRUE), 
+    .groups = "drop"  # Removes automatic grouping
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.FBOM = mean(mean.FBOM, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+
+food <- cbind(CBOM,FBOM)
+food <- left_join(CBOM,FBOM, by = c("Site"))
+
+# THISSS
+prod.food <- cbind(food, TOTALPROD_sum)
+prod.food <- left_join(food, TOTALPROD_sum, by = c("Site"))
+
+prod.food.ffg <-cbind(food, TOTALPROD_Summary_Sum)
+prod.food.ffg <- left_join(food, TOTALPROD_Summary_Sum, by = c("Site"))
+
+colnames(prod.food.ffg)  # Lists all column names
+
+
+prod.food.ffg <- prod.food.ffg %>%
+  mutate(Site_FFG = paste(Site, FFG, sep = "."))  # Creates unique site-FFG names
+
+
+
+# production and standing stock facet wrapped with FFG
+production_cbom_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.CBOM, y = Summed.Annual.Production, color = SC.Level) # or SC.Category
+) +
+  geom_point(aes(shape = Site.Type), size = 3) +   # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, linetype = "dashed", color = "gray45") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),
+    formula = y ~ x,  
+    parse = TRUE,   
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  
+ facet_wrap(~FFG, scales = "free") +       # Facet by FFG
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +
+  xlab("Mean annual CBOM (g/m²)") +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +
+  #scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +  # Define shapes for the legend
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+production_cbom_lm
+
+
+
+
+production_fbom_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.FBOM, y = Summed.Annual.Production, color = SC.Level) # or SC.Category
+) +
+  geom_point(aes(shape = Site.Type), size = 3) +   # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, linetype = "dashed", color = "gray45") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),
+    formula = y ~ x,  
+    parse = TRUE,   
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  
+  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +
+  xlab("Mean annual FBOM (g/m²)") +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +
+  #scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +  # Define shapes for the legend
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+production_fbom_lm
+
+# food
+CBOM.lm <- ggplot(prod.food, aes(x = annual.mean.CBOM, y = Sum.Annual.Production, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual CBOM (g/m²)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+CBOM.lm
+
+FBOM.lm <- ggplot(prod.food, aes(x = annual.mean.FBOM, y = Sum.Annual.Production, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual FBOM (g/m²)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+FBOM.lm
+
+
+
+
+
+# Just standing stock against sc level
+FBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.FBOM, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression("Mean annual FBOM (g/m²)")) +  
+  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+FBOM.sc.lm
+
+
+CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.CBOM, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression("Mean annual CBOM (g/m²)")) +  
+  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+CBOM.sc.lm
+
