@@ -7158,6 +7158,7 @@ library(readr)
 
 CBOM=read.csv("CBOM.Year1Summary.csv")
 FBOM=read.csv("FBOM.Year1Summary.csv")
+Algae=read.csv("Algae.Year1Summary.csv")
 
 CBOM <- CBOM %>%
   mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
@@ -7193,12 +7194,32 @@ FBOM <- FBOM %>%
   )
 
 
-food <- cbind(CBOM,FBOM)
-food <- left_join(CBOM,FBOM, by = c("Site"))
+Algae <- Algae %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.Algae = mean(Algae.AFDM.g.m2., na.rm = TRUE),
+    mean.AI = mean(Autotrophic.Index..g.m2., na.rm = TRUE),
+    mean.chla = mean(Chl.a..g.m2., na.rm = TRUE)
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.Algae = mean(mean.Algae, na.rm = TRUE),
+    annual.mean.AI = mean(mean.AI, na.rm = TRUE),
+    annual.mean.chla = mean(mean.chla, na.rm = TRUE),
+  )
+
+
+food <- cbind(CBOM,FBOM,Algae)
+food <- CBOM %>%
+  left_join(FBOM, by = "Site") %>%
+  left_join(Algae, by = "Site")
+
 
 # THISSS
 prod.food <- cbind(food, TOTALPROD_sum)
 prod.food <- left_join(food, TOTALPROD_sum, by = c("Site"))
+
 
 prod.food.ffg <-cbind(food, TOTALPROD_Summary_Sum)
 prod.food.ffg <- left_join(food, TOTALPROD_Summary_Sum, by = c("Site"))
@@ -7285,7 +7306,124 @@ production_fbom_lm <- ggplot(
     legend.key = element_rect(fill = "white", color = "white")
   )
 
+
 production_fbom_lm
+
+
+
+
+production_algae_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.Algae, y = Summed.Annual.Production, color = SC.Level) # or SC.Category
+) +
+  geom_point(aes(shape = Site.Type), size = 3) +   # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, linetype = "dashed", color = "gray45") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),
+    formula = y ~ x,  
+    parse = TRUE,   
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  
+  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +
+  xlab("Mean annual Algae (g/m²)") +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +
+  #scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +  # Define shapes for the legend
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+
+production_algae_lm
+
+
+production_AI_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.AI, y = Summed.Annual.Production, color = SC.Level) # or SC.Category
+) +
+  geom_point(aes(shape = Site.Type), size = 3) +   # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, linetype = "dashed", color = "gray45") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),
+    formula = y ~ x,  
+    parse = TRUE,   
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  
+  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +
+  xlab("Mean annual AI (g/m²)") +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +
+  #scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +  # Define shapes for the legend
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+
+production_AI_lm # glm might be better
+
+
+production_chla_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.chla, y = Summed.Annual.Production, color = SC.Level) # or SC.Category
+) +
+  geom_point(aes(shape = Site.Type), size = 3) +   # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, linetype = "dashed", color = "gray45") +  # Line of best fit
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),
+    formula = y ~ x,  
+    parse = TRUE,   
+    size = 3,
+    label.x = 0.1,  # Left alignment
+    label.y = 0.1
+  ) +  
+  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +
+  xlab("Mean annual Chl-a (g/m²)") +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +
+  #scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
+  scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +  # Define shapes for the legend
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+
+production_chla_lm
 
 # food
 CBOM.lm <- ggplot(prod.food, aes(x = annual.mean.CBOM, y = Sum.Annual.Production, color = SC.Level)) +  
@@ -7359,8 +7497,76 @@ FBOM.lm <- ggplot(prod.food, aes(x = annual.mean.FBOM, y = Sum.Annual.Production
 FBOM.lm
 
 
+Algae.lm <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Production, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual Algae (g/m²)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+Algae.lm
 
 
+chla.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Production, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual Chl-a (g/m²)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+chla.lm
 
 # Just standing stock against sc level
 FBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.FBOM, color = SC.Level)) +  
@@ -7434,3 +7640,112 @@ CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.CBOM, color = 
 
 CBOM.sc.lm
 
+
+Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression("Mean annual Algae (g/m²)")) +  
+  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+Algae.sc.lm
+
+
+
+
+AI.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.AI, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression("Mean annual Autotrophic Index (g/m²)")) +  
+  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+AI.sc.lm
+
+
+chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression("Mean annual Chl-a (g/m²)")) +  
+  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+chla.sc.lm
