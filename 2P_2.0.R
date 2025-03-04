@@ -7650,7 +7650,7 @@ Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color 
     parse = TRUE,   
     size = 3   
   ) +  
-  ylab(expression("Mean annual Algae (g/m²)")) +  
+  ylab(expression("Mean annual algae AFDM (g/m²)")) +  
   xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
@@ -7749,3 +7749,214 @@ chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = 
   )
 
 chla.sc.lm
+
+
+
+
+
+
+
+
+# NMDS-------------------------------------------------------------------------
+
+# Loading the appropariate packages
+library(vegan) # vegan to calculate distance matrices
+library(ggplot2) # ggplot for plotting
+library(tidyverse) 
+library(dplyr)
+library(rcartocolor)
+
+
+# Running the NMDS for all taxa
+aggregated.prod<- aggregate(Annual.Production ~ Site + SC.Level + SC.Category + 
+                                    + Genus, data = TOTALPROD_Summary, FUN = mean, na.rm = TRUE)
+
+prod.nmds. = aggregated.prod %>% 
+  pivot_wider(
+    names_from = Genus, 
+    values_from = Annual.Production,
+  ) 
+
+prod.nmds.[is.na(prod.nmds.)] <- 0 # Replace NAs with 0
+
+prod.nmds.$SC.Level <- factor(prod.nmds.$SC.Level, 
+                             levels = c("25","72","78","387","402","594","1119","1242","1457"), 
+                             ordered = TRUE)
+
+
+#  Rename the ID part of the matrix; take out the columns for streams, SC, season, genus
+prod.nmds <- prod.nmds.[,-c(1:3)]
+
+
+
+# Example environmental data (sites x environmental factors)
+food
+
+
+# Run NMDS (Euclidean distance, best for continuous positive)
+nmds_result <- metaMDS(prod.nmds, distance = "bray", k = 2, trymax = 100)
+
+# Check stress value (should be < 0.2 for a good fit)
+nmds_result$stress
+
+# Fit environmental variables
+env_fit <- envfit(nmds_result, food, permutations = 999)
+
+# Extract NMDS site scores
+nmds_scores <- as.data.frame(scores(nmds_result, display = "sites"))
+nmds_scores$Salinity <- c("25","72","78","387","402","1119","1242","1457","594")
+nmds_scores$Salinity.Category <- c("REF","REF","REF","MID","MID","HIGH","HIGH","HIGH","MID")
+
+head(nmds_scores)
+str(nmds_scores)
+
+# Extract envfit vectors
+env_vectors <- as.data.frame(scores(env_fit, display = "vectors"))
+env_vectors$Variable <- rownames(env_vectors)
+
+
+
+library(ggplot2)
+library(dplyr)
+
+# Function to compute convex hull points
+find_hull <- function(df) {
+  df[chull(df$NMDS1, df$NMDS2), ]
+}
+
+# Compute hulls for each Salinity.Category
+hulls <- nmds_scores %>%
+  group_by(Salinity.Category) %>%
+  do(find_hull(.))
+
+# Plot with convex hulls instead of ellipses
+ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
+  geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category), 
+               alpha = 0.2, linetype = 0) +  # Convex hulls
+  geom_point(size = 4) +  # Sites as points
+  
+  # Add environmental vectors
+  geom_segment(data = env_vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.2, "cm")), color = "black") +
+  
+
+  # Add labels for environmental vectors
+  geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
+            inherit.aes = FALSE, vjust = 1, hjust = 1) +
+  
+  # Improve theme and labels
+  theme_minimal() +
+  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +  
+  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +   
+  labs(title = "NMDS of Genus Production with Environmental Fit")
+
+
+# Close variance is why we are using hulls instead of ellipse
+nmds_scores %>%
+  group_by(Salinity.Category) %>%
+  summarise(sd_NMDS1 = sd(NMDS1), sd_NMDS2 = sd(NMDS2))
+
+
+
+
+# Permanova
+
+library(vegan)
+
+
+# If I want to keep Bray-Curtis...
+# Shift all NMDS scores to be positive by adding the absolute value of the minimum score
+nmds_scores_transformed <- nmds_scores
+nmds_scores_transformed[, c("NMDS1", "NMDS2")] <- nmds_scores_transformed[, c("NMDS1", "NMDS2")] + abs(min(nmds_scores[, c("NMDS1", "NMDS2")]))
+
+# Now calculate the Bray-Curtis distance
+dist_matrix <- vegdist(nmds_scores_transformed[, c("NMDS1", "NMDS2")], method = "bray")
+
+# Run PERMANOVA
+permanova_result <- adonis2(dist_matrix ~ Salinity.Category, data = nmds_scores)
+print(permanova_result)
+
+
+
+# new, elizabeth's code ways
+dist_matrix <- vegdist(prod.nmds, method = "bray")
+
+
+permanova_m <- adonis2(
+dist_matrix ~ SC.Level + SC.Category, 
+data = prod.nmds., 
+permutations = 999, 
+method = "bray"
+)
+print(permanova_result) #same results as above
+
+
+
+# Use Euclidean distance instead of Bray-Curtis
+dist_matrix <- dist(nmds_scores[, c("NMDS1", "NMDS2")])
+
+# Run PERMANOVA
+permanova_result <- adonis2(dist_matrix ~ Salinity.Category, data = nmds_scores)
+print(permanova_result)
+
+
+
+
+
+TOPGenera <- scores(nmds_scores, display="species") 
+
+
+ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
+  # Convex hulls
+  geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category),
+               alpha = 0.2, linetype = 0) + 
+  
+  # Points with genera labels
+  geom_point(size = 4) +  # Sites as points
+  
+  # Add genera labels to the points (Assuming `Genera` column exists)
+  geom_text(aes(label = Genera), size = 3, vjust = -0.5, hjust = 1) +  # Adjust positioning of labels
+  
+  # Add environmental vectors
+  geom_segment(data = env_vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.2, "cm")), color = "black") +
+  
+  # Add labels for environmental vectors
+  geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
+            inherit.aes = FALSE, vjust = 1, hjust = 1) +
+  
+  # Improve theme and labels
+  theme_minimal() +
+  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +
+  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +
+  labs(title = "NMDS of Genus Production with Environmental Fit")
+
+
+
+# Load the ggrepel package
+install.packages("ggrepel")
+library(ggrepel)
+
+ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) + 
+  # Convex hulls
+  geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category), 
+               alpha = 0.2, linetype = 0) +  # Convex hulls
+  
+  # Points
+  geom_point(size = 4) +  # Sites as points
+  
+  # Add environmental vectors
+  geom_segment(data = env_vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.2, "cm")), color = "black") +
+  
+  # Add labels for environmental vectors with geom_text_repel to avoid clipping
+  geom_text_repel(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
+                  box.padding = 0.5, point.padding = 0.5, # Add space around the text
+                  segment.color = "black", max.overlaps = 10) + # Dynamic label adjustment
+  
+  # Improve theme and labels
+  theme_minimal() +
+  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +  
+  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +    
+  labs(title = "NMDS of Genus Production with Environmental Fit")
+
