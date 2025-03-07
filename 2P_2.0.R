@@ -6168,6 +6168,9 @@ TOTAL_PROD_lengths <- rbind(EAS_genus_2P_Final_df, FRY_genus_2P_Final_df, RIC_ge
                             CRO_genus_2P_Final_df, HCN_genus_2P_Final_df, HUR_genus_2P_Final_df,
                             RUT_genus_2P_Final_df, LLW_genus_2P_Final_df, LLC_genus_2P_Final_df) 
 
+# Save as a csv to bring in to another script
+write.csv(TOTAL_PROD_lengths, "TOTALPROD.csv", row.names = FALSE)
+
 
 
 library(dplyr)
@@ -6811,7 +6814,8 @@ TOTALPROD_sum$Site <- factor(TOTALPROD_sum$Site, levels = c("EAS", "CRO","HCN","
 TOTALPROD_sum$SC.Category <- factor(TOTALPROD_sum$SC.Category, levels = c("REF","MID","HIGH"))
 TOTALPROD_sum$SC.Level <- factor(TOTALPROD_sum$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
 
-
+install.packages("ggpmisc")
+library(ggpmisc)
 
 # pretty linear model
 # Ensure SC.Level is numeric

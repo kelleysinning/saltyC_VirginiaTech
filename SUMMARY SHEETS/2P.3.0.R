@@ -205,10 +205,6 @@ ffg_colors <- c("Scraper" = "#008080",
                 "Collector-Filterer" = "#70A494")  
 
 
-install.packages("ggplot2")
-library(ggplot2)
-
-
 
 # Proportion party
 
@@ -548,6 +544,10 @@ prod.food.ffg <- prod.food.ffg %>%
 prod.food <- prod.food %>%
   mutate(fbom.cbom = annual.mean.FBOM + annual.mean.CBOM) # column with fbom+cbom combined
 
+prod.food.ffg <- prod.food.ffg %>%
+  mutate(fbom.cbom = annual.mean.FBOM + annual.mean.CBOM) # column with fbom+cbom combined
+
+
 # production and standing stock facet wrapped with FFG------------------------------
 prod.food.ffg$SC.Level <- as.numeric(as.character(prod.food.ffg$SC.Level))# Ensure SC.Level is numeric
 
@@ -698,13 +698,13 @@ production_fbom_lm
 
 # CBOM + FBOM-----------------------------------
 
-plot(prod.food.ffg$fbom, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
+plot(prod.food.ffg$fbom.cbom, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
 
 
 glm_results <- prod.food.ffg %>%
   group_by(FFG) %>%
   summarise(
-    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.FBOM, 
+    glm_model = list(glm(Summed.Annual.Production ~ fbom.cbom, 
                          #family = Gamma(link = "log"), # this yielded a very unfit model
                          family = gaussian(link = "identity"),
                          control = glm.control(maxit = 1000),
@@ -719,6 +719,18 @@ glm_results <- prod.food.ffg %>%
     r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
   )
 
+library(purrr)
+
+# Extract the coefficients and create the equation for each glm model
+glm_results <- glm_results %>%
+  mutate(
+    equation = map(glm_model, ~paste("y =", round(coef(.x)[1], 2), 
+                                     "+", round(coef(.x)[2], 2), "*x"))
+  )
+
+# Check the output
+glm_results
+
 # At this point, p_value, pseudo_r2, p_label, and r2_label are all in the `glm_results` dataframe.
 
 # Merge with main dataset
@@ -726,39 +738,273 @@ prod.food.ffg <- prod.food.ffg %>%
   left_join(glm_results, by = "FFG")
 
 
-production_fbom_lm <- ggplot(
+
+# Create the plot
+production_cbomfbom_lm <- ggplot(
   data = prod.food.ffg, 
-  aes(x = annual.mean.FBOM, y = Summed.Annual.Production, color = SC.Level) 
-) +
-  geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) +  
-  geom_smooth(method = "glm", method.args = list(family = gaussian (link = "identity")), se = TRUE, color = "grey37") +  
+  aes(x = fbom.cbom, y = Summed.Annual.Production, color = SC.Level)
+) + 
+  geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) + 
+  geom_smooth(method = "glm", method.args = list(family = gaussian(link = "identity")), se = TRUE, color = "grey37") + 
   geom_text(data = glm_results, aes(
-    x = min(prod.food.ffg$annual.mean.CBOM),
-    y = quantile(prod.food.ffg$Summed.Annual.Production, 0.1),
-    label = paste("R² =", r2_label, "\nP =", p_label),
-    group = FFG
-  ), hjust = 0, vjust = 0.1, size = 3, alpha = 1, inherit.aes = FALSE) +  
-  facet_wrap(~FFG, scales = "free") +  
-  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
-  xlab("Mean annual FBOM (g/m²)") +  
-  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
-  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) +
-  theme_bw() +  
+    x = min(prod.food.ffg$fbom.cbom) * 0.95,  # Adjust to move the label to the left of the plot
+    y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
+    label = paste("R² =", r2_label, "\nP =", p_label), 
+    group = FFG),
+    hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
+  facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
+  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  xlab("Mean annual leaf litter standing stock (g/m²)") + 
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") + 
+  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) + 
+  theme_bw() + 
   theme(
-    axis.title = element_text(size = 15),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(),
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-    legend.position = "top",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 10),
-    legend.background = element_blank(),
-    legend.key = element_rect(fill = "white", color = "white"),
-    strip.text = element_text(size = 12),
+    axis.title = element_text(size = 15), 
+    axis.text = element_text(size = 15), 
+    panel.grid = element_blank(), 
+    axis.line = element_line(), 
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"), 
+    legend.position = "top", 
+    legend.title = element_blank(), 
+    legend.text = element_text(size = 10), 
+    legend.background = element_blank(), 
+    legend.key = element_rect(fill = "white", color = "white"), 
+    strip.text = element_text(size = 12), 
     plot.margin = unit(c(1, 2, 1, 1), "cm")
+  ) + 
+  scale_x_continuous(
+    limits = c(min(prod.food.ffg$fbom.cbom) * 0.9, max(prod.food.ffg$fbom.cbom) * 0.9),  # Add cushion to both ends
+    expand = c(0.05, 0.05)  # Add padding to the x-axis ends
+  ) + 
+  scale_y_continuous(expand = c(0.05, 0.05))  # Add padding to the y-axis to ensure points don't get cut off
+
+# Print the plot
+production_cbomfbom_lm
+
+
+
+# Algae------------------------------
+
+plot(prod.food.ffg$annual.mean.Algae, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
+
+
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.Algae, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract p-values and R² values from each model
+    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
+    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
+    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
   )
 
-production_fbom_lm
+
+# Merge with main dataset
+prod.food.ffg <- prod.food.ffg %>%
+  left_join(glm_results, by = "FFG")
+
+
+
+# Create the plot
+production_algae_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.Algae, y = Summed.Annual.Production, color = SC.Level)
+) + 
+  geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) + 
+  geom_smooth(method = "glm", method.args = list(family = gaussian(link = "identity")), se = TRUE, color = "grey37") + 
+  geom_text(data = glm_results, aes(
+    x = min(prod.food.ffg$annual.mean.Algae) * 1,  # Adjust to move the label to the left of the plot
+    y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
+    label = paste("R² =", r2_label, "\nP =", p_label), 
+    group = FFG),
+    hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
+  facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
+  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  xlab("Mean annual algae standing stock (g/m²)") + 
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") + 
+  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) + 
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 15), 
+    axis.text = element_text(size = 15), 
+    panel.grid = element_blank(), 
+    axis.line = element_line(), 
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"), 
+    legend.position = "top", 
+    legend.title = element_blank(), 
+    legend.text = element_text(size = 10), 
+    legend.background = element_blank(), 
+    legend.key = element_rect(fill = "white", color = "white"), 
+    strip.text = element_text(size = 12), 
+    plot.margin = unit(c(1, 2, 1, 1), "cm")
+  ) + 
+  scale_x_continuous(
+    limits = c(min(prod.food.ffg$annual.mean.Algae), max(prod.food.ffg$annual.mean.Algae) * 1.05),  # Adjusted cushion for both ends
+    expand = c(0.05, 0)  # Remove extra space on x-axis
+  ) + 
+  scale_y_continuous(expand = c(0.0, 0.2))  # Add padding to the y-axis to ensure points don't get cut off
+
+# Print the plot
+production_algae_lm
+
+
+
+
+
+# Chl-a------------------------------
+
+plot(prod.food.ffg$annual.mean.chla, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
+
+
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract p-values and R² values from each model
+    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
+    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
+    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
+  )
+
+
+# Merge with main dataset
+prod.food.ffg <- prod.food.ffg %>%
+  left_join(glm_results, by = "FFG")
+
+
+
+# Create the plot
+production_chla_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.chla, y = Summed.Annual.Production, color = SC.Level)
+) + 
+  geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) + 
+  geom_smooth(method = "glm", method.args = list(family = gaussian(link = "identity")), se = TRUE, color = "grey37") + 
+  #geom_text(data = glm_results, aes(
+    #x = min(prod.food.ffg$annual.mean.chla) * 1,  # Adjust to move the label to the left of the plot
+    #y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
+    #label = paste("R² =", r2_label, "\nP =", p_label), 
+    #group = FFG),
+    #hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
+  facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
+  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  xlab("Mean annual chl-a (g/m²)") + 
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") + 
+  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) + 
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 15), 
+    axis.text = element_text(size = 15), 
+    panel.grid = element_blank(), 
+    axis.line = element_line(), 
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"), 
+    legend.position = "top", 
+    legend.title = element_blank(), 
+    legend.text = element_text(size = 10), 
+    legend.background = element_blank(), 
+    legend.key = element_rect(fill = "white", color = "white"), 
+    strip.text = element_text(size = 12), 
+    plot.margin = unit(c(1, 2, 1, 1), "cm")
+  ) + 
+  scale_x_continuous(
+    limits = c(min(prod.food.ffg$annual.mean.chla), max(prod.food.ffg$annual.mean.chla) * 1.05),  # Adjusted cushion for both ends
+    expand = c(0.05, 0)  # Remove extra space on x-axis
+  ) + 
+  scale_y_continuous(expand = c(0.0, 0.2))  # Add padding to the y-axis to ensure points don't get cut off
+
+# Print the plot
+production_chla_lm
+
+
+
+
+# Autotrophic index---------------------------
+
+
+plot(prod.food.ffg$annual.mean.AI, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
+
+
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.AI, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract p-values and R² values from each model
+    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
+    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
+    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
+  )
+
+
+# Merge with main dataset
+prod.food.ffg <- prod.food.ffg %>%
+  left_join(glm_results, by = "FFG")
+
+
+
+# Create the plot
+production_AI_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.AI, y = Summed.Annual.Production, color = SC.Level)
+) + 
+  geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) + 
+  geom_smooth(method = "glm", method.args = list(family = gaussian(link = "identity")), se = TRUE, color = "grey37") + 
+  #geom_text(data = glm_results, aes(
+  #x = min(prod.food.ffg$annual.mean.AI) * 1,  # Adjust to move the label to the left of the plot
+  #y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
+  #label = paste("R² =", r2_label, "\nP =", p_label), 
+  #group = FFG),
+  #hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
+  facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
+  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  xlab("Mean annual autotrophic index (g/m²)") + 
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") + 
+  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) + 
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 15), 
+    axis.text = element_text(size = 15), 
+    panel.grid = element_blank(), 
+    axis.line = element_line(), 
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"), 
+    legend.position = "top", 
+    legend.title = element_blank(), 
+    legend.text = element_text(size = 10), 
+    legend.background = element_blank(), 
+    legend.key = element_rect(fill = "white", color = "white"), 
+    strip.text = element_text(size = 12), 
+    plot.margin = unit(c(1, 2, 1, 1), "cm")
+  ) + 
+  scale_x_continuous(
+    limits = c(min(prod.food.ffg$annual.mean.AI), max(prod.food.ffg$annual.mean.AI) * 1.05),  # Adjusted cushion for both ends
+    expand = c(0.05, 0)  # Remove extra space on x-axis
+  ) + 
+  scale_y_continuous(expand = c(0.0, 0.4))  # Add padding to the y-axis to ensure points don't get cut off
+
+# Print the plot
+production_AI_lm
 
 
