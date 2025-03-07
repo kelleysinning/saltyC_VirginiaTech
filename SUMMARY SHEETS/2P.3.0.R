@@ -17,7 +17,7 @@ library(purrr)
 setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
 
 # Bringing in total prod csv from 2P_2.0.R to cut out a lot of coding from previous scripts!
-read.csv("TOTALPROD.csv")
+TOTAL_PROD_lengths <- read.csv("TOTALPROD.csv")
 
 # Keeping only the necessary columns
 TOTALPROD_Summary <- TOTAL_PROD_lengths %>%
@@ -286,9 +286,20 @@ TOTALPROD_sum$SC.Category <- factor(TOTALPROD_sum$SC.Category, levels = c("REF",
 TOTALPROD_sum$SC.Level <- factor(TOTALPROD_sum$SC.Level, levels = c("25","72","78","387","402","594","1119","1242","1457"))
 
 
+TOTALPROD_sum$SC.Level <- as.numeric(as.character(TOTALPROD_sum$SC.Level))# Ensure SC.Level is numeric
+
+TOTALPROD_sum$Site.Type <- ifelse(TOTALPROD_sum$Site %in% c("EAS", "FRY", "RIC"), 
+                                  "Core Streams", "Quarterly Streams")# Create a categorical variable for site type
+
+TOTALPROD_sum$Site.Type <- factor(TOTALPROD_sum$Site.Type, levels = c("Quarterly Streams", "Core Streams"))# Convert Site.Type to a factor for proper legend display
+
+install.packages("ggpmisc")
+library(ggpmisc)
+
 # PRODUCTION ALONG SC GRADIENT GLM...FINAL FIGURE
 glm_model <- glm(Sum.Annual.Production ~ SC.Level, 
-                 family = Gamma(link = "log"), 
+                 #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
+                 family = gaussian(link = "identity"),
                  data = TOTALPROD_sum)
 
 summary(glm_model)  # Check model summary
@@ -301,16 +312,9 @@ p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format 
 r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 
 
-TOTALPROD_sum$SC.Level <- as.numeric(as.character(TOTALPROD_sum$SC.Level))# Ensure SC.Level is numeric
-
-TOTALPROD_sum$Site.Type <- ifelse(TOTALPROD_sum$Site %in% c("EAS", "FRY", "RIC"), 
-                                  "Core Streams", "Quarterly Streams")# Create a categorical variable for site type
-
-TOTALPROD_sum$Site.Type <- factor(TOTALPROD_sum$Site.Type, levels = c("Quarterly Streams", "Core Streams"))# Convert Site.Type to a factor for proper legend display
-
 prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Level)) +   
   geom_point(aes(shape = Site.Type), size = 3) +  
-  geom_smooth(method = "glm", method.args = list(family = "Gamma"), se = FALSE, color = "grey37") +  
+  geom_smooth(method = "glm", method.args = list(family = "gaussian"), se = TRUE, color = "grey37") +  
   annotate("text", 
            x = min(TOTALPROD_sum$SC.Level), 
            y = max(TOTALPROD_sum$Sum.Annual.Production), 
@@ -339,15 +343,47 @@ prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color
 prod  # Display the plot
 
 
-
-
-
 # COMPUTE GLMs PER FFG...FINAL FIGURE!!!!!
+TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>% # new df for FFG facet wraps
+  group_by(Site,FFG, SC.Level) %>%
+  summarise(
+    Summed.Annual.Production = sum((Annual.Production), na.rm = TRUE),
+    SC.Category = first(SC.Category)  
+  )
+
+
+TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))# Ensure SC.Level is numeric
+
+TOTALPROD_Summary_Sum$Site.Type <- ifelse(TOTALPROD_Summary_Sum$Site %in% c("EAS", "FRY", "RIC"), 
+                                          "Core Streams", "Quarterly Streams")# Create a categorical variable for site type
+
+TOTALPROD_Summary_Sum$Site.Type <- factor(TOTALPROD_Summary_Sum$Site.Type, levels = c("Quarterly Streams", "Core Streams"))# Convert Site.Type to a factor for proper legend display
+
+
+ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
+  geom_point(aes(color = SC.Level), size = 3, alpha = 0.7) +  
+  facet_wrap(~FFG, scales = "free") +  # Facet by FFG
+  theme_bw() + 
+  labs(x = "Specific Conductivity (µS/cm)", y = "Summed Annual Production") +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +
+  theme(
+    strip.text = element_text(size = 12),  # Facet labels size
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 12),
+    panel.grid = element_blank()
+  )
+
+plot(TOTALPROD_Summary_Sum$SC.Level, TOTALPROD_Summary_Sum$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
+
+
+
+
 glm_results <- TOTALPROD_Summary_Sum %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ SC.Level, 
                          family = Gamma(link = "log"), 
+                         #family = gaussian(link = "identity"),
                          data = cur_data())),
     .groups = "drop"
   ) %>%
@@ -368,22 +404,21 @@ TOTALPROD_Summary_Sum <- TOTALPROD_Summary_Sum %>%
 TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))
 
 
-
 # Plot to scale
 ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
-  geom_point(aes(color = SC.Level, shape = Site.Type), size = 3) +  # Color points by SC.Level
-  geom_smooth(method = "glm", method.args = list(family = "Gamma"), se = FALSE, color = "grey37") + 
+  geom_point(aes(color = SC.Level, shape = Site.Type), size = 3, alpha = 0.8) +  # Color points by SC.Level
+  geom_smooth(method = "glm", method.args = list(family = Gamma (link = "log")), se = TRUE, color = "grey37") + 
   # Add p-values and R² to each facet in the bottom left corner
   geom_text(data = glm_results, aes(
     x = min(TOTALPROD_Summary_Sum$SC.Level),  # Place the text at the bottom left of each facet
     y = min(TOTALPROD_Summary_Sum$Summed.Annual.Production),  # Adjust y to the lower bound
     label = paste("R² =", r2_label, "\nP =", p_label)),
-    hjust = 0, vjust = .1 , size = 3, alpha = 2, inherit.aes = FALSE) +  # Position text at bottom-left
+    hjust = 0, vjust = .1 , size = 3, alpha = 0, inherit.aes = FALSE) +  # Position text at bottom-left
   facet_wrap(~FFG, scales = "free") +  # Facet by FFG with independent scaling per facet
   ylab(expression(Secondary~Production~(g/m^2/yr))) + 
   xlab("Specific Conductivity (µS/cm)") + 
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +  # Gradient color scale
-  scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +
+  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) +
   theme_bw() + 
   theme(
     axis.title = element_text(size = 15),
@@ -396,19 +431,20 @@ ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) +
     legend.text = element_text(size = 10),
     legend.background = element_blank(),
     legend.key = element_rect(fill = "white", color = "white"),
-    strip.text = element_text(size = 12)  
+    strip.text = element_text(size = 12),
+    plot.margin = unit(c(1, 2, 1, 1), "cm")
   )
 
 
 # NOT scaled
 ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
   geom_point(aes(color = SC.Level)) +  # Color points by SC.Level
-  geom_smooth(method = "glm", method.args = list(family = "Gamma"), se = FALSE, color = "grey37") + 
+  geom_smooth(method = "glm", method.args = list(family = Gamma (link = "log")), se = FALSE, color = "grey37") + 
   geom_text(data = glm_results, aes(
     x = min(TOTALPROD_Summary_Sum$SC.Level),  # Place the text at the top-left of each facet
     y = max(TOTALPROD_Summary_Sum$Summed.Annual.Production),  # Adjust y to the upper bound
     label = paste("R² =", r2_label, "\nP =", p_label)),
-    hjust = 0, vjust = 1, size = 3, inherit.aes = FALSE) +  # Smaller text and position at top-left
+    hjust = 0, vjust = 1, size = 3, inherit.aes = FALSE, alpha = 0) +  # Smaller text and position at top-left
   facet_wrap(~FFG, scales = "free") +  # Facet by FFG with independent scaling per facet
   ylab(expression(Secondary~Production~(g/m^2/yr))) + 
   xlab("Specific Conductivity (µS/cm)") + 
@@ -425,6 +461,304 @@ ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) +
     legend.text = element_text(size = 10),
     legend.background = element_blank(),
     legend.key = element_rect(fill = "white", color = "white"),
-    strip.text = element_text(size = 12)  # Make facet labels readable
+    strip.text = element_text(size = 12),  # Make facet labels readable
+    plot.margin = unit(c(1, 2, 1, 1), "cm")
   )
+
+
+
+
+
+# Adding in food resources------------------------------------------------------
+
+CBOM=read.csv("CBOM.Year1Summary.csv")
+FBOM=read.csv("FBOM.Year1Summary.csv")
+Algae=read.csv("Algae.Year1Summary.csv")
+
+CBOM <- CBOM %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.CBOM = mean(CBOM.AFDM.g.m2., na.rm = TRUE)
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.CBOM = mean(mean.CBOM, na.rm = TRUE)  # Use mean.CBOM to get the annual mean
+  )
+
+str(FBOM)
+
+FBOM <- FBOM %>%
+  mutate(FBOM.AFDM.g.m2. = parse_number(FBOM.AFDM.g.m2.))
+
+
+FBOM <- FBOM %>%
+  mutate(
+    Site = str_trim(Site),  # Remove extra spaces
+    FBOM.AFDM.g.m2. = as.numeric(FBOM.AFDM.g.m2.)  # Convert to numeric if needed
+  ) %>%
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.FBOM = mean(FBOM.AFDM.g.m2., na.rm = TRUE), 
+    .groups = "drop"  # Removes automatic grouping
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.FBOM = mean(mean.FBOM, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+
+Algae <- Algae %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.Algae = mean(Algae.AFDM.g.m2., na.rm = TRUE),
+    mean.AI = mean(Autotrophic.Index..g.m2., na.rm = TRUE),
+    mean.chla = mean(Chl.a..g.m2., na.rm = TRUE)
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.Algae = mean(mean.Algae, na.rm = TRUE),
+    annual.mean.AI = mean(mean.AI, na.rm = TRUE),
+    annual.mean.chla = mean(mean.chla, na.rm = TRUE),
+  )
+
+
+food <- cbind(CBOM,FBOM,Algae)
+food <- CBOM %>%
+  left_join(FBOM, by = "Site") %>%
+  left_join(Algae, by = "Site")
+
+
+# THIS is the "totals" dataframes...linking production with food
+prod.food <- cbind(food, TOTALPROD_sum)
+prod.food <- left_join(food, TOTALPROD_sum, by = c("Site"))
+
+
+prod.food.ffg <-cbind(food, TOTALPROD_Summary_Sum)
+prod.food.ffg <- left_join(food, TOTALPROD_Summary_Sum, by = c("Site"))
+
+colnames(prod.food.ffg)  # Lists all column names
+
+
+prod.food.ffg <- prod.food.ffg %>%
+  mutate(Site_FFG = paste(Site, FFG, sep = "."))  # Creates unique site-FFG names
+
+prod.food <- prod.food %>%
+  mutate(fbom.cbom = annual.mean.FBOM + annual.mean.CBOM) # column with fbom+cbom combined
+
+# production and standing stock facet wrapped with FFG------------------------------
+prod.food.ffg$SC.Level <- as.numeric(as.character(prod.food.ffg$SC.Level))# Ensure SC.Level is numeric
+
+prod.food.ffg$Site.Type <- ifelse(prod.food.ffg$Site %in% c("EAS", "FRY", "RIC"), 
+                                          "Core Streams", "Quarterly Streams")# Create a categorical variable for site type
+
+prod.food.ffg$Site.Type <- factor(prod.food.ffg$Site.Type, levels = c("Quarterly Streams", "Core Streams"))# Convert Site.Type to a factor for proper legend display
+
+
+
+
+
+# CBOM-----------------------------------
+plot(prod.food.ffg$annual.mean.CBOM, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
+
+
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.CBOM, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract p-values and R² values from each model
+    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
+    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
+    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
+  )
+
+
+
+# At this point, p_value, pseudo_r2, p_label, and r2_label are all in the `glm_results` dataframe.
+
+# Merge with main dataset
+prod.food.ffg <- prod.food.ffg %>%
+  left_join(glm_results, by = "FFG")
+
+cor(prod.food.ffg$annual.mean.CBOM, prod.food.ffg$Summed.Annual.Production)
+
+production_cbom_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.CBOM, y = Summed.Annual.Production, color = SC.Level) 
+) +
+  geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) +  
+  geom_smooth(method = "glm", method.args = list(family = gaussian (link = "identity")), se = TRUE, color = "grey37") +  
+  geom_text(data = glm_results, aes(
+    x = min(prod.food.ffg$annual.mean.CBOM),
+    y = quantile(prod.food.ffg$Summed.Annual.Production, 0.1),
+    label = paste("R² =", r2_label, "\nP =", p_label),
+    group = FFG
+  ), hjust = 0, vjust = 0.1, size = 3, alpha = 1, inherit.aes = FALSE) +  
+  facet_wrap(~FFG, scales = "free") +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual CBOM (g/m²)") +  
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
+  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) +
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12),
+    plot.margin = unit(c(1, 2, 1, 1), "cm")
+  )
+
+production_cbom_lm
+
+
+
+
+# FBOM-----------------------------------
+
+plot(prod.food.ffg$annual.mean.FBOM, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
+
+
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.FBOM, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract p-values and R² values from each model
+    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
+    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
+    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
+  )
+
+# At this point, p_value, pseudo_r2, p_label, and r2_label are all in the `glm_results` dataframe.
+
+# Merge with main dataset
+prod.food.ffg <- prod.food.ffg %>%
+  left_join(glm_results, by = "FFG")
+
+
+production_fbom_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.FBOM, y = Summed.Annual.Production, color = SC.Level) 
+) +
+  geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) +  
+  geom_smooth(method = "glm", method.args = list(family = gaussian (link = "identity")), se = TRUE, color = "grey37") +  
+  geom_text(data = glm_results, aes(
+    x = min(prod.food.ffg$annual.mean.CBOM),
+    y = quantile(prod.food.ffg$Summed.Annual.Production, 0.1),
+    label = paste("R² =", r2_label, "\nP =", p_label),
+    group = FFG
+  ), hjust = 0, vjust = 0.1, size = 3, alpha = 1, inherit.aes = FALSE) +  
+  facet_wrap(~FFG, scales = "free") +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual FBOM (g/m²)") +  
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
+  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) +
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12),
+    plot.margin = unit(c(1, 2, 1, 1), "cm")
+  )
+
+production_fbom_lm
+
+
+# CBOM + FBOM-----------------------------------
+
+plot(prod.food.ffg$fbom, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
+
+
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.FBOM, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract p-values and R² values from each model
+    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
+    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
+    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
+  )
+
+# At this point, p_value, pseudo_r2, p_label, and r2_label are all in the `glm_results` dataframe.
+
+# Merge with main dataset
+prod.food.ffg <- prod.food.ffg %>%
+  left_join(glm_results, by = "FFG")
+
+
+production_fbom_lm <- ggplot(
+  data = prod.food.ffg, 
+  aes(x = annual.mean.FBOM, y = Summed.Annual.Production, color = SC.Level) 
+) +
+  geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) +  
+  geom_smooth(method = "glm", method.args = list(family = gaussian (link = "identity")), se = TRUE, color = "grey37") +  
+  geom_text(data = glm_results, aes(
+    x = min(prod.food.ffg$annual.mean.CBOM),
+    y = quantile(prod.food.ffg$Summed.Annual.Production, 0.1),
+    label = paste("R² =", r2_label, "\nP =", p_label),
+    group = FFG
+  ), hjust = 0, vjust = 0.1, size = 3, alpha = 1, inherit.aes = FALSE) +  
+  facet_wrap(~FFG, scales = "free") +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual FBOM (g/m²)") +  
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
+  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) +
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12),
+    plot.margin = unit(c(1, 2, 1, 1), "cm")
+  )
+
+production_fbom_lm
+
 
