@@ -6782,87 +6782,6 @@ production_FFG <- ggplot(data = TOTALPROD_Summary_Sum, aes(x = SC.Level, y = (Su
 production_FFG
 
 
-# Trying something linear with discrete values------------------------------------------
-
-# Linear model with line of best fit
-install.packages("ggpmisc")
-library(ggpmisc)
-
-# With all sites
-# With p-values and r-squared
-
-production_lineplot_lm <- ggplot(
-  data = TOTALPROD_Summary_Sum, 
-  aes(x = SC.Level, y = Summed.Annual.Production, group = FFG, color = SC.Category)
-) +
-  geom_point(size = 3) +   # Add points for emphasis
-  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed", color = "grey37") +  # Line of best fit
-  stat_poly_eq(
-    aes(label = paste(after_stat(eq.label), 
-                      after_stat(rr.label), 
-                      after_stat(p.value.label), sep = "~~~")),  
-    formula = y ~ x,  
-    parse = TRUE,
-    size = 3,
-    label.x.npc = "left",  # Align text to left
-    label.y.npc = 0.1  # Position the label at 10% of y range
-  ) +  
-  facet_wrap(~FFG, scales = "free") +  # Facet by FFG
-  ylab(expression(Secondary~Production~(g/m^2/yr))) +  # Fixing y-axis label formatting
-  xlab("") +
-  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +  
-  theme_bw() +
-  theme(
-    axis.title = element_text(size = 15),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(),
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-    legend.position = "top",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 20),
-    legend.background = element_blank(),
-    legend.key = element_rect(fill = "white", color = "white")
-  )
-
-print(production_lineplot_lm)
-
-
-# Loess line
-
-production_lineplot_loess <- ggplot(
-  data = COREPROD_Summary_Sum, # The sum of production for each FFG at each site
-  aes(x = SC.Level, y =(Summed.Annual.Production), group = FFG, color = SC.Category)
-) + 
-  geom_point(size = 3) +   # Add points for emphasis
-  geom_smooth(
-    method = "loess",       # Fit a LOESS smoother instead of a linear model
-    se = TRUE,              # Display standard error around the curve
-    aes(group = FFG),       # Separate smoothers by FFG group
-    linetype = "dashed"     # Make the LOESS line dashed for distinction
-  ) +  # Line of best fit
-  facet_wrap(~FFG) +       # Facet by FFG
-  ylab(expression(SecondaryProduction ~ (g/m^2/yr))) +
-  xlab("") +
-  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
-  theme_bw() + 
-  theme(
-    axis.title = element_text(size = 15),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(),
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-    legend.position = "top",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 20),
-    legend.background = element_blank(),
-    legend.key = element_rect(fill = "white", color = "white")
-  )
-
-# Display the plot
-production_lineplot_loess
-
-
 
 # Total Production across gradient, continuous instead of discrete --------------------------------------
 
@@ -6905,9 +6824,12 @@ TOTALPROD_sum$Site.Type <- ifelse(TOTALPROD_sum$Site %in% c("EAS", "FRY", "RIC")
 # Convert Site.Type to a factor for proper legend display
 TOTALPROD_sum$Site.Type <- factor(TOTALPROD_sum$Site.Type, levels = c("Quarterly Streams", "Core Sites"))
 
+
+# Production across gradient GLM...FINAL FIGURE!!!!!
 prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
-  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Black linear regression line
+  geom_smooth(method = "glm", method.args = list(family = "Gamma"), se = FALSE, color = "grey37") +  #GLM line 
+  #geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Black linear regression line
   stat_poly_eq(
     aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
     formula = y ~ x,   
@@ -6933,49 +6855,9 @@ prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color
   )
 
 prod
-library(ggplot2)
-library(ggpmisc)
 
 
-
-# With FFGs
-TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))
-
-production_lineplot_lm <- ggplot(
-  data = TOTALPROD_Summary_Sum, # The sum of production for each FFG at each site
-  aes(x = SC.Level, y = (Summed.Annual.Production), group = FFG, color = SC.Category)
-) +
-  geom_point(size = 3) +   # Add points for emphasis
-  geom_smooth(method = "lm", se = TRUE, aes(group = FFG), linetype = "dashed", color = "gray45") +  # Line of best fit
-  stat_poly_eq(
-    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
-    formula = y ~ x,   
-    parse = TRUE,   
-    size = 3,
-    label.x = 0.1,  # Left alignment
-    label.y = 0.1
-  ) +  
-  facet_wrap(~FFG, scales = "free") +       # Facet by FFG
-  ylab(SecondaryProduction~ (g/m^2/yr)) +
-  xlab("") +
-  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C")) +
-  theme_bw() +
-  theme(
-    axis.title = element_text(size = 15),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(),
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-    legend.position = "top",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 20),
-    legend.background = element_blank(),
-    legend.key = element_rect(fill = "white", color = "white")
-  )
-production_lineplot_lm
-
-
-# same as above but scale bar instead of SC categories
+# Linear model with FFGs
 
 TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))
 
@@ -7022,48 +6904,105 @@ production_lineplot_lm
 
 
 
+# Compute GLMs per FFG...FINAL FIGURE!!!!!
+glm_results <- TOTALPROD_Summary_Sum %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ SC.Level, 
+                         family = Gamma(link = "log"), 
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract p-values and R² values from each model
+    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
+    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
+    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
+  )
 
-# Fit a GLM model
-install.packages("MuMIn")
-library(MuMIn)
+# At this point, p_value, pseudo_r2, p_label, and r2_label are all in the `glm_results` dataframe.
 
-glm_model <- glm(Sum.Annual.Production ~ SC.Level, family = "Gamma", data = TOTALPROD_sum)
+# Merge with main dataset
+TOTALPROD_Summary_Sum <- TOTALPROD_Summary_Sum %>%
+  left_join(glm_results, by = "FFG")
 
-# Get summary statistics
-summary(glm_model)
-
-
-# Extract R² (pseudo R²) 
-
-pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance)
-print(pseudo_r2)
+TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))
 
 
-# Extract p-value
-p_value <- summary(glm_model)$coefficients[2, 4]
 
-# Plot with annotation
-ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production)) +
-  geom_point() +
-  geom_smooth(method = "glm", method.args = list(family = "Gamma"), se = TRUE) +
-  annotate("text", x = min(TOTALPROD_sum$SC.Level), y = max(TOTALPROD_sum$Sum.Annual.Production),
-           label = paste("R² =", round(pseudo_r2, 3), "\nP =", round(p_value, 3)),
-           hjust = 0, size = 5)
+# Plot to scale
+ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
+  geom_point(aes(color = SC.Level, shape = Site.Type), size = 3) +  # Color points by SC.Level
+  geom_smooth(method = "glm", method.args = list(family = "Gamma"), se = FALSE, color = "grey37") + 
+  # Add p-values and R² to each facet in the bottom left corner
+  geom_text(data = glm_results, aes(
+    x = min(TOTALPROD_Summary_Sum$SC.Level),  # Place the text at the bottom left of each facet
+    y = min(TOTALPROD_Summary_Sum$Summed.Annual.Production),  # Adjust y to the lower bound
+    label = paste("R² =", r2_label, "\nP =", p_label)),
+    hjust = 0, vjust = .1 , size = 3, alpha = 2, inherit.aes = FALSE) +  # Position text at bottom-left
+  facet_wrap(~FFG, scales = "free") +  # Facet by FFG with independent scaling per facet
+  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  xlab("Specific Conductivity (µS/cm)") + 
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  # Gradient color scale
+  scale_shape_manual(values = c("Core Sites" = 8, "Quarterly Sites" = 16)) +
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12)  
+  )
+
+
+# NOT scaled
+ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
+  geom_point(aes(color = SC.Level)) +  # Color points by SC.Level
+  geom_smooth(method = "glm", method.args = list(family = "Gamma"), se = FALSE, color = "grey37") + 
+  geom_text(data = glm_results, aes(
+    x = min(TOTALPROD_Summary_Sum$SC.Level),  # Place the text at the top-left of each facet
+    y = max(TOTALPROD_Summary_Sum$Summed.Annual.Production),  # Adjust y to the upper bound
+    label = paste("R² =", r2_label, "\nP =", p_label)),
+    hjust = 0, vjust = 1, size = 3, inherit.aes = FALSE) +  # Smaller text and position at top-left
+  facet_wrap(~FFG, scales = "free") +  # Facet by FFG with independent scaling per facet
+  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  xlab("Specific Conductivity (µS/cm)") + 
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  # Gradient color scale
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12)  # Make facet labels readable
+  )
+
 
 
 
 # Testing normal distributions
-shapiro.test(TOTALPROD_sum$Sum.Annual.Production) # normally distributed
-shapiro.test(TOTALPROD_Summary_Sum$FFG)
+shapiro.test(TOTALPROD_sum$Sum.Annual.Production) # lm for production along sc is normally distributed
+                                                  # P > 0.05
+
 
 
 
 
 # Testing normality within FFG
 TOTALPROD_Summary_Sum$FFG <- as.numeric(TOTALPROD_Summary_Sum$FFG)
-str(TOTALPROD_Summary_Sum)
-
-
 
 # Scraper = 1
 # Scraper-Coleoptera = 2
@@ -7072,26 +7011,26 @@ str(TOTALPROD_Summary_Sum)
 # Collector-Gatherer = 5
 # Collector-Filterer = 6
 
-subset_FFG <- subset(TOTALPROD_Summary_Sum, FFG == "5")
+subset_FFG <- subset(TOTALPROD_Summary_Sum, FFG == "6")
 
-# Run the Shapiro-Wilk test on the biomass column (assumed to be Sum.Annual.Production)
+# Run the Shapiro-Wilk test on the production
 shapiro.test(subset_FFG$Summed.Annual.Production)
 
-# Scraper not normal p = .002133
-# Scraper-Coleoptera not normal p = .05883
-# Shredder normal p = .1051
-# CG not normal p = .001535
-# CF not normal p = .01409
+# Scraper residuals normal (W = .86288, p-value = .103)
+# Scraper-Coleoptera residuals normal (W = .88364, p-value = .1715)
+# Shredder residuals not normal (W = 0.78703, p-value = 0.01451)
+# Predator residuals normal (W = 0.94818, p-value = 0.6701)
+# CG residuals normal (W = 0.83524, p-value = 0.05112)
+# CF residuals not normal (W = 0.70954, p-value = 0.001834)
 
 # checking residuals, those are normal so lm should still be appropriate for FFGs
 lm_model <- lm(Summed.Annual.Production ~ SC.Level, data = subset_FFG)
 plot(lm_model) # Check residual plots
-shapiro.test(resid(lm_model)) # Test residuals for normality, looking good for ffgs
+shapiro.result <- shapiro.test(resid(lm_model)) # Test residuals for normality, looking good for ffgs
+print(shapiro.result)
 
 
-glm_model <- glm(Summed.Annual.Production ~ SC.Level, data = TOTALPROD_Summary_Sum, family = Gamma(link = "inverse"))
-summary(glm_model)
-plot(glm_model)
+
 
 
 # CPI things---------------------------------------------------------------------
@@ -7232,7 +7171,7 @@ prod.food.ffg <- prod.food.ffg %>%
 
 
 
-# production and standing stock facet wrapped with FFG
+# production and standing stock facet wrapped with FFG------------------------------
 production_cbom_lm <- ggplot(
   data = prod.food.ffg, 
   aes(x = annual.mean.CBOM, y = Summed.Annual.Production, color = SC.Level) # or SC.Category
@@ -7268,6 +7207,36 @@ production_cbom_lm <- ggplot(
   )
 
 production_cbom_lm
+
+# Testing normality within FFG facet wraps
+prod.food.ffg$FFG <- as.numeric(prod.food.ffg$FFG)
+
+# Scraper = 1
+# Scraper-Coleoptera = 2
+# Shredder = 3
+# Predator = 4
+# Collector-Gatherer = 5
+# Collector-Filterer = 6
+
+subset_FFG <- subset(prod.food.ffg, FFG == "6")
+
+# Scraper residuals not normal (W = 0.80538, p-value = 0.02352)
+# Scraper-Coleoptera residuals not normal (W = 0.83004, p-value = 0.0447)
+# Shredder residuals normal (W = 0.90898, p-value = 0.3088)
+# Predator residuals normal (W = 0.9165, p-value = 0.3641)
+# CG resiudals not normal (W = 0.80598, p-value = 0.0239)
+# CF resiudals not normal (W = 0.7903, p-value = 0.01581)
+
+# checking residuals, those are normal so lm should still be appropriate for FFGs
+lm_model <- lm(Summed.Annual.Production ~ annual.mean.CBOM, data = subset_FFG)
+plot(lm_model) # Check residual plots
+shapiro.result <- shapiro.test(resid(lm_model)) # Test residuals for normality, looking good for ffgs
+print(shapiro.result)
+
+
+
+
+
 
 
 
@@ -7309,6 +7278,33 @@ production_fbom_lm <- ggplot(
 
 production_fbom_lm
 
+# Testing normality within FFG facet wraps
+prod.food.ffg$FFG <- as.numeric(prod.food.ffg$FFG)
+
+# Scraper = 1
+# Scraper-Coleoptera = 2
+# Shredder = 3
+# Predator = 4
+# Collector-Gatherer = 5
+# Collector-Filterer = 6
+
+subset_FFG <- subset(prod.food.ffg, FFG == "6")
+
+# Scraper residuals not normal (W = 0.81571, p-value = 0.03081)
+# Scraper-Coleoptera residuals normal (W = 0.96199, p-value = 0.8189)
+# Shredder residuals normal (W = 0.87232, p-value = 0.1302)
+# Predator residuals not normal (W = 0.8113, p-value = 0.02746)
+# CG resiudals not normal (W = 0.80435, p-value = 0.0229)
+# CF resiudals normal (W = 0.89789, p-value = 0.24)
+
+# checking residuals, those are normal so lm should still be appropriate for FFGs
+lm_model <- lm(Summed.Annual.Production ~ annual.mean.FBOM, data = subset_FFG)
+plot(lm_model) # Check residual plots
+shapiro.result <- shapiro.test(resid(lm_model)) # Test residuals for normality, looking good for ffgs
+print(shapiro.result)
+
+
+
 
 
 
@@ -7346,8 +7342,35 @@ production_algae_lm <- ggplot(
     legend.key = element_rect(fill = "white", color = "white")
   )
 
-
 production_algae_lm
+
+# Testing normality within FFG facet wraps
+prod.food.ffg$FFG <- as.numeric(prod.food.ffg$FFG)
+
+# Scraper = 1
+# Scraper-Coleoptera = 2
+# Shredder = 3
+# Predator = 4
+# Collector-Gatherer = 5
+# Collector-Filterer = 6
+
+subset_FFG <- subset(prod.food.ffg, FFG == "6")
+
+# Scraper residuals not normal (W = 0.81677, p-value = 0.03168)
+# Scraper-Coleoptera residuals normal (W = 0.84967, p-value = 0.0739)
+# Shredder residuals not normal (W = 0.79653, p-value = 0.01864)
+# Predator residuals not normal (W = 0.77075, p-value = 0.009422)
+# CG residuals not normal (W = 0.73975, p-value = 0.004122)
+# CF residuals not normal (W = 0.78163, p-value = 0.01258)
+
+# checking residuals, those are normal so lm should still be appropriate for FFGs
+lm_model <- lm(Summed.Annual.Production ~ annual.mean.Algae, data = subset_FFG)
+plot(lm_model) # Check residual plots
+shapiro.result <- shapiro.test(resid(lm_model)) # Test residuals for normality, looking good for ffgs
+print(shapiro.result)
+
+
+ 
 
 
 production_AI_lm <- ggplot(
@@ -7384,8 +7407,35 @@ production_AI_lm <- ggplot(
     legend.key = element_rect(fill = "white", color = "white")
   )
 
-
 production_AI_lm # glm might be better
+
+# Testing normality within FFG facet wraps
+prod.food.ffg$FFG <- as.numeric(prod.food.ffg$FFG)
+
+# Scraper = 1
+# Scraper-Coleoptera = 2
+# Shredder = 3
+# Predator = 4
+# Collector-Gatherer = 5
+# Collector-Filterer = 6
+
+subset_FFG <- subset(prod.food.ffg, FFG == "6")
+
+# Scraper residuals not normal (W = 0.76722, p-value = 0.008578)
+# Scraper-Coleoptera residuals normal (W = 0.89081, p-value = 0.2034)
+# Shredder residuals normal (W = 0.89587, p-value = 0.229)
+# Predator residuals not normal (W = 0.72557, p-value = 0.00282)
+# CG residuals normal (W = 0.85651, p-value = 0.08784)
+# CF residuals not normal (W = 0.81363, p-value = 0.02919)
+
+# checking residuals, those are normal so lm should still be appropriate for FFGs
+lm_model <- lm(Summed.Annual.Production ~ annual.mean.AI, data = subset_FFG)
+plot(lm_model) # Check residual plots
+shapiro.result <- shapiro.test(resid(lm_model)) # Test residuals for normality, looking good for ffgs
+print(shapiro.result)
+
+
+
 
 
 production_chla_lm <- ggplot(
@@ -7422,10 +7472,114 @@ production_chla_lm <- ggplot(
     legend.key = element_rect(fill = "white", color = "white")
   )
 
-
 production_chla_lm
 
-# food
+# Testing normality within FFG facet wraps
+prod.food.ffg$FFG <- as.numeric(prod.food.ffg$FFG)
+
+# Scraper = 1
+# Scraper-Coleoptera = 2
+# Shredder = 3
+# Predator = 4
+# Collector-Gatherer = 5
+# Collector-Filterer = 6
+
+subset_FFG <- subset(prod.food.ffg, FFG == "1")
+
+# Scraper residuals not normal (W = 0.76869, p-value = 0.008922)
+# Scraper-Coleoptera residuals normal (W = 0.96621, p-value = 0.8605)
+# Shredder residuals normal (W = 0.9589, p-value = 0.7867)
+# Predator residuals normal (W = 0.89575, p-value = 0.2284)
+# CG residuals normal (W = 0.9176, p-value = 0.3728)
+# CF residuals not normal (W = 0.93038, p-value = 0.485)
+
+# checking residuals, those are normal so lm should still be appropriate for FFGs
+lm_model <- lm(Summed.Annual.Production ~ annual.mean.chla, data = subset_FFG)
+plot(lm_model) # Check residual plots
+shapiro.result <- shapiro.test(resid(lm_model)) # Test residuals for normality, looking good for ffgs
+print(shapiro.result)
+
+
+
+
+# Food---------------------------------------------------------------------------
+prod.food <- prod.food %>%
+  mutate(fbom.cbom = annual.mean.FBOM + annual.mean.CBOM)
+
+
+FBOM.CBOM.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Production, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual leaf litter standing stock (g/m²)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+FBOM.CBOM.lm
+
+FBOM.CBOM.lm.cat <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Production, color = SC.Category)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = FALSE, aes(group = SC.Category), linetype = "dashed") +  # Separate regression lines
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~"), group = SC.Category),   
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3    
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual leaf litter standing stock (g/m²)") +  
+  scale_colour_manual(
+    values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), 
+    name = "SC Category"  # Correct legend label
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)  
+  ) +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+FBOM.CBOM.lm.cat
+
+
+
+
+
 CBOM.lm <- ggplot(prod.food, aes(x = annual.mean.CBOM, y = Sum.Annual.Production, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
   geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
@@ -7461,6 +7615,45 @@ CBOM.lm <- ggplot(prod.food, aes(x = annual.mean.CBOM, y = Sum.Annual.Production
 
 CBOM.lm
 
+CBOM.lm.cat <- ggplot(prod.food, aes(x = annual.mean.CBOM, y = Sum.Annual.Production, color = SC.Category)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = FALSE, aes(group = SC.Category), linetype = "dashed") +  # Separate regression lines
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~"), group = SC.Category),   
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3    
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual CBOM (g/m²)") +  
+  scale_colour_manual(
+    values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), 
+    name = "SC Category"  # Correct legend label
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)  
+  ) +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+CBOM.lm.cat
+
+
+
+
+
+
 FBOM.lm <- ggplot(prod.food, aes(x = annual.mean.FBOM, y = Sum.Annual.Production, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
   geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
@@ -7495,6 +7688,45 @@ FBOM.lm <- ggplot(prod.food, aes(x = annual.mean.FBOM, y = Sum.Annual.Production
   )
 
 FBOM.lm
+
+FBOM.lm.cat <- ggplot(prod.food, aes(x = annual.mean.FBOM, y = Sum.Annual.Production, color = SC.Category)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = FALSE, aes(group = SC.Category), linetype = "dashed") +  # Separate regression lines
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~"), group = SC.Category),   
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3    
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual FBOM (g/m²)") +  
+  scale_colour_manual(
+    values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), 
+    name = "SC Category"  # Correct legend label
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)  
+  ) +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+FBOM.lm.cat
+
+
+
+
+
 
 
 Algae.lm <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Production, color = SC.Level)) +  
@@ -7532,6 +7764,44 @@ Algae.lm <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Producti
 
 Algae.lm
 
+Algae.lm.cat <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Production, color = SC.Category)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = FALSE, aes(group = SC.Category), linetype = "dashed") +  # Separate regression lines
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~"), group = SC.Category),   
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3    
+  ) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual Algae (g/m²)") +  
+  scale_colour_manual(
+    values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), 
+    name = "SC Category"  # Correct legend label
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)  
+  ) +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+Algae.lm.cat
+
+
+
+
+
 
 chla.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Production, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
@@ -7568,7 +7838,54 @@ chla.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Production
 
 chla.lm
 
-# Just standing stock against sc level
+# Testing normal distributions
+# Fit a linear model
+lm_model <- lm(Sum.Annual.Production ~ annual.mean.chla, data = prod.food)
+summary(lm_model)
+par(mfrow = c(2, 2))
+plot(lm_model)
+shapiro.test(resid(lm_model))# Shapiro-Wilk test for normality of residuals
+
+# All normally distributed: FBOM, CBOM, Algae, AI, chl-a
+
+
+# Standing stock and production against sc level-----------------------------------------
+prod.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
+  stat_poly_eq(
+    aes(label = paste(after_stat(eq.label), after_stat(rr.label), after_stat(p.value.label), sep = "~~~")),  
+    formula = y ~ x,   
+    parse = TRUE,   
+    size = 3   
+  ) +  
+  ylab(expression("Secondary Production (g/m²/yr)")) +  
+  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Sites" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+prod.sc.lm
+
+
 FBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.FBOM, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
   geom_smooth(method = "lm", se = TRUE, color = "darkgrey") +  # Linear regression line
@@ -7752,10 +8069,22 @@ chla.sc.lm
 
 
 
+# Testing normal distributions
+# Fit a linear model
+lm_model <- lm(SC.Level ~ Sum.Annual.Production, data = prod.food)
+summary(lm_model)
+par(mfrow = c(2, 2))
+plot(lm_model)
+shapiro.test(resid(lm_model))# Shapiro-Wilk test for normality of residuals
 
+# All normally distributed:  chl-a, Algae, CBOM, FBOM, and production along
+# Not normally distributed: AI
 
+cooks_dist <- cooks.distance(lm_model)
 
-
+#Plot Cook's Distance to visually inspect influential points
+plot(cooks_dist, type = "h", main = "Cook's Distance", ylab = "Cook's Distance", xlab = "Observation Index")
+abline(h = 4 / length(cooks_dist), col = "red", lty = 2)  # Threshold for influential points (4/n)
 
 # NMDS-------------------------------------------------------------------------
 
@@ -7790,17 +8119,44 @@ prod.nmds <- prod.nmds.[,-c(1:3)]
 
 
 # Example environmental data (sites x environmental factors)
-food
+YSI <- read.csv("YSI.Year1.csv")
+
+YSI <- YSI %>%
+  drop_na() %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.Temp = mean(Temp...C., na.rm = TRUE),
+    mean.pH = mean(pH, na.rm = TRUE),
+    mean.DO.percent = mean(DO...., na.rm = TRUE),
+    mean.DO.mg.L = mean(DO..mg.L., na.rm = TRUE)
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.temp = mean(mean.Temp, na.rm = TRUE),
+    annual.mean.pH = mean(mean.pH, na.rm = TRUE),
+    annual.mean.DO.percent = mean(mean.DO.percent, na.rm = TRUE),
+    annual.mean.DO.mg.L = mean(mean.DO.mg.L, na.rm = TRUE),
+  )
 
 
-# Run NMDS (Euclidean distance, best for continuous positive)
+food.YSI <- cbind(CBOM,FBOM,Algae,YSI)
+food.YSI <- CBOM %>%
+  left_join(FBOM, by = "Site") %>%
+  left_join(Algae, by = "Site") %>%
+  left_join(YSI, by = "Site"
+)
+
+
+
+# Run NMDS (bray-curtis)
 nmds_result <- metaMDS(prod.nmds, distance = "bray", k = 2, trymax = 100)
 
 # Check stress value (should be < 0.2 for a good fit)
 nmds_result$stress
 
 # Fit environmental variables
-env_fit <- envfit(nmds_result, food, permutations = 999)
+env_fit <- envfit(nmds_result, food.YSI, permutations = 999)
 
 # Extract NMDS site scores
 nmds_scores <- as.data.frame(scores(nmds_result, display = "sites"))
@@ -7842,13 +8198,14 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
 
   # Add labels for environmental vectors
   geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
-            inherit.aes = FALSE, vjust = 1, hjust = 1) +
+            inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 2) +
   
   # Improve theme and labels
   theme_minimal() +
   scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +  
   scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +   
-  labs(title = "NMDS of Genus Production with Environmental Fit")
+  labs(title = "NMDS of Genus Production with Environmental Fit") +
+  theme(panel.grid = element_blank())
 
 
 # Close variance is why we are using hulls instead of ellipse
@@ -7858,26 +8215,12 @@ nmds_scores %>%
 
 
 
-
 # Permanova
 
 library(vegan)
 
 
 # If I want to keep Bray-Curtis...
-# Shift all NMDS scores to be positive by adding the absolute value of the minimum score
-nmds_scores_transformed <- nmds_scores
-nmds_scores_transformed[, c("NMDS1", "NMDS2")] <- nmds_scores_transformed[, c("NMDS1", "NMDS2")] + abs(min(nmds_scores[, c("NMDS1", "NMDS2")]))
-
-# Now calculate the Bray-Curtis distance
-dist_matrix <- vegdist(nmds_scores_transformed[, c("NMDS1", "NMDS2")], method = "bray")
-
-# Run PERMANOVA
-permanova_result <- adonis2(dist_matrix ~ Salinity.Category, data = nmds_scores)
-print(permanova_result)
-
-
-
 # new, elizabeth's code ways
 dist_matrix <- vegdist(prod.nmds, method = "bray")
 
@@ -7892,71 +8235,24 @@ print(permanova_result) #same results as above
 
 
 
-# Use Euclidean distance instead of Bray-Curtis
-dist_matrix <- dist(nmds_scores[, c("NMDS1", "NMDS2")])
 
-# Run PERMANOVA
-permanova_result <- adonis2(dist_matrix ~ Salinity.Category, data = nmds_scores)
-print(permanova_result)
+# More stats for environmental vectors
+env_scores <- as.data.frame(scores(env_fit, display = "vectors"))  # Extract vector scores
+env_scores$Variable <- rownames(env_scores)  # Add variable names
+env_scores$R2 <- env_fit$vectors$r  # Extract R² values
+env_scores$P_value <- env_fit$vectors$pvals  # Extract p-values
 
-
-
-
-
-TOPGenera <- scores(nmds_scores, display="species") 
-
-
-ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
-  # Convex hulls
-  geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category),
-               alpha = 0.2, linetype = 0) + 
-  
-  # Points with genera labels
-  geom_point(size = 4) +  # Sites as points
-  
-  # Add genera labels to the points (Assuming `Genera` column exists)
-  geom_text(aes(label = Genera), size = 3, vjust = -0.5, hjust = 1) +  # Adjust positioning of labels
-  
-  # Add environmental vectors
-  geom_segment(data = env_vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
-               arrow = arrow(length = unit(0.2, "cm")), color = "black") +
-  
-  # Add labels for environmental vectors
-  geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
-            inherit.aes = FALSE, vjust = 1, hjust = 1) +
-  
-  # Improve theme and labels
-  theme_minimal() +
-  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +
-  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +
-  labs(title = "NMDS of Genus Production with Environmental Fit")
+# Print results
+print(env_scores)
 
 
 
-# Load the ggrepel package
-install.packages("ggrepel")
-library(ggrepel)
-
-ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) + 
-  # Convex hulls
-  geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category), 
-               alpha = 0.2, linetype = 0) +  # Convex hulls
-  
-  # Points
-  geom_point(size = 4) +  # Sites as points
-  
-  # Add environmental vectors
-  geom_segment(data = env_vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
-               arrow = arrow(length = unit(0.2, "cm")), color = "black") +
-  
-  # Add labels for environmental vectors with geom_text_repel to avoid clipping
-  geom_text_repel(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
-                  box.padding = 0.5, point.padding = 0.5, # Add space around the text
-                  segment.color = "black", max.overlaps = 10) + # Dynamic label adjustment
-  
-  # Improve theme and labels
-  theme_minimal() +
-  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +  
-  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +    
-  labs(title = "NMDS of Genus Production with Environmental Fit")
+install.packages("knitr")
+install.packages("kableExtra")
+library(knitr)
+library(kableExtra)
+# Create a pretty table using kable and kableExtra
+env_scores %>%
+  kable("html", caption = "Environmental Scores Table") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
