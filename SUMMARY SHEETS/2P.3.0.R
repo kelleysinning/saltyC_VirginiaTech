@@ -1677,25 +1677,31 @@ production_AI_lm
 # FBOM AND CBOM--------------------------
 plot(prod.food$fbom.cbom, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
-glm_results <- prod.food %>%
+glm_results_leaf <- prod.food %>%
   group_by(SC.Category) %>%
   do({
     model <- glm(Sum.Annual.Production ~ fbom.cbom, family = gaussian(link="identity"), data = .)
-    # Extract p-value and R² from the model
-    p_value <- summary(model)$coefficients[2, 4]  # p-value for fbom.cbom
-    r2 <- 1 - sum(residuals(model)^2) / sum((.$Sum.Annual.Production - mean(.$Sum.Annual.Production, na.rm = TRUE))^2)  # R²
-    data.frame(p_value = p_value, r2 = r2)
+    intercept <- coef(model)[1]
+    slope <- coef(model)[2]
+    p_value <- summary(model)$coefficients[2, 4]  
+    r2 <- 1 - sum(residuals(model)^2) / sum((.$Sum.Annual.Production - mean(.$Sum.Annual.Production, na.rm = TRUE))^2)  
+    equation <- paste0("y = ", signif(intercept, 3), " + ", signif(slope, 3), "x")
+    data.frame(intercept = intercept, slope = slope, p_value = p_value, r2 = r2, equation = equation)
   }) %>%
   ungroup() %>%
   mutate(
-    label = paste0("P = ", signif(p_value, 3), "\nR² = ", signif(r2, 3))  # Format label text
+    label = paste0(equation, "\nP = ", signif(p_value, 3), "\nR² = ", signif(r2, 3))  # Format label text
   )
+
+# Print results
+print(glm_results_leaf)
+
 
 
 
 FBOM.CBOM.lm.cat <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Production, color = SC.Category)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  
-  geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = FALSE) +  
+  geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = TRUE) +  
   geom_text(data = glm_results, aes(
     x = min(prod.food$fbom.cbom) + 0.05 * (max(prod.food$fbom.cbom) - min(prod.food$fbom.cbom)),  # Adjust x position
     y = max(prod.food$Sum.Annual.Production) - 0.1 * (max(prod.food$Sum.Annual.Production) - min(prod.food$Sum.Annual.Production)) * as.numeric(factor(SC.Category)),  # Different y offsets per category
@@ -1726,19 +1732,25 @@ FBOM.CBOM.lm.cat
 # ALGAE---------------------------------------
 plot(prod.food$annual.mean.Algae, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
-glm_results <- prod.food %>%
+
+glm_results_algae <- prod.food %>%
   group_by(SC.Category) %>%
   do({
     model <- glm(Sum.Annual.Production ~ annual.mean.Algae, family = gaussian(link="identity"), data = .)
-    # Extract p-value and R² from the model
-    p_value <- summary(model)$coefficients[2, 4]  # p-value for fbom.cbom
-    r2 <- 1 - sum(residuals(model)^2) / sum((.$Sum.Annual.Production - mean(.$Sum.Annual.Production, na.rm = TRUE))^2)  # R²
-    data.frame(p_value = p_value, r2 = r2)
+    intercept <- coef(model)[1]
+    slope <- coef(model)[2]
+    p_value <- summary(model)$coefficients[2, 4]  
+    r2 <- 1 - sum(residuals(model)^2) / sum((.$Sum.Annual.Production - mean(.$Sum.Annual.Production, na.rm = TRUE))^2)  
+    equation <- paste0("y = ", signif(intercept, 3), " + ", signif(slope, 3), "x")
+    data.frame(intercept = intercept, slope = slope, p_value = p_value, r2 = r2, equation = equation)
   }) %>%
   ungroup() %>%
   mutate(
-    label = paste0("P = ", signif(p_value, 3), "\nR² = ", signif(r2, 3))  # Format label text
+    label = paste0(equation, "\nP = ", signif(p_value, 3), "\nR² = ", signif(r2, 3))  # Format label text
   )
+
+# Print results
+print(glm_results_algae)
 
 
 
@@ -1772,7 +1784,7 @@ Algae.lm.cat <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Prod
 Algae.lm.cat
 
 
-# NMDS-------------------------------------------------------------------------
+# PRODUCTION NMDS-------------------------------------------------------------------------
 
 # Loading the appropariate packages
 library(vegan) # vegan to calculate distance matrices
@@ -1784,23 +1796,26 @@ library(rcartocolor)
 
 # Running the NMDS for all taxa
 aggregated.prod<- aggregate(Annual.Production ~ Site + SC.Level + SC.Category + 
-                              + Genus, data = TOTALPROD_Summary, FUN = mean, na.rm = TRUE)
+                              + Genus, data = TOTALPROD_Summary, FUN = mean, na.rm = TRUE) #mean doesn't change anything bc there is only one annual value for production
 
-prod.nmds. = aggregated.prod %>% 
+prod_nmds = aggregated.prod %>% 
   pivot_wider(
     names_from = Genus, 
     values_from = Annual.Production,
   ) 
 
-prod.nmds.[is.na(prod.nmds.)] <- 0 # Replace NAs with 0
+prod_nmds[is.na(prod_nmds)] <- 0 # Replace NAs with 0
 
-prod.nmds.$SC.Level <- factor(prod.nmds.$SC.Level, 
+str(prod_nmds)
+
+prod_nmds$SC.Level <- factor(as.character(prod_nmds$SC.Level), 
                               levels = c("16","40","77","293","350","447","1048","1083","1185"), 
-                              ordered = TRUE)
+                              ordered = TRUE) # this isn't working which is annoying
+
 
 
 #  Rename the ID part of the matrix; take out the columns for streams, SC, season, genus
-prod.nmds <- prod.nmds.[,-c(1:3)]
+prod.nmds <- prod_nmds[,-c(1:3)]
 
 
 
@@ -1833,7 +1848,33 @@ food.YSI <- CBOM %>%
   left_join(YSI, by = "Site"
   )
 
+# Adding yearly SC values to this data frame so it is considered as a vector later
+library(dplyr)
 
+food.YSI <- food.YSI %>%
+  mutate(SC.Level = case_when(
+    Site %in% c("EAS") ~ 16,
+    Site %in% c("CRO") ~ 40,
+    Site %in% c("HCN") ~ 77,
+    Site %in% c("HUR") ~ 293,
+    Site %in% c("FRY") ~ 350,
+    Site %in% c("RUT") ~ 447,
+    Site %in% c("LLW") ~ 1048,
+    Site %in% c("LLC") ~ 1083,
+    Site %in% c("RIC") ~ 1185,
+    TRUE ~ NA_real_  # Use NA_real_ to ensure numeric output
+  ))
+
+food.YSI <- food.YSI %>%
+  mutate(SC.Category = case_when(
+    Site %in% c("EAS", "CRO", "HCN") ~ "REF",   # Sites that should be classified as "REF"
+    Site %in% c("HUR", "FRY", "RUT") ~ "MID",   # Sites that should be classified as "MID"
+    Site %in% c("LLW", "LLC", "RIC") ~ "HIGH",  # Sites that should be classified as "HIGH"
+    TRUE ~ NA_character_  # Default value if none of the above conditions are met (use NA_character_ for a string)
+  ))
+
+
+str(food.YSI)
 
 # Run NMDS (bray-curtis)
 nmds_result <- metaMDS(prod.nmds, distance = "bray", k = 2, trymax = 100)
@@ -1841,16 +1882,24 @@ nmds_result <- metaMDS(prod.nmds, distance = "bray", k = 2, trymax = 100)
 # Check stress value (should be < 0.2 for a good fit)
 nmds_result$stress
 
-# Fit environmental variables
-env_fit <- envfit(nmds_result, food.YSI, permutations = 999)
 
-# Extract NMDS site scores
+# Fit environmental variables
+env_fit <- envfit(nmds_result, food.YSI, permutations = 99999)
+
+
+# Extract NMDS site and species scores
+genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
+genera_scores <- as.data.frame(genera_scores)
+genera_scores$species <- rownames(genera_scores)  # create a column of species, from the rownames of TOPGenera
+
+
 nmds_scores <- as.data.frame(scores(nmds_result, display = "sites"))
-nmds_scores$Salinity <- c("25","72","78","387","402","1119","1242","1457","594")
+nmds_scores$Salinity <- c("19","40","77","293","350","1048","1083","1185","447")
 nmds_scores$Salinity.Category <- c("REF","REF","REF","MID","MID","HIGH","HIGH","HIGH","MID")
 
 head(nmds_scores)
 str(nmds_scores)
+
 
 # Extract envfit vectors
 env_vectors <- as.data.frame(scores(env_fit, display = "vectors"))
@@ -1871,6 +1920,7 @@ hulls <- nmds_scores %>%
   group_by(Salinity.Category) %>%
   do(find_hull(.))
 
+
 # Plot with convex hulls instead of ellipses
 ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
   geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category), 
@@ -1882,9 +1932,11 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
                arrow = arrow(length = unit(0.2, "cm")), color = "black") +
   
   
-  # Add labels for environmental vectors
+  # Add labels for environmental vectors and species and sc level
+  geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.2, vjust = 0.5, color = "grey23") +
+  #geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
   geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
-            inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 2) +
+            inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 0) +
   
   # Improve theme and labels
   theme_minimal() +
@@ -1901,45 +1953,781 @@ nmds_scores %>%
 
 
 
-# Permanova
+# Permanova and other stats----------------
 
 library(vegan)
 
 
 # If I want to keep Bray-Curtis...
-# new, elizabeth's code ways
-dist_matrix <- vegdist(prod.nmds, method = "bray")
 
+prod_nmds$SC.Category <- as.factor(prod_nmds$SC.Category)
+# First, create the distance matrix using vegdist() 
+dist_matrix <- vegdist(prod_nmds[, -(1:3)], method = "bray")  # adjust based on your actual columns
 
-permanova_m <- adonis2(
-  dist_matrix ~ SC.Level + SC.Category, 
-  data = prod.nmds., 
-  permutations = 999, 
-  method = "bray"
+# Then, run adonis2 using the distance matrix and relevant factors
+adonis_result <- adonis2(
+  dist_matrix ~ SC.Category, 
+  data = prod_nmds, 
+  permutations = 9999
 )
-print(permanova_result) #same results as above
+
+print(adonis_result)
+
+
+
+# Compute dispersion (PERMDISP)
+dispersion_test <- betadisper(dist_matrix, prod_nmds$SC.Category)
+
+# Perform permutation test for dispersion
+permdisp_result <- permutest(dispersion_test, permutations = 9999)
+
+# View results
+print(permdisp_result)
+
+# Visualize dispersion differences
+boxplot(dispersion_test)
+plot(dispersion_test)
 
 
 
 
 # More stats for environmental vectors
+set.seed(123)  # Set a fixed seed for reproducibility
+env_fit <- envfit(nmds_result, food.YSI, permutations = 9999)
+
 env_scores <- as.data.frame(scores(env_fit, display = "vectors"))  # Extract vector scores
 env_scores$Variable <- rownames(env_scores)  # Add variable names
 env_scores$R2 <- env_fit$vectors$r  # Extract R² values
 env_scores$P_value <- env_fit$vectors$pvals  # Extract p-values
 
-# Print results
 print(env_scores)
 
 
 
-install.packages("knitr")
-install.packages("kableExtra")
-library(knitr)
-library(kableExtra)
-# Create a pretty table using kable and kableExtra
-env_scores %>%
-  kable("html", caption = "Environmental Scores Table") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+# stats for genera...not sure about this
+genera_fit <- envfit(nmds_result, prod.nmds, permutations = 999)  # Fit species data
+
+# Extract species scores from the NMDS result
+genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
+genera_scores$species <- rownames(genera_scores)  # Create a column for species names
+
+# Extract the R² and p-values from genera_fit (envfit object)
+genera_r2 <- genera_fit$vectors$r  # Extract R² values
+genera_pvals <- genera_fit$vectors$pvals  # Extract p-values
+
+# Create a data frame to hold the R² and p-values for each species
+genera_fit_results <- data.frame(
+  species = names(genera_r2),  # Species names
+  R2 = genera_r2,  # R² values
+  P_value = genera_pvals  # p-values
+)
+
+# Merge the genera scores with the R² and p-values
+genera_scores <- merge(genera_scores, genera_fit_results, by.x = "species", by.y = "species", all.x = TRUE)
+
+# Print the results
+print(genera_scores)
+
+# Plotting significant genera just to see (Ameletus and Tanytarsini)
+# Filter genera that are significantly correlated (p < 0.05)
+significant_genera <- genera_fit_results %>%
+  filter(P_value < 0.05)
+
+nmds_sites <- as.data.frame(scores(nmds_result, display = "sites"))
+nmds_sites$Site <- rownames(nmds_sites)  
+
+
+nmds_species <- as.data.frame(scores(nmds_result, display = "species"))
+nmds_species$Species <- rownames(nmds_species)  
+
+
+vectors <- as.data.frame(scores(genera_fit, display = "vectors"))
+vectors$Species <- rownames(vectors)  
+
+vectors <- vectors %>% filter(Species %in% significant_genera$species)# Keep only significant vectors
+
+
+ggplot() +
+  geom_point(data = nmds_sites, aes(x = NMDS1, y = NMDS2), color = "blue", alpha = 0.7) +
+  geom_text(data = nmds_species, aes(x = NMDS1, y = NMDS2, label = Species), color = "red", size = 3) +
+  geom_segment(data = vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               arrow = arrow(length = unit(0.2, "cm")), color = "darkgreen") +
+  geom_text(data = vectors, aes(x = NMDS1, y = NMDS2, label = Species), 
+            color = "darkgreen", size = 4, hjust = 1.2, vjust = 1.2) +
+  theme_minimal() +
+  labs(title = "NMDS with Significant Genera Vectors", x = "NMDS1", y = "NMDS2")
+
+
+
+# Saving vector information
+install.packages("writexl")  
+library(writexl)
+write_xlsx(env_scores, "environmentalvectorstats_NMDS.xlsx")
+write_xlsx(genera_scores, "generastats_NMDS.xlsx")
+
+
+
+# Calculate centroids by grouping by Salinity.Category (or Genus if needed)
+centroids <- nmds_scores %>%
+  group_by(SC.Category) %>%
+  summarise(
+    centroid_NMDS1 = mean(NMDS1),
+    centroid_NMDS2 = mean(NMDS2)
+  )
+
+# View the centroids data
+head(centroids) 
+
+
+# Improved ggplot
+ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) + 
+  # Convex hulls with transparency and refined border
+  geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category), 
+               alpha = 0.2, linetype = 1, color = "black", size = 0.6) + 
+  
+  # Sites as points with a refined size and transparency
+  geom_point(size = 4, shape = 19, alpha = 0.7) + 
+  
+  # Centroids as larger, distinct points
+  geom_point(data = centroids, aes(x = centroid_NMDS1, y = centroid_NMDS2), 
+             color = "black", size = 5, shape = 17, stroke = 1.5) + 
+  
+  # Add centroid labels with a clear, readable font
+  geom_text(data = centroids, aes(x = centroid_NMDS1, y = centroid_NMDS2, label = Salinity.Category), 
+            color = "black", size = 4, fontface = "bold", vjust = -1.5) + 
+  
+  # Add environmental vectors with clean arrows and labels
+  geom_segment(data = env_vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               arrow = arrow(length = unit(0.2, "cm")), color = "black", size = 1) + 
+  
+  # Add environmental variable labels
+  geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable), 
+            inherit.aes = FALSE, color = "black", size = 4, vjust = 1.5, hjust = 1.2) + 
+  
+  # Refined theme with minimal grid, updated axis labels, and title
+  theme_minimal(base_size = 15) +
+  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) + 
+  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) + 
+  labs(
+    title = "NMDS of Genus Production with Environmental Fit",
+    subtitle = "Colored by Salinity Category",
+    x = "NMDS1 Axis",
+    y = "NMDS2 Axis"
+  ) + 
+  theme(
+    panel.grid = element_blank(), 
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    plot.subtitle = element_text(hjust = 0.5, size = 14),
+    legend.title = element_blank(),
+    legend.position = "top"
+  ) 
+
+
+
+
+
+
+
+
+# ABUNDANCE NMDS-------------------------------------------------------------------------
+
+# Need to bring in csv SEC_PROD which has biomass data
+abundance <- read.csv("SECPROD_FFGadjusted.csv")
+
+abundance <- abundance %>%
+  mutate(SC.Level = case_when(
+    Site %in% c("EAS") ~ 16,
+    Site %in% c("CRO") ~ 40,
+    Site %in% c("HCN") ~ 77,
+    Site %in% c("HUR") ~ 293,
+    Site %in% c("FRY") ~ 350,
+    Site %in% c("RUT") ~ 447,
+    Site %in% c("LLW") ~ 1048,
+    Site %in% c("LLC") ~ 1083,
+    Site %in% c("RIC") ~ 1185,
+    TRUE ~ NA_real_  # updating SC values of this df
+  ))
+
+
+# Summarizing each genus in each replicate for each stream
+# Then, averaging the replicates from each stream--> 1 value per genus per month
+abundance <- abundance %>%
+  group_by(Sample.Month, SC.Category,SC.Level,Site,Replicate,Genus ) %>% 
+  summarise(sum.abundance=sum(Abundance,na.rm=FALSE))  %>% 
+  
+  group_by(Sample.Month,SC.Category,SC.Level,Site,Genus ) %>% 
+  summarise(mean.abundance=mean(sum.abundance,na.rm=FALSE))
+
+
+# Running the NMDS for all taxa
+aggregated.abd<- aggregate(mean.abundance ~ Site + SC.Level + SC.Category + 
+                              + Genus, data = abundance, FUN = mean, na.rm = TRUE) #average abundance for each site for year
+
+abd_nmds = aggregated.abd %>% 
+  pivot_wider(
+    names_from = Genus, 
+    values_from = mean.abundance,
+  ) 
+
+abd_nmds[is.na(abd_nmds)] <- 0 # Replace NAs with 0
+
+str(abd_nmds)
+
+levels(abd_nmds$Site)
+abd_nmds$Site <- factor(as.character(abd_nmds$Site), 
+                             levels = c("EAS","CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"), 
+                             ordered = TRUE) # this isn't working which is annoying
+
+
+#  Rename the ID part of the matrix; take out the columns for streams, SC, season, genus
+abd.nmds <- abd_nmds[,-c(1:3)]
+
+
+
+# Example environmental data (sites x environmental factors)
+YSI <- read.csv("YSI.Year1.csv")
+
+YSI <- YSI %>%
+  drop_na() %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.Temp = mean(Temp...C., na.rm = TRUE),
+    mean.pH = mean(pH, na.rm = TRUE),
+    mean.DO.percent = mean(DO...., na.rm = TRUE),
+    mean.DO.mg.L = mean(DO..mg.L., na.rm = TRUE)
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.temp = mean(mean.Temp, na.rm = TRUE),
+    annual.mean.pH = mean(mean.pH, na.rm = TRUE),
+    annual.mean.DO.percent = mean(mean.DO.percent, na.rm = TRUE),
+    annual.mean.DO.mg.L = mean(mean.DO.mg.L, na.rm = TRUE),
+  )
+
+
+food.YSI <- cbind(CBOM,FBOM,Algae,YSI)
+food.YSI <- CBOM %>%
+  left_join(FBOM, by = "Site") %>%
+  left_join(Algae, by = "Site") %>%
+  left_join(YSI, by = "Site"
+  )
+
+# Adding yearly SC values to this data frame so it is considered as a vector later
+library(dplyr)
+
+food.YSI <- food.YSI %>%
+  mutate(SC.Level = case_when(
+    Site %in% c("EAS") ~ 16,
+    Site %in% c("CRO") ~ 40,
+    Site %in% c("HCN") ~ 77,
+    Site %in% c("HUR") ~ 293,
+    Site %in% c("FRY") ~ 350,
+    Site %in% c("RUT") ~ 447,
+    Site %in% c("LLW") ~ 1048,
+    Site %in% c("LLC") ~ 1083,
+    Site %in% c("RIC") ~ 1185,
+    TRUE ~ NA_real_  # Use NA_real_ to ensure numeric output
+  ))
+
+food.YSI <- food.YSI %>%
+  mutate(SC.Category = case_when(
+    Site %in% c("EAS", "CRO", "HCN") ~ "REF",   # Sites that should be classified as "REF"
+    Site %in% c("HUR", "FRY", "RUT") ~ "MID",   # Sites that should be classified as "MID"
+    Site %in% c("LLW", "LLC", "RIC") ~ "HIGH",  # Sites that should be classified as "HIGH"
+    TRUE ~ NA_character_  # Default value if none of the above conditions are met (use NA_character_ for a string)
+  ))
+
+
+str(food.YSI)
+
+# Run NMDS (bray-curtis)
+nmds_result <- metaMDS(abd.nmds, distance = "bray", k = 2, trymax = 100)
+
+# Check stress value (should be < 0.2 for a good fit)
+nmds_result$stress
+
+
+# Fit environmental variables
+env_fit <- envfit(nmds_result, food.YSI, permutations = 99999)
+
+
+# Extract NMDS site and species scores
+genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
+genera_scores <- as.data.frame(genera_scores)
+genera_scores$species <- rownames(genera_scores)  # create a column of species, from the rownames of TOPGenera
+
+
+nmds_scores <- as.data.frame(scores(nmds_result, display = "sites"))
+nmds_scores$Salinity <- c("1048","1083","1185","293","350","16","40","77","447")
+nmds_scores$Salinity.Category <- c("HIGH","HIGH","HIGH","MID","MID","REF","REF","REF","MID")
+
+head(nmds_scores)
+str(nmds_scores)
+
+
+# Extract envfit vectors
+env_vectors <- as.data.frame(scores(env_fit, display = "vectors"))
+env_vectors$Variable <- rownames(env_vectors)
+
+
+# Function to compute convex hull points
+find_hull <- function(df) {
+  df[chull(df$NMDS1, df$NMDS2), ]
+}
+
+# Compute hulls for each Salinity.Category
+hulls <- nmds_scores %>%
+  group_by(Salinity.Category) %>%
+  do(find_hull(.))
+
+
+# Plot with convex hulls instead of ellipses
+ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
+  geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category), 
+               alpha = 0.2, linetype = 0) +  # Convex hulls
+  geom_point(size = 4) +  # Sites as points
+  
+  # Add environmental vectors
+  geom_segment(data = env_vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.2, "cm")), color = "black") +
+  
+  
+  # Add labels for environmental vectors and species and sc level
+  geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 2, vjust = 0.5, color = "grey23") +
+  #geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
+  geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
+            inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 0) +
+  
+  # Improve theme and labels
+  theme_minimal() +
+  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +  
+  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +   
+  labs(title = "NMDS of Genus Abundance with Environmental Fit") +
+  coord_cartesian(xlim = c(-0.5, 0.9), ylim = c(-0.5, 0.35)) +
+  theme(panel.grid = element_blank())
+
+
+# Close variance is why we are using hulls instead of ellipse
+nmds_scores %>%
+  group_by(Salinity.Category) %>%
+  summarise(sd_NMDS1 = sd(NMDS1), sd_NMDS2 = sd(NMDS2))
+
+
+
+# Permanova and other stats----------------
+
+library(vegan)
+
+
+# If I want to keep Bray-Curtis...
+
+abd_nmds$SC.Category <- as.factor(abd_nmds$SC.Category)
+# First, create the distance matrix using vegdist() 
+dist_matrix <- vegdist(abd_nmds[, -(1:3)], method = "bray")  # adjust based on your actual columns
+
+# Then, run adonis2 using the distance matrix and relevant factors
+adonis_result <- adonis2(
+  dist_matrix ~ SC.Category, 
+  data = abd_nmds, 
+  permutations = 9999
+)
+
+print(adonis_result)
+
+
+
+# Compute dispersion (PERMDISP)
+dispersion_test <- betadisper(dist_matrix, abd_nmds$SC.Category)
+
+# Perform permutation test for dispersion
+permdisp_result <- permutest(dispersion_test, permutations = 9999)
+
+# View results
+print(permdisp_result)
+
+# Visualize dispersion differences
+boxplot(dispersion_test)
+plot(dispersion_test)
+
+
+
+
+# More stats for environmental vectors
+set.seed(123)  # Set a fixed seed for reproducibility
+env_fit <- envfit(nmds_result, food.YSI, permutations = 9999)
+
+env_scores <- as.data.frame(scores(env_fit, display = "vectors"))  # Extract vector scores
+env_scores$Variable <- rownames(env_scores)  # Add variable names
+env_scores$R2 <- env_fit$vectors$r  # Extract R² values
+env_scores$P_value <- env_fit$vectors$pvals  # Extract p-values
+
+print(env_scores)
+
+
+
+# stats for genera...not sure about this
+genera_fit <- envfit(nmds_result, abd.nmds, permutations = 999)  # Fit species data
+
+# Extract species scores from the NMDS result
+genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
+genera_scores$species <- rownames(genera_scores)  # Create a column for species names
+
+# Extract the R² and p-values from genera_fit (envfit object)
+genera_r2 <- genera_fit$vectors$r  # Extract R² values
+genera_pvals <- genera_fit$vectors$pvals  # Extract p-values
+
+# Create a data frame to hold the R² and p-values for each species
+genera_fit_results <- data.frame(
+  species = names(genera_r2),  # Species names
+  R2 = genera_r2,  # R² values
+  P_value = genera_pvals  # p-values
+)
+
+# Merge the genera scores with the R² and p-values
+genera_scores <- merge(genera_scores, genera_fit_results, by.x = "species", by.y = "species", all.x = TRUE)
+
+# Print the results
+print(genera_scores)
+
+# Plotting significant genera just to see (Ameletus and Tanytarsini)
+# Filter genera that are significantly correlated (p < 0.05)
+significant_genera <- genera_fit_results %>%
+  filter(P_value < 0.05)
+
+nmds_sites <- as.data.frame(scores(nmds_result, display = "sites"))
+nmds_sites$Site <- rownames(nmds_sites)  
+
+
+nmds_species <- as.data.frame(scores(nmds_result, display = "species"))
+nmds_species$Species <- rownames(nmds_species)  
+
+
+vectors <- as.data.frame(scores(genera_fit, display = "vectors"))
+vectors$Species <- rownames(vectors)  
+
+vectors <- vectors %>% filter(Species %in% significant_genera$species)# Keep only significant vectors
+
+
+ggplot() +
+  geom_point(data = nmds_sites, aes(x = NMDS1, y = NMDS2), color = "blue", alpha = 0.7) +
+  geom_text(data = nmds_species, aes(x = NMDS1, y = NMDS2, label = Species), color = "red", size = 3) +
+  geom_segment(data = vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               arrow = arrow(length = unit(0.2, "cm")), color = "darkgreen") +
+  geom_text(data = vectors, aes(x = NMDS1, y = NMDS2, label = Species), 
+            color = "darkgreen", size = 4, hjust = 1.2, vjust = 1.2) +
+  theme_minimal() +
+  labs(title = "NMDS with Significant Genera Vectors", x = "NMDS1", y = "NMDS2")
+
+
+
+# Saving vector information
+install.packages("writexl")  
+library(writexl)
+write_xlsx(env_scores, "environmentalvectorstats_abdNMDS.xlsx")
+write_xlsx(genera_scores, "generastats_abdNMDS.xlsx")
+
+
+
+
+
+
+# BIOMASS NMDS-------------------------------------------------------------------------
+
+# Need to bring in csv SEC_PROD which has biomass data
+biomass <- read.csv("SECPROD_FFGadjusted.csv")
+
+biomass <- biomass %>%
+  mutate(SC.Level = case_when(
+    Site %in% c("EAS") ~ 16,
+    Site %in% c("CRO") ~ 40,
+    Site %in% c("HCN") ~ 77,
+    Site %in% c("HUR") ~ 293,
+    Site %in% c("FRY") ~ 350,
+    Site %in% c("RUT") ~ 447,
+    Site %in% c("LLW") ~ 1048,
+    Site %in% c("LLC") ~ 1083,
+    Site %in% c("RIC") ~ 1185,
+    TRUE ~ NA_real_  # updating SC values of this df
+  ))
+
+
+# Summarizing each genus in each replicate for each stream
+# Then, averaging the replicates from each stream--> 1 value per genus per month
+biomass <- biomass %>%
+  group_by(Sample.Month, SC.Category,SC.Level,Site,Replicate,Genus ) %>% 
+  summarise(sum.biomass=sum(Biomass.Area.Corrected,na.rm=FALSE))  %>% 
+  
+  group_by(Sample.Month,SC.Category,SC.Level,Site,Genus ) %>% 
+  summarise(mean.biomass=mean(sum.biomass,na.rm=FALSE))
+
+
+# Running the NMDS for all taxa
+aggregated.bio<- aggregate(mean.biomass ~ Site + SC.Level + SC.Category + 
+                             + Genus, data = biomass, FUN = mean, na.rm = TRUE) #average abundance for each site for year
+
+bio_nmds = aggregated.bio %>% 
+  pivot_wider(
+    names_from = Genus, 
+    values_from = mean.biomass,
+  ) 
+
+bio_nmds[is.na(bio_nmds)] <- 0 # Replace NAs with 0
+
+str(bio_nmds)
+
+levels(bio_nmds$Site)
+bio_nmds$Site <- factor(as.character(bio_nmds$Site), 
+                        levels = c("EAS","CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"), 
+                        ordered = TRUE) # this isn't working which is annoying
+
+
+#  Rename the ID part of the matrix; take out the columns for streams, SC, season, genus
+bio.nmds <- bio_nmds[,-c(1:3)]
+
+
+
+# Example environmental data (sites x environmental factors)
+YSI <- read.csv("YSI.Year1.csv")
+
+YSI <- YSI %>%
+  drop_na() %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    mean.Temp = mean(Temp...C., na.rm = TRUE),
+    mean.pH = mean(pH, na.rm = TRUE),
+    mean.DO.percent = mean(DO...., na.rm = TRUE),
+    mean.DO.mg.L = mean(DO..mg.L., na.rm = TRUE)
+  ) %>%
+  group_by(Site) %>%
+  summarise(
+    annual.mean.temp = mean(mean.Temp, na.rm = TRUE),
+    annual.mean.pH = mean(mean.pH, na.rm = TRUE),
+    annual.mean.DO.percent = mean(mean.DO.percent, na.rm = TRUE),
+    annual.mean.DO.mg.L = mean(mean.DO.mg.L, na.rm = TRUE),
+  )
+
+
+food.YSI <- cbind(CBOM,FBOM,Algae,YSI)
+food.YSI <- CBOM %>%
+  left_join(FBOM, by = "Site") %>%
+  left_join(Algae, by = "Site") %>%
+  left_join(YSI, by = "Site"
+  )
+
+# Adding yearly SC values to this data frame so it is considered as a vector later
+library(dplyr)
+
+food.YSI <- food.YSI %>%
+  mutate(SC.Level = case_when(
+    Site %in% c("EAS") ~ 16,
+    Site %in% c("CRO") ~ 40,
+    Site %in% c("HCN") ~ 77,
+    Site %in% c("HUR") ~ 293,
+    Site %in% c("FRY") ~ 350,
+    Site %in% c("RUT") ~ 447,
+    Site %in% c("LLW") ~ 1048,
+    Site %in% c("LLC") ~ 1083,
+    Site %in% c("RIC") ~ 1185,
+    TRUE ~ NA_real_  # Use NA_real_ to ensure numeric output
+  ))
+
+food.YSI <- food.YSI %>%
+  mutate(SC.Category = case_when(
+    Site %in% c("EAS", "CRO", "HCN") ~ "REF",   # Sites that should be classified as "REF"
+    Site %in% c("HUR", "FRY", "RUT") ~ "MID",   # Sites that should be classified as "MID"
+    Site %in% c("LLW", "LLC", "RIC") ~ "HIGH",  # Sites that should be classified as "HIGH"
+    TRUE ~ NA_character_  # Default value if none of the above conditions are met (use NA_character_ for a string)
+  ))
+
+
+str(food.YSI)
+
+# Run NMDS (bray-curtis)
+nmds_result <- metaMDS(bio.nmds, distance = "bray", k = 2, trymax = 100)
+
+# Check stress value (should be < 0.2 for a good fit)
+nmds_result$stress
+
+
+# Fit environmental variables
+env_fit <- envfit(nmds_result, food.YSI, permutations = 99999)
+
+
+# Extract NMDS site and species scores
+genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
+genera_scores <- as.data.frame(genera_scores)
+genera_scores$species <- rownames(genera_scores)  # create a column of species, from the rownames of TOPGenera
+
+
+nmds_scores <- as.data.frame(scores(nmds_result, display = "sites"))
+nmds_scores$Salinity <- c("1048","1083","1185","293","350","16","40","77","447")
+nmds_scores$Salinity.Category <- c("HIGH","HIGH","HIGH","MID","MID","REF","REF","REF","MID")
+
+head(nmds_scores)
+str(nmds_scores)
+
+
+# Extract envfit vectors
+env_vectors <- as.data.frame(scores(env_fit, display = "vectors"))
+env_vectors$Variable <- rownames(env_vectors)
+
+
+# Function to compute convex hull points
+find_hull <- function(df) {
+  df[chull(df$NMDS1, df$NMDS2), ]
+}
+
+# Compute hulls for each Salinity.Category
+hulls <- nmds_scores %>%
+  group_by(Salinity.Category) %>%
+  do(find_hull(.))
+
+
+# Plot with convex hulls instead of ellipses
+ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
+  geom_polygon(data = hulls, aes(x = NMDS1, y = NMDS2, fill = Salinity.Category), 
+               alpha = 0.2, linetype = 0) +  # Convex hulls
+  geom_point(size = 4) +  # Sites as points
+  
+  # Add environmental vectors
+  geom_segment(data = env_vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.2, "cm")), color = "black") +
+  
+  
+  # Add labels for environmental vectors and species and sc level
+  geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0, vjust = 0.5, color = "grey23") +
+  geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
+  geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
+            inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 2) +
+  
+  # Improve theme and labels
+  theme_minimal() +
+  scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +  
+  scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +   
+  labs(title = "NMDS of Genus Abundance with Environmental Fit") +
+  coord_cartesian(xlim = c(-0.75, 0.9), ylim = c(-0.5, 0.6)) +
+  theme(panel.grid = element_blank())
+
+
+# Close variance is why we are using hulls instead of ellipse
+nmds_scores %>%
+  group_by(Salinity.Category) %>%
+  summarise(sd_NMDS1 = sd(NMDS1), sd_NMDS2 = sd(NMDS2))
+
+
+
+# Permanova and other stats----------------
+
+library(vegan)
+
+
+# If I want to keep Bray-Curtis...
+
+bio_nmds$SC.Category <- as.factor(bio_nmds$SC.Category)
+# First, create the distance matrix using vegdist() 
+dist_matrix <- vegdist(bio_nmds[, -(1:3)], method = "bray")  # adjust based on your actual columns
+
+# Then, run adonis2 using the distance matrix and relevant factors
+adonis_result <- adonis2(
+  dist_matrix ~ SC.Category, 
+  data = bio_nmds, 
+  permutations = 9999
+)
+
+print(adonis_result)
+
+
+
+# Compute dispersion (PERMDISP)
+dispersion_test <- betadisper(dist_matrix, bio_nmds$SC.Category)
+
+# Perform permutation test for dispersion
+permdisp_result <- permutest(dispersion_test, permutations = 9999)
+
+# View results
+print(permdisp_result)
+
+# Visualize dispersion differences
+boxplot(dispersion_test)
+plot(dispersion_test)
+
+
+
+
+# More stats for environmental vectors
+set.seed(123)  # Set a fixed seed for reproducibility
+env_fit <- envfit(nmds_result, food.YSI, permutations = 9999)
+
+env_scores <- as.data.frame(scores(env_fit, display = "vectors"))  # Extract vector scores
+env_scores$Variable <- rownames(env_scores)  # Add variable names
+env_scores$R2 <- env_fit$vectors$r  # Extract R² values
+env_scores$P_value <- env_fit$vectors$pvals  # Extract p-values
+
+print(env_scores)
+
+
+
+# stats for genera...not sure about this
+genera_fit <- envfit(nmds_result, bio.nmds, permutations = 999)  # Fit species data
+
+# Extract species scores from the NMDS result
+genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
+genera_scores$species <- rownames(genera_scores)  # Create a column for species names
+
+# Extract the R² and p-values from genera_fit (envfit object)
+genera_r2 <- genera_fit$vectors$r  # Extract R² values
+genera_pvals <- genera_fit$vectors$pvals  # Extract p-values
+
+# Create a data frame to hold the R² and p-values for each species
+genera_fit_results <- data.frame(
+  species = names(genera_r2),  # Species names
+  R2 = genera_r2,  # R² values
+  P_value = genera_pvals  # p-values
+)
+
+# Merge the genera scores with the R² and p-values
+genera_scores <- merge(genera_scores, genera_fit_results, by.x = "species", by.y = "species", all.x = TRUE)
+
+# Print the results
+print(genera_scores)
+
+# Plotting significant genera just to see (Ameletus and Tanytarsini)
+# Filter genera that are significantly correlated (p < 0.05)
+significant_genera <- genera_fit_results %>%
+  filter(P_value < 0.05)
+
+nmds_sites <- as.data.frame(scores(nmds_result, display = "sites"))
+nmds_sites$Site <- rownames(nmds_sites)  
+
+
+nmds_species <- as.data.frame(scores(nmds_result, display = "species"))
+nmds_species$Species <- rownames(nmds_species)  
+
+
+vectors <- as.data.frame(scores(genera_fit, display = "vectors"))
+vectors$Species <- rownames(vectors)  
+
+vectors <- vectors %>% filter(Species %in% significant_genera$species)# Keep only significant vectors
+
+
+ggplot() +
+  geom_point(data = nmds_sites, aes(x = NMDS1, y = NMDS2), color = "blue", alpha = 0.7) +
+  geom_text(data = nmds_species, aes(x = NMDS1, y = NMDS2, label = Species), color = "red", size = 3) +
+  geom_segment(data = vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               arrow = arrow(length = unit(0.2, "cm")), color = "darkgreen") +
+  geom_text(data = vectors, aes(x = NMDS1, y = NMDS2, label = Species), 
+            color = "darkgreen", size = 4, hjust = 1.2, vjust = 1.2) +
+  theme_minimal() +
+  labs(title = "NMDS with Significant Genera Vectors", x = "NMDS1", y = "NMDS2")
+
+
+
+# Saving vector information
+install.packages("writexl")  
+library(writexl)
+write_xlsx(env_scores, "environmentalvectorstats_biomassNMDS.xlsx")
+write_xlsx(genera_scores, "generastats_biomassNMDS.xlsx")
 
 
