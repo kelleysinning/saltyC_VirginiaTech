@@ -543,6 +543,7 @@ prod.food.ffg <- left_join(food, TOTALPROD_Summary_Sum, by = c("Site"))
 colnames(prod.food.ffg)  # Lists all column names
 
 
+# Adding cbom + fbom columns and total foods column
 prod.food.ffg <- prod.food.ffg %>%
   mutate(Site_FFG = paste(Site, FFG, sep = "."))  # Creates unique site-FFG names
 
@@ -552,7 +553,11 @@ prod.food <- prod.food %>%
 prod.food.ffg <- prod.food.ffg %>%
   mutate(fbom.cbom = annual.mean.FBOM + annual.mean.CBOM) # column with fbom+cbom combined
 
+prod.food <- prod.food %>%
+  mutate(total.food = annual.mean.FBOM + annual.mean.CBOM + annual.mean.Algae) # column with fbom+cbom combined
 
+prod.food.ffg <- prod.food.ffg %>%
+  mutate(total.food = annual.mean.FBOM + annual.mean.CBOM + annual.mean.Algae) # column with fbom+cbom combined
 
 
 
@@ -1733,7 +1738,7 @@ FBOM.CBOM.lm.cat
 plot(prod.food$annual.mean.Algae, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
 
-glm_results_algae <- prod.food %>%
+glm_results <- prod.food %>%
   group_by(SC.Category) %>%
   do({
     model <- glm(Sum.Annual.Production ~ annual.mean.Algae, family = gaussian(link="identity"), data = .)
@@ -1750,7 +1755,7 @@ glm_results_algae <- prod.food %>%
   )
 
 # Print results
-print(glm_results_algae)
+print(glm_results)
 
 
 
@@ -1784,6 +1789,60 @@ Algae.lm.cat <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Prod
 Algae.lm.cat
 
 
+# ALL FOOD RESOURCES----------
+plot(prod.food$total.food, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
+
+glm_results <- prod.food %>%
+  group_by(SC.Category) %>%
+  do({
+    model <- glm(Sum.Annual.Production ~ total.food, family = gaussian (link="identity"), data = .)
+    intercept <- coef(model)[1]
+    slope <- coef(model)[2]
+    p_value <- summary(model)$coefficients[2, 4]  
+    r2 <- 1 - sum(residuals(model)^2) / sum((.$Sum.Annual.Production - mean(.$Sum.Annual.Production, na.rm = TRUE))^2)  
+    equation <- paste0("y = ", signif(intercept, 3), " + ", signif(slope, 3), "x")
+    data.frame(intercept = intercept, slope = slope, p_value = p_value, r2 = r2, equation = equation)
+  }) %>%
+  ungroup() %>%
+  mutate(
+    label = paste0(equation, "\nP = ", signif(p_value, 3), "\nR² = ", signif(r2, 3))  # Format label text
+  )
+
+# Print results
+print(glm_results)
+
+
+
+totalfood.lm.cat <- ggplot(prod.food, aes(x = total.food, y = Sum.Annual.Production, color = SC.Category)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+  geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = FALSE) +  
+  #geom_text(data = glm_results, aes(
+    #x = min(prod.food$total.food) + 0.05 * (max(prod.food$total.food) - min(prod.food$total.food)),  # Adjust x position
+    #y = max(prod.food$Sum.Annual.Production) - 0.1 * (max(prod.food$Sum.Annual.Production) - min(prod.food$Sum.Annual.Production)) * as.numeric(factor(SC.Category)),  # Different y offsets per category
+    #label = label, 
+    #color = SC.Category  # Color the text based on SC.Category
+  #), inherit.aes = FALSE, hjust = 0, size = 5, alpha = 2) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual total standing stock (g/m²)") +  
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), name = "SC Category") +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Streams" = 8)) +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+totalfood.lm.cat
+
+
 # PRODUCTION NMDS-------------------------------------------------------------------------
 
 # Loading the appropariate packages
@@ -1794,9 +1853,10 @@ library(dplyr)
 library(rcartocolor)
 
 
+
 # Running the NMDS for all taxa
 aggregated.prod<- aggregate(Annual.Production ~ Site + SC.Level + SC.Category + 
-                              + Genus, data = TOTALPROD_Summary, FUN = mean, na.rm = TRUE) #mean doesn't change anything bc there is only one annual value for production
+                              Genus, data = TOTALPROD_Summary, FUN = mean, na.rm = TRUE) #mean doesn't change anything bc there is only one annual value for production
 
 prod_nmds = aggregated.prod %>% 
   pivot_wider(
@@ -1810,13 +1870,15 @@ str(prod_nmds)
 
 prod_nmds$SC.Level <- factor(as.character(prod_nmds$SC.Level), 
                               levels = c("16","40","77","293","350","447","1048","1083","1185"), 
-                              ordered = TRUE) # this isn't working which is annoying
+                              ordered = TRUE) 
+prod_nmds <- prod_nmds %>%
+  arrange(SC.Level) # Trying to order columns
 
+rownames(prod_nmds) <- prod_nmds$Site
 
 
 #  Rename the ID part of the matrix; take out the columns for streams, SC, season, genus
 prod.nmds <- prod_nmds[,-c(1:3)]
-
 
 
 # Example environmental data (sites x environmental factors)
@@ -1841,7 +1903,7 @@ YSI <- YSI %>%
   )
 
 
-food.YSI <- cbind(CBOM,FBOM,Algae,YSI)
+
 food.YSI <- CBOM %>%
   left_join(FBOM, by = "Site") %>%
   left_join(Algae, by = "Site") %>%
@@ -1849,7 +1911,6 @@ food.YSI <- CBOM %>%
   )
 
 # Adding yearly SC values to this data frame so it is considered as a vector later
-library(dplyr)
 
 food.YSI <- food.YSI %>%
   mutate(SC.Level = case_when(
@@ -1864,6 +1925,16 @@ food.YSI <- food.YSI %>%
     Site %in% c("RIC") ~ 1185,
     TRUE ~ NA_real_  # Use NA_real_ to ensure numeric output
   ))
+
+food.YSI$SC.Level <- factor(as.character(food.YSI$SC.Level), 
+                             levels = c("16","40","77","293","350","447","1048","1083","1185"), 
+                             ordered = TRUE) 
+food.YSI <- food.YSI %>%
+  arrange(SC.Level)
+
+rownames(food.YSI) <- food.YSI$Site
+
+
 
 food.YSI <- food.YSI %>%
   mutate(SC.Category = case_when(
@@ -1884,7 +1955,10 @@ nmds_result$stress
 
 
 # Fit environmental variables
-env_fit <- envfit(nmds_result, food.YSI, permutations = 99999)
+food.YSI$SC.Level <- as.numeric(as.character(food.YSI$SC.Level)) #making SC numeric for env_fit
+
+env_fit <- envfit(nmds_result, food.YSI %>% select(where(is.numeric)), permutations = 99999)
+
 
 
 # Extract NMDS site and species scores
@@ -1892,10 +1966,9 @@ genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
 genera_scores <- as.data.frame(genera_scores)
 genera_scores$species <- rownames(genera_scores)  # create a column of species, from the rownames of TOPGenera
 
-
 nmds_scores <- as.data.frame(scores(nmds_result, display = "sites"))
-nmds_scores$Salinity <- c("19","40","77","293","350","1048","1083","1185","447")
-nmds_scores$Salinity.Category <- c("REF","REF","REF","MID","MID","HIGH","HIGH","HIGH","MID")
+nmds_scores$Salinity <- c("16","40","77","293","350","447","1048","1083","1185")
+nmds_scores$Salinity.Category <- c("REF","REF","REF","MID","MID","MID","HIGH","HIGH","HIGH")
 
 head(nmds_scores)
 str(nmds_scores)
@@ -1933,8 +2006,8 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
   
   
   # Add labels for environmental vectors and species and sc level
-  geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.2, vjust = 0.5, color = "grey23") +
-  #geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
+  geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.0, vjust = 0.5, color = "grey23") +
+  geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
   geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
             inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 0) +
   
@@ -1983,6 +2056,7 @@ permdisp_result <- permutest(dispersion_test, permutations = 9999)
 
 # View results
 print(permdisp_result)
+
 
 # Visualize dispersion differences
 boxplot(dispersion_test)
@@ -2127,14 +2201,12 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
 
 
 
-
-
-# ABUNDANCE NMDS-------------------------------------------------------------------------
+# DENSITY NMDS-------------------------------------------------------------------------
 
 # Need to bring in csv SEC_PROD which has biomass data
-abundance <- read.csv("SECPROD_FFGadjusted.csv")
+density <- read.csv("SECPROD_FFGadjusted.csv")
 
-abundance <- abundance %>%
+density <- density %>%
   mutate(SC.Level = case_when(
     Site %in% c("EAS") ~ 16,
     Site %in% c("CRO") ~ 40,
@@ -2151,36 +2223,38 @@ abundance <- abundance %>%
 
 # Summarizing each genus in each replicate for each stream
 # Then, averaging the replicates from each stream--> 1 value per genus per month
-abundance <- abundance %>%
+density <- density %>%
   group_by(Sample.Month, SC.Category,SC.Level,Site,Replicate,Genus ) %>% 
-  summarise(sum.abundance=sum(Abundance,na.rm=FALSE))  %>% 
+  summarise(sum.density=sum(Density,na.rm=FALSE))  %>% 
   
   group_by(Sample.Month,SC.Category,SC.Level,Site,Genus ) %>% 
-  summarise(mean.abundance=mean(sum.abundance,na.rm=FALSE))
+  summarise(mean.density=mean(sum.density,na.rm=FALSE))
 
 
 # Running the NMDS for all taxa
-aggregated.abd<- aggregate(mean.abundance ~ Site + SC.Level + SC.Category + 
-                              + Genus, data = abundance, FUN = mean, na.rm = TRUE) #average abundance for each site for year
+aggregated.dens<- aggregate(mean.density ~ Site + SC.Level + SC.Category + 
+                             + Genus, data = density, FUN = mean, na.rm = TRUE) #average abundance for each site for year
 
-abd_nmds = aggregated.abd %>% 
+dens_nmds = aggregated.dens %>% 
   pivot_wider(
     names_from = Genus, 
-    values_from = mean.abundance,
+    values_from = mean.density,
   ) 
 
-abd_nmds[is.na(abd_nmds)] <- 0 # Replace NAs with 0
+dens_nmds[is.na(dens_nmds)] <- 0 # Replace NAs with 0
 
-str(abd_nmds)
+str(dens_nmds)
 
-levels(abd_nmds$Site)
-abd_nmds$Site <- factor(as.character(abd_nmds$Site), 
-                             levels = c("EAS","CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"), 
-                             ordered = TRUE) # this isn't working which is annoying
+dens_nmds$Site <- factor(as.character(dens_nmds$Site), 
+                        levels = c("EAS","CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"), 
+                        ordered = TRUE) # this isn't working which is annoying
+dens_nmds <- dens_nmds %>%
+  arrange(Site)
 
+rownames(dens_nmds) <- dens_nmds$Site
 
 #  Rename the ID part of the matrix; take out the columns for streams, SC, season, genus
-abd.nmds <- abd_nmds[,-c(1:3)]
+dens.nmds <- dens_nmds[,-c(1:3)]
 
 
 
@@ -2206,7 +2280,7 @@ YSI <- YSI %>%
   )
 
 
-food.YSI <- cbind(CBOM,FBOM,Algae,YSI)
+
 food.YSI <- CBOM %>%
   left_join(FBOM, by = "Site") %>%
   left_join(Algae, by = "Site") %>%
@@ -2214,7 +2288,7 @@ food.YSI <- CBOM %>%
   )
 
 # Adding yearly SC values to this data frame so it is considered as a vector later
-library(dplyr)
+
 
 food.YSI <- food.YSI %>%
   mutate(SC.Level = case_when(
@@ -2230,6 +2304,15 @@ food.YSI <- food.YSI %>%
     TRUE ~ NA_real_  # Use NA_real_ to ensure numeric output
   ))
 
+food.YSI$SC.Level <- factor(as.character(food.YSI$SC.Level), 
+                            levels = c("16","40","77","293","350","447","1048","1083","1185"), 
+                            ordered = TRUE) 
+food.YSI <- food.YSI %>%
+  arrange(SC.Level)
+
+rownames(food.YSI) <- food.YSI$Site
+
+
 food.YSI <- food.YSI %>%
   mutate(SC.Category = case_when(
     Site %in% c("EAS", "CRO", "HCN") ~ "REF",   # Sites that should be classified as "REF"
@@ -2242,13 +2325,15 @@ food.YSI <- food.YSI %>%
 str(food.YSI)
 
 # Run NMDS (bray-curtis)
-nmds_result <- metaMDS(abd.nmds, distance = "bray", k = 2, trymax = 100)
+nmds_result <- metaMDS(dens.nmds, distance = "bray", k = 2, trymax = 100)
 
 # Check stress value (should be < 0.2 for a good fit)
 nmds_result$stress
 
 
 # Fit environmental variables
+food.YSI$SC.Level <- as.numeric(as.character(food.YSI$SC.Level)) #making SC numeric for env_fit
+
 env_fit <- envfit(nmds_result, food.YSI, permutations = 99999)
 
 
@@ -2259,8 +2344,8 @@ genera_scores$species <- rownames(genera_scores)  # create a column of species, 
 
 
 nmds_scores <- as.data.frame(scores(nmds_result, display = "sites"))
-nmds_scores$Salinity <- c("1048","1083","1185","293","350","16","40","77","447")
-nmds_scores$Salinity.Category <- c("HIGH","HIGH","HIGH","MID","MID","REF","REF","REF","MID")
+nmds_scores$Salinity <- c("16","40","77","293","350","447","1048","1083","1185")
+nmds_scores$Salinity.Category <- c("REF","REF","REF","MID","MID","MID","HIGH","HIGH","HIGH")
 
 head(nmds_scores)
 str(nmds_scores)
@@ -2295,7 +2380,7 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
   
   # Add labels for environmental vectors and species and sc level
   geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 2, vjust = 0.5, color = "grey23") +
-  #geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
+  geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
   geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
             inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 0) +
   
@@ -2303,8 +2388,8 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
   theme_minimal() +
   scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +  
   scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +   
-  labs(title = "NMDS of Genus Abundance with Environmental Fit") +
-  coord_cartesian(xlim = c(-0.5, 0.9), ylim = c(-0.5, 0.35)) +
+  labs(title = "NMDS of Genus Density with Environmental Fit") +
+  coord_cartesian(xlim = c(-0.3, 0.9), ylim = c(-0.5, 0.75)) +
   theme(panel.grid = element_blank())
 
 
@@ -2322,14 +2407,14 @@ library(vegan)
 
 # If I want to keep Bray-Curtis...
 
-abd_nmds$SC.Category <- as.factor(abd_nmds$SC.Category)
+dens_nmds$SC.Category <- as.factor(dens_nmds$SC.Category)
 # First, create the distance matrix using vegdist() 
-dist_matrix <- vegdist(abd_nmds[, -(1:3)], method = "bray")  # adjust based on your actual columns
+dist_matrix <- vegdist(dens_nmds[, -(1:3)], method = "bray")  # adjust based on your actual columns
 
 # Then, run adonis2 using the distance matrix and relevant factors
 adonis_result <- adonis2(
   dist_matrix ~ SC.Category, 
-  data = abd_nmds, 
+  data = dens_nmds, 
   permutations = 9999
 )
 
@@ -2338,7 +2423,7 @@ print(adonis_result)
 
 
 # Compute dispersion (PERMDISP)
-dispersion_test <- betadisper(dist_matrix, abd_nmds$SC.Category)
+dispersion_test <- betadisper(dist_matrix, dens_nmds$SC.Category)
 
 # Perform permutation test for dispersion
 permdisp_result <- permutest(dispersion_test, permutations = 9999)
@@ -2367,7 +2452,7 @@ print(env_scores)
 
 
 # stats for genera...not sure about this
-genera_fit <- envfit(nmds_result, abd.nmds, permutations = 999)  # Fit species data
+genera_fit <- envfit(nmds_result, dens.nmds, permutations = 999)  # Fit species data
 
 # Extract species scores from the NMDS result
 genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
@@ -2424,8 +2509,12 @@ ggplot() +
 # Saving vector information
 install.packages("writexl")  
 library(writexl)
-write_xlsx(env_scores, "environmentalvectorstats_abdNMDS.xlsx")
-write_xlsx(genera_scores, "generastats_abdNMDS.xlsx")
+write_xlsx(env_scores, "environmentalvectorstats_densNMDS.xlsx")
+write_xlsx(genera_scores, "generastats_densNMDS.xlsx")
+
+
+
+
 
 
 
@@ -2476,11 +2565,13 @@ bio_nmds[is.na(bio_nmds)] <- 0 # Replace NAs with 0
 
 str(bio_nmds)
 
-levels(bio_nmds$Site)
 bio_nmds$Site <- factor(as.character(bio_nmds$Site), 
-                        levels = c("EAS","CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"), 
-                        ordered = TRUE) # this isn't working which is annoying
+                         levels = c("EAS","CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"), 
+                         ordered = TRUE) # ordering for consistency
+bio_nmds <- bio_nmds %>%
+  arrange(Site)
 
+rownames(bio_nmds) <- bio_nmds$Site
 
 #  Rename the ID part of the matrix; take out the columns for streams, SC, season, genus
 bio.nmds <- bio_nmds[,-c(1:3)]
@@ -2509,7 +2600,7 @@ YSI <- YSI %>%
   )
 
 
-food.YSI <- cbind(CBOM,FBOM,Algae,YSI)
+
 food.YSI <- CBOM %>%
   left_join(FBOM, by = "Site") %>%
   left_join(Algae, by = "Site") %>%
@@ -2533,6 +2624,14 @@ food.YSI <- food.YSI %>%
     TRUE ~ NA_real_  # Use NA_real_ to ensure numeric output
   ))
 
+food.YSI$SC.Level <- factor(as.character(food.YSI$SC.Level), 
+                            levels = c("16","40","77","293","350","447","1048","1083","1185"), 
+                            ordered = TRUE) 
+food.YSI <- food.YSI %>%
+  arrange(SC.Level)
+
+rownames(food.YSI) <- food.YSI$Site
+
 food.YSI <- food.YSI %>%
   mutate(SC.Category = case_when(
     Site %in% c("EAS", "CRO", "HCN") ~ "REF",   # Sites that should be classified as "REF"
@@ -2552,6 +2651,8 @@ nmds_result$stress
 
 
 # Fit environmental variables
+food.YSI$SC.Level <- as.numeric(as.character(food.YSI$SC.Level)) #making SC numeric for env_fit
+
 env_fit <- envfit(nmds_result, food.YSI, permutations = 99999)
 
 
@@ -2560,10 +2661,9 @@ genera_scores <- as.data.frame(scores(nmds_result, display = "species"))
 genera_scores <- as.data.frame(genera_scores)
 genera_scores$species <- rownames(genera_scores)  # create a column of species, from the rownames of TOPGenera
 
-
 nmds_scores <- as.data.frame(scores(nmds_result, display = "sites"))
-nmds_scores$Salinity <- c("1048","1083","1185","293","350","16","40","77","447")
-nmds_scores$Salinity.Category <- c("HIGH","HIGH","HIGH","MID","MID","REF","REF","REF","MID")
+nmds_scores$Salinity <- c("16","40","77","293","350","447","1048","1083","1185")
+nmds_scores$Salinity.Category <- c("REF","REF","REF","MID","MID","MID","HIGH","HIGH","HIGH")
 
 head(nmds_scores)
 str(nmds_scores)
@@ -2598,7 +2698,7 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
   
   # Add labels for environmental vectors and species and sc level
   geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0, vjust = 0.5, color = "grey23") +
-  geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
+  geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 1) +
   geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
             inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 2) +
   
@@ -2606,7 +2706,7 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
   theme_minimal() +
   scale_color_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +  
   scale_fill_manual(values = c("REF" = "#70A494", "MID" = "#EDBB8A", "HIGH" = "#CA562C")) +   
-  labs(title = "NMDS of Genus Abundance with Environmental Fit") +
+  labs(title = "NMDS of Genus Biomass with Environmental Fit") +
   coord_cartesian(xlim = c(-0.75, 0.9), ylim = c(-0.5, 0.6)) +
   theme(panel.grid = element_blank())
 
@@ -2729,5 +2829,506 @@ install.packages("writexl")
 library(writexl)
 write_xlsx(env_scores, "environmentalvectorstats_biomassNMDS.xlsx")
 write_xlsx(genera_scores, "generastats_biomassNMDS.xlsx")
+
+
+
+# BIOMASS SEASONAL NMDS--------------------------
+
+# Isolate REF sites for each quarterly---------
+
+# Loading the appropriate packages
+library(vegan) # vegan to calculate distance matrices
+library(ggplot2) # ggplot for plotting
+library(tidyverse) 
+library(dplyr)
+install.packages("ggforce")
+library(ggforce)
+
+SEC_PROD <- read.csv("SEC_PROD.csv") # Need biomass by months, not across length classes for year
+
+
+aggregated.ref.filter <- subset(SEC_PROD, 
+                                 (Site == "EAS" & Sample.Month == "October") | 
+                                   Site == "EAS" & Sample.Month == "February" |
+                                   Site == "EAS" & Sample.Month == "May" |
+                                   Site == "EAS" & Sample.Month == "August" |
+                                   Site == "CRO" & Sample.Month == "October" | 
+                                   Site == "CRO" & Sample.Month == "February" |
+                                   Site == "CRO" & Sample.Month == "May" |
+                                   Site == "CRO" & Sample.Month == "August"|
+                                   Site == "HCN" & Sample.Month == "October" | 
+                                   Site == "HCN" & Sample.Month == "February" |
+                                   Site == "HCN" & Sample.Month == "May" |
+                                   Site == "HCN" & Sample.Month == "August")
+
+aggregated.ref.filter <- aggregate(Biomass.Area.Corrected ~ Site + SC.Level + SC.Category + Sample.Month 
+                                    + Genus, data = aggregated.ref.filter, FUN = mean, na.rm = TRUE)
+
+
+biomass.ref.filter <- aggregated.ref.filter %>% 
+  pivot_wider(
+    names_from = Genus, 
+    values_from = Biomass.Area.Corrected,
+  )
+
+# Define the correct order for Sample.Month and Site
+biomass.ref.filter <- as.data.frame(biomass.ref.filter)
+
+# Define levels
+sample_month_levels <- c("October", "February", "May", "August")
+site_levels <- c("EAS", "CRO", "HCN")
+
+# Ensure columns are factors
+biomass.ref.filter$Sample.Month <- factor(biomass.ref.filter$Sample.Month, levels = sample_month_levels)
+biomass.ref.filter$Site <- factor(biomass.ref.filter$Site, levels = site_levels)
+
+# Arrange the data frame by Sample.Month and Site
+biomass.ref.filter <- biomass.ref.filter %>%
+  arrange(Site, Sample.Month)
+
+#  Rename the ID part of the matrix; take out the columns for streams, SC level, SC cat, and sample month
+biomass.ref.ID.filter <- biomass.ref.filter[,-c(1:4)]
+
+
+biomass.ref.ID.filter[is.na(biomass.ref.ID.filter)] <- 0
+
+
+# Running the NMDS for all reference taxa across quarterly
+
+#  metaMDS integrates functions from several packages to perform NMDS.....
+#  ....including'vegdist' from the vegan package
+
+biomass.ref.ID.nmds <- metaMDS(biomass.ref.ID.filter, distance='bray', k=2, trymax=20, autotransform=FALSE, pc=FALSE, plot=FALSE)
+
+# Gives average stress
+biomass.ref.ID.nmds$stress
+
+# Gives weights that different species hold in the axis
+biomass.ref.ID.nmds$species
+
+
+# Basic plot of all of the points
+plot(biomass.ref.ID.nmds, display=c('sites', 'species'), choices=c(1,2), type='p')
+
+nmds_species <- scores(biomass.ref.ID.nmds, display = "species")
+
+nmds_sites <- scores(biomass.ref.ID.nmds, display = "sites")
+
+# Scores
+site.scores <- as.data.frame(scores(nmds_sites)) #Using the scores function from vegan to extract the site scores and convert to a data.frame
+site.scores$site <- rownames(site.scores)# Add site column to dataframe
+head(site.scores)
+
+
+species.scores <- as.data.frame(scores(nmds_species)) 
+species.scores$species <- rownames(species.scores)  
+head(species.scores)
+
+
+rownames(site.scores) <- c("EAS.OCT", "EAS.FEB", "EAS.MAY", "EAS.AUG",
+                           "CRO.OCT", "CRO.FEB", "CRO.MAY", "CRO.AUG",
+                           "HCN.OCT", "HCN.FEB", "HCN.MAY", "HCN.AUG") # Change sites from numbers to categorical
+site.scores$site <- rownames(site.scores) 
+
+# Organizing the polygons
+ref.oct <- subset(site.scores, site %in% c("EAS.OCT", "CRO.OCT", "HCN.OCT"))
+ref.feb <- subset(site.scores, site %in% c("EAS.FEB", "CRO.FEB", "HCN.FEB"))
+ref.may <- subset(site.scores, site %in% c("EAS.MAY", "CRO.MAY", "HCN.MAY"))
+ref.aug <- subset(site.scores, site %in% c("EAS.AUG", "CRO.AUG", "HCN.AUG"))
+
+
+# Filter data for specific colors
+
+# geom_mark_ellipse for ellipse instead of polygon
+
+REF.NMDS <- ggplot() +    
+  geom_polygon(data = ref.oct, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#70A494", alpha = 0.5) +
+  geom_polygon(data = ref.feb, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#EDBB8A", alpha = 0.5) +
+  geom_polygon(data = ref.may, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#CA562C", alpha = 0.5) +
+  geom_polygon(data = ref.aug, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#F6EDBD", alpha = 0.5) +
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.0, vjust = 0.5, color = "grey23") +   
+  geom_point(data = site.scores, aes(x = NMDS1, y = NMDS2, color = site), size = 3) + 
+  geom_text(data = site.scores, aes(x = NMDS1, y = NMDS2, label = site), size = 2, vjust = 0.5, alpha = 0) +
+  scale_colour_manual(values = c( "EAS.OCT" = "#70A494", "EAS.FEB" = "#EDBB8A", "EAS.MAY" = "#CA562C","EAS.AUG"="#F6EDBD",
+                                  "CRO.OCT" = "#70A494", "CRO.FEB" = "#EDBB8A", "CRO.MAY" = "#CA562C","CRO.AUG"="#F6EDBD",
+                                  "HCN.OCT" = "#70A494", "HCN.FEB" = "#EDBB8A", "HCN.MAY" = "#CA562C","HCN.AUG"="#F6EDBD",
+                                  "HUR.OCT" = "#EDBB8A00", "HUR.FEB" = "#EDBB8A00", "HUR.MAY" = "#EDBB8A00","HUR.AUG" = "#EDBB8A00",
+                                  "FRY.OCT" = "#EDBB8A00", "FRY.FEB" = "#EDBB8A00", "FRY.MAY" = "#EDBB8A00","FRY.AUG" = "#EDBB8A00",
+                                  "RUT.OCT" = "#EDBB8A00", "RUT.FEB" = "#EDBB8A00", "RUT.MAY" = "#EDBB8A00","RUT.AUG" = "#EDBB8A00",
+                                  "RIC.OCT" = "#CA562C00", "RIC.FEB" = "#CA562C00", "RIC.MAY" = "#CA562C00","RIC.AUG"=  "#EDBB8A00",
+                                  "LLW.OCT" = "#CA562C00", "LLW.FEB" = "#CA562C00", "LLW.MAY" = "#CA562C00","LLW.AUG" = "#EDBB8A00",
+                                  "LLC.OCT" = "#CA562C00", "LLC.FEB" = "#CA562C00", "LLC.MAY" = "#CA562C00","LLC.MAY" = "#EDBB8A00")) +
+  coord_equal() +
+  coord_equal() +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  #scale_x_continuous(name = "NMDS1", limits = c(-1, 1.2)) +
+  #scale_y_continuous(name = "NMDS2", limits = c(-1, 1)) 
+  scale_x_continuous(name = "NMDS1", limits =c(-2, 1.5)) + # to be on same scale
+  scale_y_continuous(name = "NMDS2", limits = c(-1.5, 2)) 
+
+print(REF.NMDS)
+
+
+
+
+
+
+#Isolate MID sites for each quarterly---------
+  
+# Loading the appropriate packages
+library(vegan) # vegan to calculate distance matrices
+library(ggplot2) # ggplot for plotting
+library(tidyverse) 
+library(dplyr)
+install.packages("ggforce")
+library(ggforce)
+
+SEC_PROD <- read.csv("SEC_PROD.csv") # Need biomass by months, not across length classes for year
+
+
+aggregated.mid.filter <- subset(SEC_PROD, 
+                                (Site == "FRY" & Sample.Month == "October") | 
+                                  Site == "FRY" & Sample.Month == "February" |
+                                  Site == "FRY" & Sample.Month == "May" |
+                                  Site == "FRY" & Sample.Month == "August" |
+                                  Site == "HUR" & Sample.Month == "October" | 
+                                  Site == "HUR" & Sample.Month == "February" |
+                                  Site == "HUR" & Sample.Month == "May" |
+                                  Site == "HUR" & Sample.Month == "August"|
+                                  Site == "RUT" & Sample.Month == "October" | 
+                                  Site == "RUT" & Sample.Month == "February" |
+                                  Site == "RUT" & Sample.Month == "May" |
+                                  Site == "RUT" & Sample.Month == "August")
+
+aggregated.mid.filter <- aggregate(Biomass.Area.Corrected ~ Site + SC.Level + SC.Category + Sample.Month 
+                                   + Genus, data = aggregated.mid.filter, FUN = mean, na.rm = TRUE)
+
+
+biomass.mid.filter <- aggregated.mid.filter %>% 
+  pivot_wider(
+    names_from = Genus, 
+    values_from = Biomass.Area.Corrected,
+  )
+
+# Define the correct order for Sample.Month and Site
+biomass.mid.filter <- as.data.frame(biomass.mid.filter)
+
+# Define levels
+sample_month_levels <- c("October", "February", "May", "August")
+site_levels <- c("FRY", "HUR", "RUT")
+
+# Ensure columns are factors
+biomass.mid.filter$Sample.Month <- factor(biomass.mid.filter$Sample.Month, levels = sample_month_levels)
+biomass.mid.filter$Site <- factor(biomass.mid.filter$Site, levels = site_levels)
+
+# Arrange the data frame by Sample.Month and Site
+biomass.mid.filter <- biomass.mid.filter %>%
+  arrange(Site, Sample.Month)
+
+#  Rename the ID part of the matrix; take out the columns for streams, SC level, SC cat, and sample month
+biomass.mid.ID.filter <- biomass.mid.filter[,-c(1:4)]
+
+
+biomass.mid.ID.filter[is.na(biomass.mid.ID.filter)] <- 0
+
+
+# Running the NMDS for all reference taxa across quarterly
+
+#  metaMDS integrates functions from several packages to perform NMDS.....
+#  ....including'vegdist' from the vegan package
+
+biomass.mid.ID.nmds <- metaMDS(biomass.mid.ID.filter, distance='bray', k=2, trymax=20, autotransform=FALSE, pc=FALSE, plot=FALSE)
+
+# Gives average stress
+biomass.mid.ID.nmds$stress
+
+# Gives weights that different species hold in the axis
+biomass.mid.ID.nmds$species
+
+
+# Basic plot of all of the points
+plot(biomass.mid.ID.nmds, display=c('sites', 'species'), choices=c(1,2), type='p')
+
+nmds_species <- scores(biomass.mid.ID.nmds, display = "species")
+
+nmds_sites <- scores(biomass.mid.ID.nmds, display = "sites")
+
+# Scores
+site.scores <- as.data.frame(scores(nmds_sites)) #Using the scores function from vegan to extract the site scores and convert to a data.frame
+site.scores$site <- rownames(site.scores)# Add site column to dataframe
+head(site.scores)
+
+
+species.scores <- as.data.frame(scores(nmds_species)) 
+species.scores$species <- rownames(species.scores)  
+head(species.scores)
+
+
+rownames(site.scores) <- c("FRY.OCT", "FRY.FEB", "FRY.MAY", "FRY.AUG",
+                           "HUR.OCT", "HUR.FEB", "HUR.MAY", "HUR.AUG",
+                           "RUT.OCT", "RUT.FEB", "RUT.MAY", "RUT.AUG") # Change sites from numbers to categorical
+site.scores$site <- rownames(site.scores) 
+
+# Organizing the polygons
+mid.oct <- subset(site.scores, site %in% c("FRY.OCT", "HUR.OCT", "RUT.OCT"))
+mid.feb <- subset(site.scores, site %in% c("FRY.FEB", "HUR.FEB", "RUT.FEB"))
+mid.may <- subset(site.scores, site %in% c("FRY.MAY", "HUR.MAY", "RUT.MAY"))
+mid.aug <- subset(site.scores, site %in% c("FRY.AUG", "HUR.AUG", "RUT.AUG"))
+
+
+# Filter data for specific colors
+
+MID.NMDS <- ggplot() +    
+  geom_polygon(data = mid.oct, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#70A494", alpha = 0.5) +
+  geom_polygon(data = mid.feb, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#EDBB8A", alpha = 0.5) +
+  geom_polygon(data = mid.may, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#CA562C", alpha = 0.5) +
+  geom_polygon(data = mid.aug, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#F6EDBD", alpha = 0.5) +
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.0, vjust = 0.5, color = "grey23") +   
+  geom_point(data = site.scores, aes(x = NMDS1, y = NMDS2, color = site), size = 3) + 
+  geom_text(data = site.scores, aes(x = NMDS1, y = NMDS2, label = site), size = 2, vjust = 0.5, alpha = 0) +
+  scale_colour_manual(values = c(  "EAS.OCT" = "#CA562C00", "EAS.FEB" = "#CA562C00", "EAS.MAY" = "#CA562C00","EAS.AUG"="#EDBB8A00",
+                                   "CRO.OCT" = "#CA562C00", "CRO.FEB" = "#CA562C00", "CRO.MAY" = "#CA562C00","CRO.AUG"="#EDBB8A00",
+                                   "HCN.OCT" = "#CA562C00", "HCN.FEB" = "#CA562C00", "HCN.MAY" = "#CA562C00","HCN.AUG"="#EDBB8A00",
+                                   "HUR.OCT" = "#70A494", "HUR.FEB" = "#EDBB8A", "HUR.MAY" = "#CA562C","HUR.AUG" = "#F6EDBD",
+                                   "FRY.OCT" = "#70A494", "FRY.FEB" = "#EDBB8A", "FRY.MAY" = "#CA562C","FRY.AUG" = "#F6EDBD",
+                                   "RUT.OCT" = "#70A494", "RUT.FEB" = "#EDBB8A", "RUT.MAY" = "#CA562C","RUT.AUG" = "#F6EDBD",
+                                   "RIC.OCT" = "#CA562C00", "RIC.FEB" = "#CA562C00", "RIC.MAY" = "#CA562C00","RIC.AUG"=  "#EDBB8A00",
+                                   "LLW.OCT" = "#CA562C00", "LLW.FEB" = "#CA562C00", "LLW.MAY" = "#CA562C00","LLW.AUG" = "#EDBB8A00",
+                                   "LLC.OCT" = "#CA562C00", "LLC.FEB" = "#CA562C00", "LLC.MAY" = "#CA562C00","LLC.MAY" = "#EDBB8A00")) +
+  coord_equal() +
+  coord_equal() +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_x_continuous(name = "NMDS1", limits = c(-2, 1.5)) +
+  scale_y_continuous(name = "NMDS2", limits = c(-1.5, 2)) 
+
+print(MID.NMDS)
+
+
+
+
+
+
+
+
+
+
+
+
+# Isolate HIGH sites for each quarterly---------
+
+# Loading the appropriate packages
+library(vegan) # vegan to calculate distance matrices
+library(ggplot2) # ggplot for plotting
+library(tidyverse) 
+library(dplyr)
+install.packages("ggforce")
+library(ggforce)
+
+SEC_PROD <- read.csv("SEC_PROD.csv") # Need biomass by months, not across length classes for year
+
+aggregated.high.filter <- subset(SEC_PROD, 
+                                 (Site == "RIC" & Sample.Month == "October") | 
+                                   Site == "RIC" & Sample.Month == "February" |
+                                   Site == "RIC" & Sample.Month == "May" |
+                                   Site == "RIC" & Sample.Month == "August" |
+                                   Site == "LLW" & Sample.Month == "October" | 
+                                   Site == "LLW" & Sample.Month == "February" |
+                                   Site == "LLW" & Sample.Month == "May" |
+                                   Site == "LLW" & Sample.Month == "August"|
+                                   Site == "LLC" & Sample.Month == "October" | 
+                                   Site == "LLC" & Sample.Month == "February" |
+                                   Site == "LLC" & Sample.Month == "May" |
+                                   Site == "LLC" & Sample.Month == "August")
+
+aggregated.high.filter <- aggregate(Biomass.Area.Corrected ~ Site + SC.Level + SC.Category + Sample.Month 
+                                    + Genus, data = aggregated.high.filter, FUN = mean, na.rm = TRUE)
+
+
+biomass.high.filter <- aggregated.high.filter %>% 
+  pivot_wider(
+    names_from = Genus, 
+    values_from = Biomass.Area.Corrected,
+  )
+
+# Define the correct order for Sample.Month and Site
+biomass.high.filter <- as.data.frame(biomass.high.filter)
+
+# Define levels
+sample_month_levels <- c("October", "February", "May", "August")
+site_levels <- c("RIC", "LLW", "LLC")
+
+# Ensure columns are factors
+biomass.high.filter$Sample.Month <- factor(biomass.high.filter$Sample.Month, levels = sample_month_levels)
+biomass.high.filter$Site <- factor(biomass.high.filter$Site, levels = site_levels)
+
+# Arrange the data frame by Sample.Month and Site
+biomass.high.filter <- biomass.high.filter %>%
+  arrange(Site, Sample.Month)
+
+#  Rename the ID part of the matrix; take out the columns for streams, SC level, SC cat, and sample month
+biomass.high.ID.filter <- biomass.high.filter[,-c(1:4)]
+
+
+biomass.high.ID.filter[is.na(biomass.high.ID.filter)] <- 0
+
+
+# Running the NMDS for all reference taxa across quarterly
+
+#  metaMDS integrates functions from several packages to perform NMDS.....
+#  ....including'vegdist' from the vegan package
+
+biomass.high.ID.nmds <- metaMDS(biomass.high.ID.filter, distance='bray', k=2, trymax=20, autotransform=FALSE, pc=FALSE, plot=FALSE)
+
+# Gives average stress
+biomass.high.ID.nmds$stress
+
+# Gives weights that different species hold in the axis
+biomass.high.ID.nmds$species
+
+
+# Basic plot of all of the points
+plot(biomass.high.ID.nmds, display=c('sites', 'species'), choices=c(1,2), type='p')
+
+nmds_species <- scores(biomass.high.ID.nmds, display = "species")
+
+nmds_sites <- scores(biomass.high.ID.nmds, display = "sites")
+
+# Scores
+site.scores <- as.data.frame(scores(nmds_sites)) #Using the scores function from vegan to extract the site scores and convert to a data.frame
+site.scores$site <- rownames(site.scores)# Add site column to dataframe
+head(site.scores)
+
+
+species.scores <- as.data.frame(scores(nmds_species)) 
+species.scores$species <- rownames(species.scores)  
+head(species.scores)
+
+
+rownames(site.scores) <- c("RIC.OCT", "RIC.FEB", "RIC.MAY", "RIC.AUG",
+                        "LLW.OCT", "LLW.FEB", "LLW.MAY", "LLW.AUG",
+                        "LLC.OCT", "LLC.FEB", "LLC.MAY", "LLC.AUG") # Change sites from numbers to categorical
+site.scores$site <- rownames(site.scores) 
+
+# Organizing the polygons
+high.oct <- subset(site.scores, site %in% c("RIC.OCT", "LLW.OCT", "LLC.OCT"))
+high.feb <- subset(site.scores, site %in% c("RIC.FEB", "LLW.FEB", "LLC.FEB"))
+high.may <- subset(site.scores, site %in% c("RIC.MAY", "LLW.MAY", "LLC.MAY"))
+high.aug <- subset(site.scores, site %in% c("RIC.AUG", "LLW.AUG", "LLC.AUG"))
+
+# Filter data for specific colors
+
+HIGH.NMDS <- ggplot() +    
+  geom_polygon(data = high.oct, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#70A494", alpha = 0.5) +
+  geom_polygon(data = high.feb, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#EDBB8A", alpha = 0.5) +
+  geom_polygon(data = high.may, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#CA562C", alpha = 0.5) +
+  geom_polygon(data = high.aug, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#F6EDBD", alpha = 0.5) +
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.0, vjust = 0.5, color = "grey23") +   
+  geom_point(data = site.scores, aes(x = NMDS1, y = NMDS2, color = site), size = 3) + 
+  geom_text(data = site.scores, aes(x = NMDS1, y = NMDS2, label = site), size = 2, vjust = 0.5, alpha = 0) +
+  scale_colour_manual(values = c(  "EAS.OCT" = "#CA562C00", "EAS.FEB" = "#CA562C00", "EAS.MAY" = "#CA562C00","EAS.AUG"="#EDBB8A00",
+                                   "CRO.OCT" = "#CA562C00", "CRO.FEB" = "#CA562C00", "CRO.MAY" = "#CA562C00","CRO.AUG"="#EDBB8A00",
+                                   "HCN.OCT" = "#CA562C00", "HCN.FEB" = "#CA562C00", "HCN.MAY" = "#CA562C00","HCN.AUG"="#EDBB8A00",
+                                   "HUR.OCT" = "#CA562C00", "HUR.FEB" = "#CA562C00", "HUR.MAY" = "#CA562C00","HUR.AUG" = "#EDBB8A00",
+                                   "FRY.OCT" = "#CA562C00", "FRY.FEB" = "#CA562C00", "FRY.MAY" = "#CA562C00","FRY.AUG" = "#EDBB8A00",
+                                   "RUT.OCT" = "#CA562C00", "RUT.FEB" = "#CA562C00", "RUT.MAY" = "#CA562C00","RUT.AUG" = "#EDBB8A00",
+                                   "RIC.OCT" = "#70A494", "RIC.FEB" = "#EDBB8A", "RIC.MAY" = "#CA562C","RIC.AUG"=  "#F6EDBD",
+                                   "LLW.OCT" = "#70A494", "LLW.FEB" = "#EDBB8A", "LLW.MAY" = "#CA562C","LLW.AUG" = "#F6EDBD",
+                                   "LLC.OCT" = "#70A494", "LLC.FEB" = "#EDBB8A", "LLC.MAY" = "#CA562C","LLC.AUG" = "#F6EDBD")) +
+  coord_equal() +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  #scale_x_continuous(name = "NMDS1", limits = c(-0.12, 0.15)) +
+  #scale_y_continuous(name = "NMDS2", limits = c(-0.15, 0.15)) 
+  scale_x_continuous(name = "NMDS1", limits =c(-2, 1.5)) + 
+  scale_y_continuous(name = "NMDS2", limits = c(-1.5, 2)) 
+
+print(HIGH.NMDS)
+
+
+
+
+
+# SPEARMANS CORRELATION MATRIX---------------------------------------------------
+
+covariates <- read.csv("covariates.csv")
+
+
+# Averaging available data to get yearly values
+covariates <- covariates %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site) %>%
+  summarise(
+    annual.mean.NPOC = mean(NPOC..mg.C.L., na.rm = TRUE),
+    annual.mean.Cl = mean(Cl..mg.Cl.L., na.rm = TRUE),
+    annual.mean.SO4 = mean(SO4..mg.SO4.L., na.rm = TRUE),
+    annual.mean.Se = mean(X78Se..ppb., na.rm = TRUE),
+    annual.mean.TN = mean(TN..mg.L.N., na.rm = TRUE),
+    annual.mean.TP = mean(TP..mg.L.P., na.rm = TRUE)
+  ) 
+
+
+# Adding in other YSI 
+total.covariates <- covariates %>%
+  left_join(YSI, by = "Site")
+
+
+# Adding SC columns
+total.covariates <- total.covariates %>%
+  mutate(SC.Level = case_when(
+    Site %in% c("EAS") ~ 16,
+    Site %in% c("CRO") ~ 40,
+    Site %in% c("HCN") ~ 77,
+    Site %in% c("HUR") ~ 293,
+    Site %in% c("FRY") ~ 350,
+    Site %in% c("RUT") ~ 447,
+    Site %in% c("LLW") ~ 1048,
+    Site %in% c("LLC") ~ 1083,
+    Site %in% c("RIC") ~ 1185,
+    TRUE ~ NA_real_  # Use NA_real_ to ensure numeric output
+  ))
+
+str(total.covariates)
+
+# Making the correlation matrix
+total.covariates.matrix <- total.covariates %>%
+  select(-c(Site)) # Removing site so that it is all numeric, necessary for matrix
+
+cor_matrix <- cor(total.covariates.matrix, method = "spearman")
+print(cor_matrix)
+
+# p-values along with correlations
+install.packages("Hmisc")
+library(Hmisc)
+
+result <- rcorr(as.matrix(total.covariates.matrix), type = "spearman")
+result$r     # Correlation matrix
+result$P     # P-value matrix
+
+# Plotting
+install.packages("ggcorrplot")
+library(ggcorrplot)
+
+ggcorrplot(cor_matrix, lab = TRUE, type = "lower")
+
+# Check for missing values in the correlation matrix
+any(is.na(cor_matrix))
+
+# Check for missing values in the p-value matrix
+any(is.na(result$P))
+
+
+# Custom color scheme for ggcorrplot
+# Using ggcorrplot with asterisks for significant correlations
+ggcorrplot(
+  cor_matrix,           # Correlation matrix
+  lab = TRUE,           # Show correlation values inside the plot
+  type = "lower",       # Display only the lower triangle
+  colors = c("#CA562C", "white", "#70A494"),  # Custom color gradient (from red to white to green)
+  p.mat = result$P,     # P-value matrix from rcorr()
+  sig.level = 0.05,     # Significance level for asterisks
+  insig = "pch"         # Use asterisks for insignificant correlations
+)
 
 
