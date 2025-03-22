@@ -2379,7 +2379,7 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2, color = Salinity.Category)) +
   
   
   # Add labels for environmental vectors and species and sc level
-  geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 2, vjust = 0.5, color = "grey23") +
+  geom_text(data = genera_scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0, vjust = 0.5, color = "grey23") +
   geom_text(data = nmds_scores, aes(x = NMDS1, y = NMDS2, label = Salinity), size = 5, vjust = 0.5, alpha = 2) +
   geom_text(data = env_vectors, aes(x = NMDS1, y = NMDS2, label = Variable),
             inherit.aes = FALSE, vjust = 1, hjust = 1, alpha = 0) +
@@ -2553,7 +2553,7 @@ biomass <- biomass %>%
 
 # Running the NMDS for all taxa
 aggregated.bio<- aggregate(mean.biomass ~ Site + SC.Level + SC.Category + 
-                             + Genus, data = biomass, FUN = mean, na.rm = TRUE) #average abundance for each site for year
+                             + Genus, data = biomass, FUN = mean, na.rm = TRUE) #average biomass for each site for year
 
 bio_nmds = aggregated.bio %>% 
   pivot_wider(
@@ -2886,6 +2886,10 @@ biomass.ref.filter$Site <- factor(biomass.ref.filter$Site, levels = site_levels)
 biomass.ref.filter <- biomass.ref.filter %>%
   arrange(Site, Sample.Month)
 
+
+
+biomass.ref.filter[is.na(biomass.ref.filter)] <- 0
+
 #  Rename the ID part of the matrix; take out the columns for streams, SC level, SC cat, and sample month
 biomass.ref.ID.filter <- biomass.ref.filter[,-c(1:4)]
 
@@ -2946,7 +2950,7 @@ REF.NMDS <- ggplot() +
   geom_polygon(data = ref.feb, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#EDBB8A", alpha = 0.5) +
   geom_polygon(data = ref.may, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#CA562C", alpha = 0.5) +
   geom_polygon(data = ref.aug, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#F6EDBD", alpha = 0.5) +
-  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.0, vjust = 0.5, color = "grey23") +   
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.2, vjust = 0.5, color = "grey23") +   
   geom_point(data = site.scores, aes(x = NMDS1, y = NMDS2, color = site), size = 3) + 
   geom_text(data = site.scores, aes(x = NMDS1, y = NMDS2, label = site), size = 2, vjust = 0.5, alpha = 0) +
   scale_colour_manual(values = c( "EAS.OCT" = "#70A494", "EAS.FEB" = "#EDBB8A", "EAS.MAY" = "#CA562C","EAS.AUG"="#F6EDBD",
@@ -2968,6 +2972,42 @@ REF.NMDS <- ggplot() +
   scale_y_continuous(name = "NMDS2", limits = c(-1.5, 2)) 
 
 print(REF.NMDS)
+
+
+
+# PERMANOVA
+str(biomass.ref.filter)
+levels(as.factor(biomass.ref.filter$Sample.Month))
+
+biomass.ref.filter$Sample.Month <- as.factor(biomass.ref.filter$Sample.Month)
+# First, create the distance matrix using vegdist() 
+dist_matrix <- vegdist(biomass.ref.filter[, -(1:4)], method = "bray")  # adjust based on your actual columns
+
+# Then, run adonis2 using the distance matrix and relevant factors
+adonis_result <- adonis2(
+  dist_matrix ~ Sample.Month, 
+  data = biomass.ref.filter, 
+  permutations = 9999
+)
+
+print(adonis_result)
+
+
+
+# Compute dispersion (PERMDISP)
+dispersion_test <- betadisper(dist_matrix, biomass.ref.filter$Sample.Month)
+
+# Perform permutation test for dispersion
+permdisp_result <- permutest(dispersion_test, permutations = 9999)
+
+# View results
+print(permdisp_result)
+
+# Visualize dispersion differences
+boxplot(dispersion_test)
+plot(dispersion_test)
+
+
 
 
 
@@ -3025,6 +3065,8 @@ biomass.mid.filter$Site <- factor(biomass.mid.filter$Site, levels = site_levels)
 # Arrange the data frame by Sample.Month and Site
 biomass.mid.filter <- biomass.mid.filter %>%
   arrange(Site, Sample.Month)
+
+biomass.mid.filter[is.na(biomass.mid.filter)] <- 0
 
 #  Rename the ID part of the matrix; take out the columns for streams, SC level, SC cat, and sample month
 biomass.mid.ID.filter <- biomass.mid.filter[,-c(1:4)]
@@ -3107,6 +3149,39 @@ print(MID.NMDS)
 
 
 
+# PERMANOVA
+str(biomass.mid.filter)
+levels(as.factor(biomass.ref.filter$Sample.Month))
+
+biomass.mid.filter$Sample.Month <- as.factor(biomass.mid.filter$Sample.Month)
+# First, create the distance matrix using vegdist() 
+dist_matrix <- vegdist(biomass.mid.filter[, -(1:4)], method = "bray")  # adjust based on your actual columns
+
+# Then, run adonis2 using the distance matrix and relevant factors
+adonis_result <- adonis2(
+  dist_matrix ~ Sample.Month, 
+  data = biomass.mid.filter, 
+  permutations = 9999
+)
+
+print(adonis_result)
+
+
+
+# Compute dispersion (PERMDISP)
+dispersion_test <- betadisper(dist_matrix, biomass.mid.filter$Sample.Month)
+
+# Perform permutation test for dispersion
+permdisp_result <- permutest(dispersion_test, permutations = 9999)
+
+# View results
+print(permdisp_result)
+
+# Visualize dispersion differences
+boxplot(dispersion_test)
+plot(dispersion_test)
+
+
 
 
 
@@ -3167,6 +3242,9 @@ biomass.high.filter$Site <- factor(biomass.high.filter$Site, levels = site_level
 biomass.high.filter <- biomass.high.filter %>%
   arrange(Site, Sample.Month)
 
+biomass.high.filter[is.na(biomass.high.filter)] <- 0
+
+
 #  Rename the ID part of the matrix; take out the columns for streams, SC level, SC cat, and sample month
 biomass.high.ID.filter <- biomass.high.filter[,-c(1:4)]
 
@@ -3186,6 +3264,7 @@ biomass.high.ID.nmds$stress
 
 # Gives weights that different species hold in the axis
 biomass.high.ID.nmds$species
+
 
 
 # Basic plot of all of the points
@@ -3224,7 +3303,7 @@ HIGH.NMDS <- ggplot() +
   geom_polygon(data = high.feb, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#EDBB8A", alpha = 0.5) +
   geom_polygon(data = high.may, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#CA562C", alpha = 0.5) +
   geom_polygon(data = high.aug, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#F6EDBD", alpha = 0.5) +
-  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.0, vjust = 0.5, color = "grey23") +   
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.2, vjust = 0.5, color = "grey23") +   
   geom_point(data = site.scores, aes(x = NMDS1, y = NMDS2, color = site), size = 3) + 
   geom_text(data = site.scores, aes(x = NMDS1, y = NMDS2, label = site), size = 2, vjust = 0.5, alpha = 0) +
   scale_colour_manual(values = c(  "EAS.OCT" = "#CA562C00", "EAS.FEB" = "#CA562C00", "EAS.MAY" = "#CA562C00","EAS.AUG"="#EDBB8A00",
@@ -3239,20 +3318,66 @@ HIGH.NMDS <- ggplot() +
   coord_equal() +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  #scale_x_continuous(name = "NMDS1", limits = c(-0.12, 0.15)) +
-  #scale_y_continuous(name = "NMDS2", limits = c(-0.15, 0.15)) 
-  scale_x_continuous(name = "NMDS1", limits =c(-2, 1.5)) + 
-  scale_y_continuous(name = "NMDS2", limits = c(-1.5, 2)) 
+  scale_x_continuous(name = "NMDS1", limits = c(-0.12, 0.15)) +
+  scale_y_continuous(name = "NMDS2", limits = c(-0.15, 0.15)) 
+  #scale_x_continuous(name = "NMDS1", limits =c(-2, 1.5)) + 
+  #scale_y_continuous(name = "NMDS2", limits = c(-1.5, 2)) 
 
 print(HIGH.NMDS)
+
+
+
+# PERMANOVA
+str(biomass.high.filter)
+levels(as.factor(biomass.high.filter$Sample.Month))
+
+biomass.high.filter$Sample.Month <- as.factor(biomass.high.filter$Sample.Month)
+# First, create the distance matrix using vegdist() 
+dist_matrix <- vegdist(biomass.high.filter[, -(1:4)], method = "bray")  # adjust based on your actual columns
+
+# Then, run adonis2 using the distance matrix and relevant factors
+adonis_result <- adonis2(
+  dist_matrix ~ Sample.Month, 
+  data = biomass.high.filter, 
+  permutations = 9999
+)
+
+print(adonis_result)
+
+
+
+# Compute dispersion (PERMDISP)
+dispersion_test <- betadisper(dist_matrix, biomass.high.filter$Sample.Month)
+
+# Perform permutation test for dispersion
+permdisp_result <- permutest(dispersion_test, permutations = 9999)
+
+# View results
+print(permdisp_result)
+
+# Visualize dispersion differences
+boxplot(dispersion_test)
+plot(dispersion_test)
+
+
 
 
 
 
 
 # SPEARMANS CORRELATION MATRIX---------------------------------------------------
+library(dbplyr)
 
 covariates <- read.csv("covariates.csv")
+
+str(covariates)
+
+covariates <- covariates %>%
+  mutate(
+    X78Se..ppb. = as.numeric(X78Se..ppb.),
+    TN..mg.L.N. = as.numeric(TN..mg.L.N.),
+    TP..mg.L.P. = as.numeric(TP..mg.L.P.)
+  )
 
 
 # Averaging available data to get yearly values
@@ -3288,6 +3413,7 @@ total.covariates <- total.covariates %>%
     Site %in% c("RIC") ~ 1185,
     TRUE ~ NA_real_  # Use NA_real_ to ensure numeric output
   ))
+
 
 str(total.covariates)
 
@@ -3332,3 +3458,22 @@ ggcorrplot(
 )
 
 
+
+
+# INDICATOR SPECIES ANALYSIS----------------------------------------------------
+
+install.packages("indicspecies")
+library(indicspecies)
+
+group_vector <- c("EAS", "CRO", "HCN","HUR", "FRY", "RUT", "LLW","LLC", "RIC")
+group_vector <- c("REF", "REF", "REF","MID", "MID", "MID", "HIGH","HIGH", "HIGH")
+
+isa_result <- multipatt(dens.nmds, group_vector, control = how(nperm = 999))
+
+# Summary
+summary(isa_result)
+
+# Get significant species (p < 0.05)
+sig_species <- isa_result$sign[isa_result$sign$p.value <= 0.05, ]
+
+print(sig_species)
