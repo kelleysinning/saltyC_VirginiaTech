@@ -360,6 +360,7 @@ TOTALPROD_Summary_Sum$Site.Type <- ifelse(TOTALPROD_Summary_Sum$Site %in% c("EAS
 
 TOTALPROD_Summary_Sum$Site.Type <- factor(TOTALPROD_Summary_Sum$Site.Type, levels = c("Quarterly Streams", "Core Streams"))# Convert Site.Type to a factor for proper legend display
 
+TOTALPROD_Summary_Sum$FFG <- factor(TOTALPROD_Summary_Sum$FFG, levels = c("Coleoptera Scraper","Scraper","Collector-Gatherer","Predator","Collector-Filterer","Shredder"))
 
 ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
   geom_point(aes(color = SC.Level), size = 3, alpha = 0.7) +  
@@ -378,7 +379,7 @@ plot(TOTALPROD_Summary_Sum$SC.Level, TOTALPROD_Summary_Sum$Summed.Annual.Product
 
 
 
-
+# p-values and r2 for each FFG
 glm_results <- TOTALPROD_Summary_Sum %>%
   group_by(FFG) %>%
   summarise(
@@ -388,13 +389,51 @@ glm_results <- TOTALPROD_Summary_Sum %>%
                          data = cur_data())),
     .groups = "drop"
   ) %>%
-  mutate(
-    # Extract p-values and R² values from each model
+  mutate(    # Extract p-values and R² values from each model
     p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
     pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
     p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
     r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
   )
+
+
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- TOTALPROD_Summary_Sum %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ SC.Level, 
+                         family = Gamma(link = "log"), 
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(FFG, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
+
+print(glm_results)
+
+
+
+
+# Interaction of SC and FFG, not using this because we want individual glms for each FFG
+glm_results <- glm(
+  Summed.Annual.Production ~ SC.Level + FFG,
+  family = Gamma(link = "log"),
+  data = TOTALPROD_Summary_Sum
+)
+
+
+print(glm_results)
 
 # At this point, p_value, pseudo_r2, p_label, and r2_label are all in the `glm_results` dataframe.
 
@@ -414,7 +453,7 @@ ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) +
     x = min(TOTALPROD_Summary_Sum$SC.Level),  # Place the text at the bottom left of each facet
     y = min(TOTALPROD_Summary_Sum$Summed.Annual.Production),  # Adjust y to the lower bound
     label = paste("R² =", r2_label, "\nP =", p_label)),
-    hjust = 0, vjust = .1 , size = 3, alpha = 2, inherit.aes = FALSE) +  # Position text at bottom-left
+    hjust = 0, vjust = .1 , size = 3, alpha = 0, inherit.aes = FALSE) +  # Position text at bottom-left
   facet_wrap(~FFG, scales = "free") +  # Facet by FFG with independent scaling per facet
   ylab(expression(Secondary~Production~(g/m^2/yr))) + 
   xlab("Specific Conductivity (µS/cm)") + 
@@ -573,6 +612,7 @@ glm_model <- glm(annual.mean.CBOM ~ SC.Level,
                  data = prod.food)
 
 summary(glm_model)  # Check model summary
+
 
 p_value <- summary(glm_model)$coefficients[2, 4]  # Extract p-value for SC.Level
 
@@ -896,7 +936,7 @@ chla.sc.lm
 #CBOM----------------------------
 plot(prod.food$annual.mean.CBOM, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
-glm_model <- glm(annual.mean.CBOM ~ Sum.Annual.Production, 
+glm_model <- glm(Sum.Annual.Production ~ annual.mean.CBOM, 
                  #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  family = gaussian(link = "identity"),
                  data = prod.food)
@@ -946,10 +986,17 @@ CBOM.prod.lm <- ggplot(prod.food, aes(x = annual.mean.CBOM, y = Sum.Annual.Produ
 CBOM.prod.lm
 
 
+
+
+
+
+
+
+
 #FBOM----------------------------
 plot(prod.food$annual.mean.FBOM, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
-glm_model <- glm(annual.mean.FBOM ~ Sum.Annual.Production, 
+glm_model <- glm(Sum.Annual.Production ~ annual.mean.FBOM, 
                  #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  family = gaussian(link = "identity"),
                  data = prod.food)
@@ -1001,7 +1048,7 @@ FBOM.prod.lm
 #FBOM + CBOM----------------------------
 plot(prod.food$fbom.cbom, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
-glm_model <- glm(fbom.cbom ~ Sum.Annual.Production, 
+glm_model <- glm(Sum.Annual.Production ~ fbom.cbom, 
                  #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  family = gaussian(link = "identity"),
                  data = prod.food)
@@ -1025,7 +1072,7 @@ FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Product
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) + 
   ylab(expression("Secondary Production (g/m²/yr)")) +  
-  xlab("Mean annual leaf litter standing stock (g/m²)") +  # Corrected X-axis label
+  xlab("Mean annual CBOM + FBOM (g/m²)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
@@ -1052,10 +1099,46 @@ FBOM.CBOM.prod.lm
 
 
 
+
+# With Cross et al. 2006 slope
+FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Production, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+  geom_smooth(method = "glm", method.args = list(family = "gaussian"(link="identity")), se = TRUE, color = "grey37") +  
+  geom_abline(intercept = 2.72, slope = 0.03, linetype = "dashed", color = "black", size = 1) +  # Dashed line
+  annotate("text", 
+           x = min(prod.food$fbom.cbom), 
+           y = max(prod.food$Sum.Annual.Production), 
+           label = paste("P =", p_label, "\n", r2_label), 
+           hjust = 0, size = 5, alpha = 0) + 
+  ylab(expression("Secondary Production (g/m²/yr)")) +  
+  xlab("Mean annual leaf litter standing stock (g/m²)") +  
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Core Streams" = 8)
+  ) +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+FBOM.CBOM.prod.lm
 #ALGAE----------------------------
 plot(prod.food$annual.mean.Algae, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
-glm_model <- glm(annual.mean.Algae ~ Sum.Annual.Production, 
+glm_model <- glm(Sum.Annual.Production ~ annual.mean.Algae, 
                  #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  family = gaussian(link = "identity"),
                  data = prod.food)
@@ -1109,7 +1192,7 @@ Algae.prod.lm
 
 plot(prod.food$annual.mean.AI, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
-glm_model <- glm(annual.mean.AI ~ Sum.Annual.Production, 
+glm_model <- glm(Sum.Annual.Production ~ annual.mean.AI, 
                  #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  family = gaussian(link = "identity"),
                  data = prod.food)
@@ -1163,7 +1246,7 @@ AI.prod.lm
 
 plot(prod.food$annual.mean.chla, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
-glm_model <- glm(annual.mean.chla ~ Sum.Annual.Production, 
+glm_model <- glm(Sum.Annual.Production ~ annual.mean.chla, 
                  #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  family = gaussian(link = "identity"),
                  data = prod.food)
@@ -1243,6 +1326,8 @@ glm_results <- prod.food.ffg %>%
     p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
     r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
   )
+
+
 
 
 
@@ -1387,9 +1472,40 @@ glm_results <- prod.food.ffg %>%
     r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
   )
 
-library(purrr)
+
+
+
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ fbom.cbom, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(FFG, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
+
+print(glm_results)
+
+
 
 # Extract the coefficients and create the equation for each glm model
+library(purrr)
 glm_results <- glm_results %>%
   mutate(
     equation = map(glm_model, ~paste("y =", round(coef(.x)[1], 2), 
@@ -1481,6 +1597,34 @@ prod.food.ffg <- prod.food.ffg %>%
 
 
 
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.Algae, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(FFG, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
+
+print(glm_results)
+
+
 # Create the plot
 production_algae_lm <- ggplot(
   data = prod.food.ffg, 
@@ -1555,6 +1699,34 @@ glm_results <- prod.food.ffg %>%
 prod.food.ffg <- prod.food.ffg %>%
   left_join(glm_results, by = "FFG")
 
+
+
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(FFG, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
+
+print(glm_results)
 
 
 # Create the plot
@@ -1632,6 +1804,35 @@ prod.food.ffg <- prod.food.ffg %>%
   left_join(glm_results, by = "FFG")
 
 
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- prod.food.ffg %>%
+  group_by(FFG) %>%
+  summarise(
+    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.AI, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(FFG, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
+
+
+print(glm_results)
+
+
 
 # Create the plot
 production_AI_lm <- ggplot(
@@ -1702,7 +1903,33 @@ glm_results_leaf <- prod.food %>%
 print(glm_results_leaf)
 
 
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- prod.food %>%
+  group_by(SC.Category) %>%
+  summarise(
+    glm_model = list(glm(Sum.Annual.Production ~ fbom.cbom, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(SC.Category, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
 
+
+print(glm_results)
 
 FBOM.CBOM.lm.cat <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Production, color = SC.Category)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  
@@ -1757,7 +1984,33 @@ glm_results <- prod.food %>%
 # Print results
 print(glm_results)
 
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- prod.food %>%
+  group_by(SC.Category) %>%
+  summarise(
+    glm_model = list(glm(Sum.Annual.Production ~ annual.mean.Algae, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(SC.Category, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
 
+
+print(glm_results)
 
 Algae.lm.cat <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Production, color = SC.Category)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  
@@ -1809,6 +2062,36 @@ glm_results <- prod.food %>%
   )
 
 # Print results
+print(glm_results)
+
+
+
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- prod.food %>%
+  group_by(SC.Category) %>%
+  summarise(
+    glm_model = list(glm(Sum.Annual.Production ~ total.food, 
+                         #family = Gamma(link = "log"), # this yielded a very unfit model
+                         family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(SC.Category, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
+
+
 print(glm_results)
 
 
@@ -2950,7 +3233,7 @@ REF.NMDS <- ggplot() +
   geom_polygon(data = ref.feb, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#EDBB8A", alpha = 0.5) +
   geom_polygon(data = ref.may, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#CA562C", alpha = 0.5) +
   geom_polygon(data = ref.aug, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#F6EDBD", alpha = 0.5) +
-  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.2, vjust = 0.5, color = "grey23") +   
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.0, vjust = 0.5, color = "grey23") +   
   geom_point(data = site.scores, aes(x = NMDS1, y = NMDS2, color = site), size = 3) + 
   geom_text(data = site.scores, aes(x = NMDS1, y = NMDS2, label = site), size = 2, vjust = 0.5, alpha = 0) +
   scale_colour_manual(values = c( "EAS.OCT" = "#70A494", "EAS.FEB" = "#EDBB8A", "EAS.MAY" = "#CA562C","EAS.AUG"="#F6EDBD",
@@ -3009,6 +3292,66 @@ plot(dispersion_test)
 
 
 
+
+# stats for genera
+genera_fit <- envfit(biomass.ref.ID.nmds, biomass.ref.ID.filter, permutations = 999)  # Fit species data
+
+# Extract species scores from the NMDS result
+genera_scores <- as.data.frame(scores(biomass.ref.ID.nmds, display = "species"))
+genera_scores$species <- rownames(genera_scores)  # Create a column for species names
+
+# Extract the R² and p-values from genera_fit (envfit object)
+genera_r2 <- genera_fit$vectors$r  # Extract R² values
+genera_pvals <- genera_fit$vectors$pvals  # Extract p-values
+
+# Create a data frame to hold the R² and p-values for each species
+genera_fit_results <- data.frame(
+  species = names(genera_r2),  # Species names
+  R2 = genera_r2,  # R² values
+  P_value = genera_pvals  # p-values
+)
+
+# Merge the genera scores with the R² and p-values
+genera_scores <- merge(genera_scores, genera_fit_results, by.x = "species", by.y = "species", all.x = TRUE)
+
+# Print the results
+print(genera_scores)
+
+# Plotting significant genera just to see (Ameletus and Tanytarsini)
+# Filter genera that are significantly correlated (p < 0.05)
+significant_genera <- genera_fit_results %>%
+  filter(P_value < 0.05)
+
+nmds_sites <- as.data.frame(scores(biomass.ref.ID.nmds, display = "sites"))
+nmds_sites$Site <- rownames(nmds_sites)  
+
+
+nmds_species <- as.data.frame(scores(biomass.ref.ID.nmds, display = "species"))
+nmds_species$Species <- rownames(nmds_species)  
+
+
+vectors <- as.data.frame(scores(genera_fit, display = "vectors"))
+vectors$Species <- rownames(vectors)  
+
+vectors <- vectors %>% filter(Species %in% significant_genera$species)# Keep only significant vectors
+
+
+ggplot() +
+  geom_point(data = nmds_sites, aes(x = NMDS1, y = NMDS2), color = "blue", alpha = 0.7) +
+  geom_text(data = nmds_species, aes(x = NMDS1, y = NMDS2, label = Species), color = "red", size = 3) +
+  geom_segment(data = vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               arrow = arrow(length = unit(0.2, "cm")), color = "darkgreen") +
+  geom_text(data = vectors, aes(x = NMDS1, y = NMDS2, label = Species), 
+            color = "darkgreen", size = 4, hjust = 1.2, vjust = 1.2) +
+  theme_minimal() +
+  labs(title = "NMDS with Significant Genera Vectors", x = "NMDS1", y = "NMDS2")
+
+
+
+# Saving vector information
+install.packages("writexl")  
+library(writexl)
+write_xlsx(genera_scores, "generastats_biomassREFacrossSZN_NMDS.xlsx")
 
 
 
@@ -3184,6 +3527,65 @@ plot(dispersion_test)
 
 
 
+# stats for genera
+genera_fit <- envfit(biomass.mid.ID.nmds, biomass.mid.ID.filter, permutations = 999)  # Fit species data
+
+# Extract species scores from the NMDS result
+genera_scores <- as.data.frame(scores(biomass.mid.ID.nmds, display = "species"))
+genera_scores$species <- rownames(genera_scores)  # Create a column for species names
+
+# Extract the R² and p-values from genera_fit (envfit object)
+genera_r2 <- genera_fit$vectors$r  # Extract R² values
+genera_pvals <- genera_fit$vectors$pvals  # Extract p-values
+
+# Create a data frame to hold the R² and p-values for each species
+genera_fit_results <- data.frame(
+  species = names(genera_r2),  # Species names
+  R2 = genera_r2,  # R² values
+  P_value = genera_pvals  # p-values
+)
+
+# Merge the genera scores with the R² and p-values
+genera_scores <- merge(genera_scores, genera_fit_results, by.x = "species", by.y = "species", all.x = TRUE)
+
+# Print the results
+print(genera_scores)
+
+# Plotting significant genera just to see (Ameletus and Tanytarsini)
+# Filter genera that are significantly correlated (p < 0.05)
+significant_genera <- genera_fit_results %>%
+  filter(P_value < 0.05)
+
+nmds_sites <- as.data.frame(scores(biomass.mid.ID.nmds, display = "sites"))
+nmds_sites$Site <- rownames(nmds_sites)  
+
+
+nmds_species <- as.data.frame(scores(biomass.mid.ID.nmds, display = "species"))
+nmds_species$Species <- rownames(nmds_species)  
+
+
+vectors <- as.data.frame(scores(genera_fit, display = "vectors"))
+vectors$Species <- rownames(vectors)  
+
+vectors <- vectors %>% filter(Species %in% significant_genera$species)# Keep only significant vectors
+
+
+ggplot() +
+  geom_point(data = nmds_sites, aes(x = NMDS1, y = NMDS2), color = "blue", alpha = 0.7) +
+  geom_text(data = nmds_species, aes(x = NMDS1, y = NMDS2, label = Species), color = "red", size = 3) +
+  geom_segment(data = vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               arrow = arrow(length = unit(0.2, "cm")), color = "darkgreen") +
+  geom_text(data = vectors, aes(x = NMDS1, y = NMDS2, label = Species), 
+            color = "darkgreen", size = 4, hjust = 1.2, vjust = 1.2) +
+  theme_minimal() +
+  labs(title = "NMDS with Significant Genera Vectors", x = "NMDS1", y = "NMDS2")
+
+
+
+# Saving vector information
+install.packages("writexl")  
+library(writexl)
+write_xlsx(genera_scores, "generastats_biomassMIDacrossSZN_NMDS.xlsx")
 
 
 
@@ -3241,6 +3643,7 @@ biomass.high.filter$Site <- factor(biomass.high.filter$Site, levels = site_level
 # Arrange the data frame by Sample.Month and Site
 biomass.high.filter <- biomass.high.filter %>%
   arrange(Site, Sample.Month)
+
 
 biomass.high.filter[is.na(biomass.high.filter)] <- 0
 
@@ -3365,6 +3768,68 @@ plot(dispersion_test)
 
 
 
+
+# stats for genera
+genera_fit <- envfit(biomass.high.ID.nmds, biomass.high.ID.filter, permutations = 999)  # Fit species data
+
+# Extract species scores from the NMDS result
+genera_scores <- as.data.frame(scores(biomass.high.ID.nmds, display = "species"))
+genera_scores$species <- rownames(genera_scores)  # Create a column for species names
+
+# Extract the R² and p-values from genera_fit (envfit object)
+genera_r2 <- genera_fit$vectors$r  # Extract R² values
+genera_pvals <- genera_fit$vectors$pvals  # Extract p-values
+
+# Create a data frame to hold the R² and p-values for each species
+genera_fit_results <- data.frame(
+  species = names(genera_r2),  # Species names
+  R2 = genera_r2,  # R² values
+  P_value = genera_pvals  # p-values
+)
+
+# Merge the genera scores with the R² and p-values
+genera_scores <- merge(genera_scores, genera_fit_results, by.x = "species", by.y = "species", all.x = TRUE)
+
+# Print the results
+print(genera_scores)
+
+# Plotting significant genera just to see (Ameletus and Tanytarsini)
+# Filter genera that are significantly correlated (p < 0.05)
+significant_genera <- genera_fit_results %>%
+  filter(P_value < 0.05)
+
+nmds_sites <- as.data.frame(scores(biomass.high.ID.nmds, display = "sites"))
+nmds_sites$Site <- rownames(nmds_sites)  
+
+
+nmds_species <- as.data.frame(scores(biomass.high.ID.nmds, display = "species"))
+nmds_species$Species <- rownames(nmds_species)  
+
+
+vectors <- as.data.frame(scores(genera_fit, display = "vectors"))
+vectors$Species <- rownames(vectors)  
+
+vectors <- vectors %>% filter(Species %in% significant_genera$species)# Keep only significant vectors
+
+
+ggplot() +
+  geom_point(data = nmds_sites, aes(x = NMDS1, y = NMDS2), color = "blue", alpha = 0.7) +
+  geom_text(data = nmds_species, aes(x = NMDS1, y = NMDS2, label = Species), color = "red", size = 3) +
+  geom_segment(data = vectors, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               arrow = arrow(length = unit(0.2, "cm")), color = "darkgreen") +
+  geom_text(data = vectors, aes(x = NMDS1, y = NMDS2, label = Species), 
+            color = "darkgreen", size = 4, hjust = 1.2, vjust = 1.2) +
+  theme_minimal() +
+  labs(title = "NMDS with Significant Genera Vectors", x = "NMDS1", y = "NMDS2")
+
+
+
+# Saving vector information
+install.packages("writexl")  
+library(writexl)
+write_xlsx(genera_scores, "generastats_biomassHIGHacrossSZN_NMDS.xlsx")
+
+
 # SPEARMANS CORRELATION MATRIX---------------------------------------------------
 library(dbplyr)
 
@@ -3468,7 +3933,7 @@ library(indicspecies)
 group_vector <- c("EAS", "CRO", "HCN","HUR", "FRY", "RUT", "LLW","LLC", "RIC")
 group_vector <- c("REF", "REF", "REF","MID", "MID", "MID", "HIGH","HIGH", "HIGH")
 
-isa_result <- multipatt(dens.nmds, group_vector, control = how(nperm = 999))
+isa_result <- multipatt(bio.nmds, group_vector, control = how(nperm = 999))
 
 # Summary
 summary(isa_result)
@@ -3477,3 +3942,290 @@ summary(isa_result)
 sig_species <- isa_result$sign[isa_result$sign$p.value <= 0.05, ]
 
 print(sig_species)
+
+
+
+# MAKING SUMMARY TABELS FOR 2P-------------------------------------------------
+
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="EAS"] = "16"
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="CRO"] = "40"
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="HCN"] = "77"
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="HUR"] = "293"
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="FRY"] = "350"
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="RUT"] = "447"
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="LLW"] = "1048"
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="LLC"] = "1083"
+TOTAL_PROD_lengths$SC.Level[TOTAL_PROD_lengths$Site =="RIC"] = "1185"
+
+
+
+TOTAL_PROD_lengths$Site <- factor(TOTAL_PROD_lengths$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
+TOTAL_PROD_lengths$SC.Category <- factor(TOTAL_PROD_lengths$SC.Category, levels = c("REF","MID","HIGH"))
+TOTAL_PROD_lengths$SC.Level <- factor(TOTAL_PROD_lengths$SC.Level, levels = c("16","40","77","293","350","447","1048","1083","1185"))
+
+
+# For the appendix...taxa specific 
+SECPROD_SUMMARY_TOTALS <- TOTAL_PROD_lengths %>%
+  group_by(Genus, Site, SC.Level, Annual.Production, AnnualP.B) %>%
+  summarise(
+    Density.summed = sum(Density.Final, na.rm = TRUE),      
+    Biomass.summed = sum(Biomass, na.rm = TRUE))
+
+
+
+install.packages("writexl")  
+library(writexl)
+write_xlsx(SECPROD_SUMMARY_TOTALS, "SECPROD_SUMMARY_TOTALS.xlsx")
+
+
+
+
+
+
+# Making tables for water quality and food
+CBOM=read.csv("CBOM.Year1Summary.csv")
+FBOM=read.csv("FBOM.Year1Summary.csv")
+Algae=read.csv("Algae.Year1Summary.csv")
+YSI <- read.csv("YSI.Year1.csv")
+SC <- read.csv("SC.yearly.Levels.csv")
+covariates <- read.csv("covariates.csv")
+
+
+# ALGAE
+# Step 1: Average replicates within each site and sample month
+monthly_avg <- Algae %>%
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    Algae.Monthly.Avg = mean(Algae.AFDM.g.m2., na.rm = TRUE),
+    AI.Monthly.Avg = mean(Autotrophic.Index..g.m2., na.rm = TRUE),
+    chla.Monthly.Avg = mean(Chl.a..g.m2., na.rm = TRUE))
+
+# Step 2: Compute the annual mean for each site
+annual_avg <- monthly_avg %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.Algae.Mean = mean(Algae.Monthly.Avg, na.rm = TRUE),
+    Annual.AI.Mean = mean(AI.Monthly.Avg, na.rm = TRUE),
+    Annual.chla.Mean = mean(chla.Monthly.Avg, na.rm = TRUE))
+
+# Step 3: Compute standard error of monthly values relative to annual mean
+se_table <- monthly_avg %>%
+  left_join(annual_avg, by = "Site") %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.Algae.Mean = unique(Annual.Algae.Mean),
+    algae.SE = sd(Algae.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.AI.Mean = unique(Annual.AI.Mean),
+    AI.SE = sd(AI.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.chla.Mean = unique(Annual.chla.Mean),
+    chla.SE = sd(chla.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+  ) %>%
+mutate(
+  Algae.Final = paste0(round(Annual.Algae.Mean, 2), " ± ", round(algae.SE, 2)),
+  AI.Final = paste0(round(Annual.AI.Mean, 2), " ± ", round(AI.SE, 2)),
+  Chla.Final = paste0(round(Annual.chla.Mean, 4), " ± ", round(chla.SE, 4)))
+
+print(se_table)
+
+
+# CBOM
+# Step 1: Average replicates within each site and sample month
+monthly_avg <- CBOM %>%
+  mutate(Site = str_trim(Site)) %>%
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    CBOM.Monthly.Avg = mean(CBOM.AFDM.g.m2., na.rm = TRUE))
+
+# Step 2: Compute the annual mean for each site
+annual_avg <- monthly_avg %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.CBOM.Mean = mean(CBOM.Monthly.Avg, na.rm = TRUE))
+
+# Step 3: Compute standard error of monthly values relative to annual mean
+se_table <- monthly_avg %>%
+  left_join(annual_avg, by = "Site") %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.CBOM.Mean = unique(Annual.CBOM.Mean),
+    CBOM.SE = sd(CBOM.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+  ) %>%
+  mutate(
+    CBOM.Final = paste0(round(Annual.CBOM.Mean, 2), " ± ", round(CBOM.SE, 2)))
+
+print(se_table)
+
+
+
+# FBOM
+# Step 1: Average replicates within each site and sample month
+FBOM <- FBOM %>%
+  mutate(FBOM.AFDM.g.m2. = parse_number(FBOM.AFDM.g.m2.))
+
+monthly_avg <- FBOM %>%
+  mutate(Site = str_trim(Site)) %>%
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    FBOM.Monthly.Avg = mean(FBOM.AFDM.g.m2., na.rm = TRUE))
+
+# Step 2: Compute the annual mean for each site
+annual_avg <- monthly_avg %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.FBOM.Mean = mean(FBOM.Monthly.Avg, na.rm = TRUE))
+
+# Step 3: Compute standard error of monthly values relative to annual mean
+se_table <- monthly_avg %>%
+  left_join(annual_avg, by = "Site") %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.FBOM.Mean = unique(Annual.FBOM.Mean),
+    FBOM.SE = sd(FBOM.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+  ) %>%
+  mutate(
+    FBOM.Final = paste0(round(Annual.FBOM.Mean, 2), " ± ", round(FBOM.SE, 2)))
+
+print(se_table)
+
+
+
+
+# YSI
+# Step 1: Average replicates within each site and sample month
+YSI <- YSI %>%
+ drop_na() %>%
+  mutate(Site = str_trim(Site)) 
+  
+monthly_avg <- YSI %>%
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    Temp.Monthly.Avg = mean(Temp...C., na.rm = TRUE),
+    pH.Monthly.Avg = mean(pH, na.rm = TRUE),
+    percent.DO.Monthly.Avg = mean(DO...., na.rm = TRUE),
+    DO.Monthly.Avg = mean(DO..mg.L., na.rm = TRUE))
+
+# Step 2: Compute the annual mean for each site
+annual_avg <- monthly_avg %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.temp.Mean = mean(Temp.Monthly.Avg, na.rm = TRUE),
+    Annual.pH.Mean = mean(pH.Monthly.Avg, na.rm = TRUE),
+    Annual.percentDO.Mean = mean(percent.DO.Monthly.Avg, na.rm = TRUE),
+    Annual.DO.Mean = mean(DO.Monthly.Avg, na.rm = TRUE))
+
+# Step 3: Compute standard error of monthly values relative to annual mean
+se_table <- monthly_avg %>%
+  left_join(annual_avg, by = "Site") %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.temp.Mean = unique(Annual.temp.Mean),
+    temp.SE = sd(Temp.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.pH.Mean = unique(Annual.pH.Mean),
+    pH.SE = sd(pH.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.percentDO.Mean = unique(Annual.percentDO.Mean),
+    percentDO.SE = sd(percent.DO.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.DO.Mean = unique(Annual.DO.Mean),
+    DO.SE = sd(DO.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+  ) %>%
+  mutate(
+    temp.Final = paste0(round(Annual.temp.Mean, 2), " ± ", round(temp.SE, 2)),
+    pH.Final = paste0(round(Annual.pH.Mean, 2), " ± ", round(pH.SE, 2)),
+    percentDO.Final = paste0(round(Annual.percentDO.Mean, 2), " ± ", round(percentDO.SE, 2)),
+    DO.Final = paste0(round(Annual.DO.Mean, 2), " ± ", round(DO.SE, 2)))
+
+print(se_table)
+
+
+
+# SC
+# Step 1: Average replicates within each site and sample month
+monthly_avg <- SC %>%
+  mutate(Site = str_trim(Site)) %>%
+  group_by(Site, Month) %>%
+  summarise(
+    SC.Monthly.Avg = mean(Specific.conductivity, na.rm = TRUE))
+
+# Step 2: Compute the annual mean for each site
+annual_avg <- monthly_avg %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.SC.Mean = mean(SC.Monthly.Avg, na.rm = TRUE))
+
+# Step 3: Compute standard error of monthly values relative to annual mean
+se_table <- monthly_avg %>%
+  left_join(annual_avg, by = "Site") %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.SC.Mean = unique(Annual.SC.Mean),
+    SC.SE = sd(SC.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+  ) %>%
+  mutate(
+    SC.Final = paste0(round(Annual.SC.Mean, 2), " ± ", round(SC.SE, 2)))
+
+
+print(se_table)
+
+
+
+# Covariates
+# Step 1: Average replicates within each site and sample months
+covariates <- covariates %>%
+  mutate(
+    X78Se..ppb. = as.numeric(X78Se..ppb.),
+    TN..mg.L.N. = as.numeric(TN..mg.L.N.),
+    TP..mg.L.P. = as.numeric(TP..mg.L.P.)
+  )
+
+monthly_avg <- covariates %>%
+  group_by(Site, Sample.Month) %>%
+  summarise(
+    NPOC.Monthly.Avg = mean(NPOC..mg.C.L., na.rm = TRUE),
+    Cl.Monthly.Avg = mean(Cl..mg.Cl.L., na.rm = TRUE),
+    SO4.Monthly.Avg = mean(SO4..mg.SO4.L., na.rm = TRUE),
+    Se.Monthly.Avg = mean(X78Se..ppb., na.rm = TRUE),
+    TN.Monthly.Avg = mean(TN..mg.L.N., na.rm = TRUE),
+    TP.Monthly.Avg = mean(TP..mg.L.P., na.rm = TRUE))
+
+# Step 2: Compute the annual mean for each site
+annual_avg <- monthly_avg %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.NPOC.Mean = mean(NPOC.Monthly.Avg, na.rm = TRUE),
+    Annual.Cl.Mean = mean(Cl.Monthly.Avg, na.rm = TRUE),
+    Annual.SO4.Mean = mean(SO4.Monthly.Avg, na.rm = TRUE),
+    Annual.Se.Mean = mean(Se.Monthly.Avg, na.rm = TRUE),
+    Annual.TN.Mean = mean(TN.Monthly.Avg, na.rm = TRUE),
+    Annual.TP.Mean = mean(TP.Monthly.Avg, na.rm = TRUE),)
+
+# Step 3: Compute standard error of monthly values relative to annual mean
+se_table <- monthly_avg %>%
+  left_join(annual_avg, by = "Site") %>%
+  group_by(Site) %>%
+  summarise(
+    Annual.NPOC.Mean = unique(Annual.NPOC.Mean),
+    NPOC.SE = sd(NPOC.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.Cl.Mean = unique(Annual.Cl.Mean),
+    Cl.SE = sd(Cl.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.SO4.Mean = unique(Annual.SO4.Mean),
+    SO4.SE = sd(SO4.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.Se.Mean = unique(Annual.Se.Mean),
+    Se.SE = sd(Se.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.TN.Mean = unique(Annual.TN.Mean),
+    TN.SE = sd(TN.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.TP.Mean = unique(Annual.TP.Mean),
+    TP.SE = sd(TP.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+  ) %>%
+  mutate(
+    NPOC.Final = paste0(round(Annual.NPOC.Mean, 2), " ± ", round(NPOC.SE, 2)),
+    Cl.Final = paste0(round(Annual.Cl.Mean, 2), " ± ", round(Cl.SE, 2)),
+    SO4.Final = paste0(round(Annual.SO4.Mean, 2), " ± ", round(SO4.SE, 2)),
+    Se.Final = paste0(round(Annual.Se.Mean, 2), " ± ", round(Se.SE, 2)),
+    TN.Final = paste0(round(Annual.TN.Mean, 2), " ± ", round(TN.SE, 2)),
+    TP.Final = paste0(round(Annual.TP.Mean, 2), " ± ", round(TP.SE, 2)),)
+
+print(se_table)
+
+
+
+
+
