@@ -322,7 +322,7 @@ prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) +  
   ylab(expression(Secondary~Production~(g/m^2/yr))) +   
-  xlab("Specific Conductivity (µS/cm)") +   
+  xlab("Specific Conductance (µS/cm)") +   
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
   scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Streams" = 8)) +  
   theme_bw() +   
@@ -515,16 +515,27 @@ CBOM=read.csv("CBOM.Year1Summary.csv")
 FBOM=read.csv("FBOM.Year1Summary.csv")
 Algae=read.csv("Algae.Year1Summary.csv")
 
+
+install.packages("stringi")
+library(stringr)
+# Replace the specific character "\xca" with an empty string (or another replacement)
+CBOM$Site <- stringr::str_replace_all(CBOM$Site, fixed("\xca"), "")
+
+
 CBOM <- CBOM %>%
   mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
   group_by(Site, Sample.Month) %>%
   summarise(
-    mean.CBOM = mean(CBOM.AFDM.g.m2., na.rm = TRUE)
+    mean.CBOM = mean(CBOM.AFDM.g.m2, na.rm = TRUE)
   ) %>%
   group_by(Site) %>%
   summarise(
     annual.mean.CBOM = mean(mean.CBOM, na.rm = TRUE)  # Use mean.CBOM to get the annual mean
   )
+
+
+# Replace the specific character "\xca" with an empty string (or another replacement)
+FBOM$Site <- stringr::str_replace_all(FBOM$Site, fixed("\xca"), "")
 
 str(FBOM)
 
@@ -548,6 +559,8 @@ FBOM <- FBOM %>%
     .groups = "drop"
   )
 
+# Replace the specific character "\xca" with an empty string (or another replacement)
+Algae$Site <- stringr::str_replace_all(Algae$Site, fixed("\xca"), "")
 
 Algae <- Algae %>%
   mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
@@ -625,24 +638,24 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.CBOM, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
   geom_smooth(method = "glm", method.args = list(family = "gaussian"), se = TRUE, color = "grey37") +  
-  annotate("text", 
-           x = min(prod.food$SC.Level), 
-           y = max(prod.food$annual.mean.CBOM), 
-           label = paste("P =", p_label, "\n", r2_label), 
-           hjust = 0, size = 5, alpha = 2) + 
+  #annotate("text", 
+           #x = min(prod.food$SC.Level), 
+           #y = max(prod.food$annual.mean.CBOM), 
+           #label = paste("P =", p_label, "\n", r2_label), 
+           #hjust = 0, size = 5, alpha = 2) + 
   ylab(expression("Mean annual CBOM (g/m²)")) +  
-  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
-    name = "Specific Conductivity"  # Labeled scale bar
+    name = "Specific Conductance"  # Labeled scale bar
   ) +  
   scale_shape_manual(
     values = c("Quarterly Streams" = 16, "Core Streams" = 8)
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -685,18 +698,18 @@ FBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.FBOM, color = 
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) + 
   ylab(expression("Mean annual FBOM (g/m²)")) +  
-  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
-    name = "Specific Conductivity"  # Labeled scale bar
+    name = "Specific Conductance"  # Labeled scale bar
   ) +  
   scale_shape_manual(
     values = c("Quarterly Streams" = 16, "Core Streams" = 8)
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -733,13 +746,13 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 FBOM.CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = fbom.cbom, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
   geom_smooth(method = "glm", method.args = list(family = "gaussian"), se = TRUE, color = "grey37") +  
-  annotate("text", 
-           x = min(prod.food$SC.Level), 
-           y = max(prod.food$fbom.cbom), 
-           label = paste("P =", p_label, "\n", r2_label), 
-           vjust = 1, hjust = 0, size = 5, alpha = 2) + 
-  ylab(expression("Mean annual leaf litter standing stock (g/m²)")) +  
-  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  #annotate("text", 
+           #x = min(prod.food$SC.Level), 
+           #y = max(prod.food$fbom.cbom), 
+           #label = paste("P =", p_label, "\n", r2_label), 
+           #vjust = 1, hjust = 0, size = 5, alpha = 2) + 
+  ylab(expression("Mean annual CBOM + FBOM (g/m²)")) +  
+  xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
@@ -791,8 +804,8 @@ Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color 
            y = max(prod.food$annual.mean.Algae), 
            label = paste("P =", p_label, "\n", r2_label), 
            vjust = 1, hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Mean annual Algae standing stock (g/m²)")) +  
-  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  ylab(expression("Mean annual algae AFDM (g/m²)")) +  
+  xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
@@ -803,7 +816,7 @@ Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color 
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -846,7 +859,7 @@ AI.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.AI, color = SC.L
            label = paste("P =", p_label, "\n", r2_label), 
            vjust = 1, hjust = 0, size = 5, alpha = 0) + 
   ylab(expression("Mean annual autotrophic index (g/m²)")) +  
-  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
@@ -857,7 +870,7 @@ AI.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.AI, color = SC.L
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 13),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -901,7 +914,7 @@ chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = 
            label = paste("P =", p_label, "\n", r2_label), 
            vjust = 1, hjust = 0, size = 5, alpha = 0) + 
   ylab(expression("Mean annual chlorophyll-a (g/m²)")) +  
-  xlab("Specific Conductivity (µS/cm)") +  # Corrected X-axis label
+  xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
@@ -912,7 +925,7 @@ chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = 
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -971,7 +984,7 @@ CBOM.prod.lm <- ggplot(prod.food, aes(x = annual.mean.CBOM, y = Sum.Annual.Produ
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -1031,7 +1044,7 @@ FBOM.prod.lm <- ggplot(prod.food, aes(x = annual.mean.FBOM, y = Sum.Annual.Produ
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -1083,7 +1096,7 @@ FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Product
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -1135,6 +1148,7 @@ FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Product
   )
 
 FBOM.CBOM.prod.lm
+
 #ALGAE----------------------------
 plot(prod.food$annual.mean.Algae, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
@@ -1173,7 +1187,7 @@ Algae.prod.lm <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Pro
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -1210,11 +1224,11 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 AI.prod.lm <- ggplot(prod.food, aes(x = annual.mean.AI, y = Sum.Annual.Production, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
   geom_smooth(method = "glm", method.args = list(family = "gaussian"(link="identity")), se = TRUE, color = "grey37") +  
-  annotate("text", 
-           x = min(prod.food$annual.mean.AI), 
-           y = max(prod.food$Sum.Annual.Production), 
-           label = paste("P =", p_label, "\n", r2_label), 
-           hjust = 0, size = 5, alpha = 2) + 
+  #annotate("text", 
+           #x = min(prod.food$annual.mean.AI), 
+           #y = max(prod.food$Sum.Annual.Production), 
+           #label = paste("P =", p_label, "\n", r2_label), 
+           #hjust = 0, size = 5, alpha = 2) + 
   ylab(expression("Secondary Production (g/m²/yr)")) +  
   xlab("Mean annual autotrophic index (g/m²)") +  # Corrected X-axis label
   scale_colour_gradient(
@@ -1227,7 +1241,7 @@ AI.prod.lm <- ggplot(prod.food, aes(x = annual.mean.AI, y = Sum.Annual.Productio
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -1281,7 +1295,7 @@ chla.prod.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Produ
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
-    axis.title = element_text(size = 12),
+    axis.title = element_text(size = 15),
     axis.text = element_text(size = 15),
     panel.grid = element_blank(),
     axis.line = element_line(),
@@ -1538,7 +1552,7 @@ production_cbomfbom_lm <- ggplot(
     #hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
   facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
   ylab(expression(Secondary~Production~(g/m^2/yr))) + 
-  xlab("Mean annual leaf litter standing stock (g/m²)") + 
+  xlab("Mean annual CBOM + FBOM standing stock (g/m²)") + 
   scale_colour_gradient(low = "#70A494", high = "#CA562C") + 
   scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) + 
   theme_bw() + 
@@ -1694,7 +1708,7 @@ glm_results <- prod.food.ffg %>%
     r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
   )
 
-
+summary(glm_results)
 # Merge with main dataset
 prod.food.ffg <- prod.food.ffg %>%
   left_join(glm_results, by = "FFG")
@@ -1736,12 +1750,12 @@ production_chla_lm <- ggplot(
 ) + 
   geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) + 
   geom_smooth(method = "glm", method.args = list(family = gaussian(link = "identity")), se = TRUE, color = "grey37") + 
-  geom_text(data = glm_results, aes(
-    x = min(prod.food.ffg$annual.mean.chla) * 1,  # Adjust to move the label to the left of the plot
-    y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
-    label = paste("R² =", r2_label, "\nP =", p_label), 
-    group = FFG),
-    hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
+ # geom_text(data = glm_results, aes(
+    #x = min(prod.food.ffg$annual.mean.chla) * 1,  # Adjust to move the label to the left of the plot
+    #y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
+    #label = paste("R² =", r2_label, "\nP =", p_label), 
+    #group = FFG),
+    #hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
   facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
   ylab(expression(Secondary~Production~(g/m^2/yr))) + 
   xlab("Mean annual chl-a (g/m²)") + 
@@ -1841,12 +1855,12 @@ production_AI_lm <- ggplot(
 ) + 
   geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) + 
   geom_smooth(method = "glm", method.args = list(family = gaussian(link = "identity")), se = TRUE, color = "grey37") + 
-  geom_text(data = glm_results, aes(
-  x = min(prod.food.ffg$annual.mean.AI) * 1,  # Adjust to move the label to the left of the plot
-  y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
-  label = paste("R² =", r2_label, "\nP =", p_label), 
-  group = FFG),
-  hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
+  #geom_text(data = glm_results, aes(
+  #x = min(prod.food.ffg$annual.mean.AI) * 1,  # Adjust to move the label to the left of the plot
+  #y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
+  #label = paste("R² =", r2_label, "\nP =", p_label), 
+  #group = FFG),
+  #hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
   facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
   ylab(expression(Secondary~Production~(g/m^2/yr))) + 
   xlab("Mean annual autotrophic index (g/m²)") + 
@@ -1911,7 +1925,7 @@ glm_results <- prod.food %>%
                          #family = Gamma(link = "log"), # this yielded a very unfit model
                          family = gaussian(link = "identity"),
                          control = glm.control(maxit = 1000),
-                         data = cur_data())),
+                         data = cur_data_all())),
     .groups = "drop"
   ) %>%
   mutate(
@@ -1934,7 +1948,7 @@ print(glm_results)
 FBOM.CBOM.lm.cat <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Production, color = SC.Category)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  
   geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = TRUE) +  
-  geom_text(data = glm_results, aes(
+  geom_text(data = glm_results_leaf, aes(
     x = min(prod.food$fbom.cbom) + 0.05 * (max(prod.food$fbom.cbom) - min(prod.food$fbom.cbom)),  # Adjust x position
     y = max(prod.food$Sum.Annual.Production) - 0.1 * (max(prod.food$Sum.Annual.Production) - min(prod.food$Sum.Annual.Production)) * as.numeric(factor(SC.Category)),  # Different y offsets per category
     label = label, 
@@ -2124,6 +2138,77 @@ totalfood.lm.cat <- ggplot(prod.food, aes(x = total.food, y = Sum.Annual.Product
   )
 
 totalfood.lm.cat
+
+
+
+
+
+
+# Trying something ------------------------------------
+# Reshape the data into long format
+prod.food_long <- prod.food %>%
+  pivot_longer(cols = c(fbom.cbom, annual.mean.Algae), 
+               names_to = "Food.Type", 
+               values_to = "Value")
+
+# Plot the data with separate lines for each Food.Type
+totalfood.lm.cat <- ggplot(prod.food_long, aes(x = Value, y = Sum.Annual.Production, color = Food.Type)) + 
+  geom_point(aes(shape = Site.Type), size = 3) + 
+  geom_smooth(aes(group = Food.Type), method = "glm", method.args = list(family = gaussian(link = "identity")), se = FALSE) + 
+  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  xlab("Mean annual organic matter standing stock (g/m²)") + 
+  scale_colour_manual(values = c("fbom.cbom" = "#CA562C","annual.mean.Algae" = "#70A494"), name = "Food Type") + 
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Streams" = 8)) + 
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+# Print the plot
+totalfood.lm.cat
+
+library(ggrepel)  # for non-overlapping labels
+
+totalfood.lm.cat <- ggplot(prod.food_long, aes(x = Value, y = Sum.Annual.Production, color = Food.Type)) + 
+  geom_point(aes(shape = Site.Type), size = 3) + 
+  geom_text_repel(aes(label = SC.Level), size = 3, max.overlaps = Inf, show.legend = FALSE) +
+  geom_smooth(aes(group = Food.Type), method = "glm", method.args = list(family = gaussian(link = "identity")), se = FALSE) + 
+  geom_abline(intercept = 2.72, slope = 0.03, linetype = "dashed", color = "black", size = 1) +  # Dashed line
+  annotate("text", 
+           x = min(prod.food$fbom.cbom), 
+           y = max(prod.food$Sum.Annual.Production), 
+           label = paste("P =", p_label, "\n", r2_label), 
+           hjust = 0, size = 5, alpha = 0) + 
+  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  xlab("Mean annual organic matter standing stock (g/m²)") + 
+  scale_colour_manual(values = c("fbom.cbom" = "#CA562C", "annual.mean.Algae" = "#70A494"), name = "Food Type") + 
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Streams" = 8)) + 
+  theme_bw() + 
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+# Print the plot
+totalfood.lm.cat
+
 
 
 # PRODUCTION NMDS-------------------------------------------------------------------------
