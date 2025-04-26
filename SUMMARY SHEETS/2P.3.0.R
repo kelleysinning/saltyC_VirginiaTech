@@ -299,8 +299,8 @@ library(ggpmisc)
 
 # PRODUCTION ALONG SC GRADIENT GLM...FINAL FIGURE
 glm_model <- glm(Sum.Annual.Production ~ SC.Level, 
-                 #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
-                 family = gaussian(link = "identity"),
+                 family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
+                 #family = gaussian(link = "identity"),
                  data = TOTALPROD_sum)
 
 summary(glm_model)  # Check model summary
@@ -315,7 +315,7 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 
 prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color = SC.Level)) +   
   geom_point(aes(shape = Site.Type), size = 3) +  
-  geom_smooth(method = "glm", method.args = list(family = "gaussian"), se = TRUE, color = "grey37") +  
+  geom_smooth(method = "glm", method.args = list(family = Gamma (link = "log")), se = TRUE, color = "grey37") +  
   annotate("text", 
            x = min(TOTALPROD_sum$SC.Level), 
            y = max(TOTALPROD_sum$Sum.Annual.Production), 
@@ -342,6 +342,11 @@ prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color
 
 
 prod  # Display the plot
+
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
 
 
 # COMPUTE GLMs PER FFG...FINAL FIGURE!!!!!
@@ -384,8 +389,8 @@ glm_results <- TOTALPROD_Summary_Sum %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ SC.Level, 
-                         family = Gamma(link = "log"), 
-                         #family = gaussian(link = "identity"),
+                         #family = Gamma(link = "log"), 
+                         family = gaussian(link = "identity"),
                          data = cur_data())),
     .groups = "drop"
   ) %>%
@@ -397,12 +402,14 @@ glm_results <- TOTALPROD_Summary_Sum %>%
   )
 
 
+
+
 # Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
 glm_results <- TOTALPROD_Summary_Sum %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ SC.Level, 
-                         family = Gamma(link = "log"), 
+                         family = gaussian, 
                          data = cur_data())),
     .groups = "drop"
   ) %>%
@@ -424,17 +431,6 @@ print(glm_results)
 
 
 
-
-# Interaction of SC and FFG, not using this because we want individual glms for each FFG
-glm_results <- glm(
-  Summed.Annual.Production ~ SC.Level + FFG,
-  family = Gamma(link = "log"),
-  data = TOTALPROD_Summary_Sum
-)
-
-
-print(glm_results)
-
 # At this point, p_value, pseudo_r2, p_label, and r2_label are all in the `glm_results` dataframe.
 
 # Merge with main dataset
@@ -447,7 +443,7 @@ TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$
 # Plot to scale
 ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
   geom_point(aes(color = SC.Level, shape = Site.Type), size = 3, alpha = 0.8) +  # Color points by SC.Level
-  geom_smooth(method = "glm", method.args = list(family = Gamma (link = "log")), se = TRUE, color = "grey37") + 
+  geom_smooth(method = "glm", method.args = list(family = Gamma (link=log)), se = TRUE, color = "grey37") + 
   # Add p-values and R² to each facet in the bottom left corner
   geom_text(data = glm_results, aes(
     x = min(TOTALPROD_Summary_Sum$SC.Level),  # Place the text at the bottom left of each facet
@@ -637,7 +633,7 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 
 CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.CBOM, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
-  geom_smooth(method = "glm", method.args = list(family = "gaussian"), se = TRUE, color = "grey37") +  
+  geom_smooth(method = "glm", method.args = list(family = Gamma (link = "log")), se = TRUE, color = "grey37") +  
   #annotate("text", 
            #x = min(prod.food$SC.Level), 
            #y = max(prod.food$annual.mean.CBOM), 
@@ -669,13 +665,16 @@ CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.CBOM, color = 
 
 CBOM.sc.lm
 
-
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
 
 #FBOM----------------------------
 plot(prod.food$SC.Level,prod.food$annual.mean.FBOM) # variance doesn't increase with more positive values-->gaussian
 
 glm_model <- glm(annual.mean.FBOM ~ SC.Level, 
-                 #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
+                #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  family = gaussian(link = "identity"),
                  data = prod.food)
 
@@ -723,7 +722,10 @@ FBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.FBOM, color = 
 
 FBOM.sc.lm
 
-
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
 
 #FBOM + CBOM----------------------------
 plot(prod.food$SC.Level, prod.food$fbom.cbom) # variance doesn't increase with more positive values-->gaussian
@@ -777,6 +779,11 @@ FBOM.CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = fbom.cbom, color = SC
 
 FBOM.CBOM.sc.lm
 
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
+
 
 #ALGAE----------------------------
 plot(prod.food$SC.Level,prod.food$annual.mean.Algae) # variance increases with greater values, postively, right skewed --> Gamma
@@ -798,7 +805,7 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 
 Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
-  geom_smooth(method = "glm", method.args = list(family = "Gamma"(link= "log")), se = TRUE, color = "grey37") +  
+  geom_smooth(method = "glm", method.args = list(family = gaussian), se = TRUE, color = "grey37") +  
   annotate("text", 
            x = min(prod.food$SC.Level), 
            y = max(prod.food$annual.mean.Algae), 
@@ -830,6 +837,10 @@ Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color 
 
 Algae.sc.lm
 
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
 
 
 #AUTOTROPHIC INDEX----------------------------
@@ -885,14 +896,17 @@ AI.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.AI, color = SC.L
 AI.sc.lm
 
 
-
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
 
 #CHL-A----------------------------
 plot(prod.food$SC.Level,prod.food$annual.mean.chla) # variance doesn't increases with greater values--> gaussian
 
 glm_model <- glm(annual.mean.chla ~ SC.Level, 
-                 #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
-                 family = gaussian(link = "identity"),
+                 family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
+                 #family = gaussian(link = "identity"),
                  data = prod.food)
 
 summary(glm_model)  # Check model summary
@@ -907,7 +921,7 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 
 chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
-  geom_smooth(method = "glm", method.args = list(family = "gaussian"(link="identity")), se = TRUE, color = "grey37") +  
+  geom_smooth(method = "glm", method.args = list(family = Gamma(link="log")), se = TRUE, color = "grey37") +  
   annotate("text", 
            x = min(prod.food$SC.Level), 
            y = max(prod.food$annual.mean.chla), 
@@ -939,7 +953,10 @@ chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = 
 
 chla.sc.lm
 
-
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
 
 
 
@@ -1001,7 +1018,10 @@ CBOM.prod.lm
 
 
 
-
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
 
 
 
@@ -1062,8 +1082,8 @@ FBOM.prod.lm
 plot(prod.food$fbom.cbom, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
 glm_model <- glm(Sum.Annual.Production ~ fbom.cbom, 
-                 #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
-                 family = gaussian(link = "identity"),
+                 family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
+                 #family = gaussian(link = "identity"),
                  data = prod.food)
 
 summary(glm_model)  # Check model summary
@@ -1078,7 +1098,7 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 
 FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Production, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
-  geom_smooth(method = "glm", method.args = list(family = "gaussian"(link="identity")), se = TRUE, color = "grey37") +  
+  geom_smooth(method = "glm", method.args = list(family = "Gamma"(link="log")), se = TRUE, color = "grey37") +  
   annotate("text", 
            x = min(prod.food$fbom.cbom), 
            y = max(prod.food$Sum.Annual.Production), 
@@ -1109,6 +1129,13 @@ FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Product
   )
 
 FBOM.CBOM.prod.lm
+
+
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
+
 
 
 
@@ -1153,8 +1180,8 @@ FBOM.CBOM.prod.lm
 plot(prod.food$annual.mean.Algae, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
 glm_model <- glm(Sum.Annual.Production ~ annual.mean.Algae, 
-                 #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
-                 family = gaussian(link = "identity"),
+                 family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
+                 #family = gaussian(link = "identity"),
                  data = prod.food)
 
 summary(glm_model)  # Check model summary
@@ -1200,6 +1227,12 @@ Algae.prod.lm <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Pro
   )
 
 Algae.prod.lm
+
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
+
 
 
 #AUTOTROPHIC INDEX----------------------------
@@ -1261,8 +1294,8 @@ AI.prod.lm
 plot(prod.food$annual.mean.chla, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
 glm_model <- glm(Sum.Annual.Production ~ annual.mean.chla, 
-                 #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
-                 family = gaussian(link = "identity"),
+                 family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
+                 #family = gaussian(link = "identity"),
                  data = prod.food)
 
 summary(glm_model)  # Check model summary
@@ -1277,7 +1310,7 @@ r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
 
 chla.prod.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Production, color = SC.Level)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
-  geom_smooth(method = "glm", method.args = list(family = "gaussian"(link="identity")), se = TRUE, color = "grey37") +  
+  geom_smooth(method = "glm", method.args = list(family = Gamma(link="log")), se = TRUE, color = "grey37") +  
   annotate("text", 
            x = min(prod.food$annual.mean.chla), 
            y = max(prod.food$Sum.Annual.Production), 
@@ -1308,6 +1341,13 @@ chla.prod.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Produ
   )
 
 chla.prod.lm
+
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_model)
+shapiro.test(resid(glm_model))
+
+
 
 # production and standing stock facet wrapped with FFG------------------------------
 prod.food.ffg$SC.Level <- as.numeric(as.character(prod.food.ffg$SC.Level))# Ensure SC.Level is numeric
@@ -1694,8 +1734,8 @@ glm_results <- prod.food.ffg %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla, 
-                         #family = Gamma(link = "log"), # this yielded a very unfit model
-                         family = gaussian(link = "identity"),
+                         family = Gamma(link = "log"), # this yielded a very unfit model
+                         #family = gaussian(link = "identity"),
                          control = glm.control(maxit = 1000),
                          data = cur_data())),
     .groups = "drop"
@@ -1720,8 +1760,8 @@ glm_results <- prod.food.ffg %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla, 
-                         #family = Gamma(link = "log"), # this yielded a very unfit model
-                         family = gaussian(link = "identity"),
+                         family = Gamma(link = "log"), # this yielded a very unfit model
+                         #family = gaussian(link = "identity"),
                          control = glm.control(maxit = 1000),
                          data = cur_data())),
     .groups = "drop"
@@ -1749,13 +1789,13 @@ production_chla_lm <- ggplot(
   aes(x = annual.mean.chla, y = Summed.Annual.Production, color = SC.Level)
 ) + 
   geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) + 
-  geom_smooth(method = "glm", method.args = list(family = gaussian(link = "identity")), se = TRUE, color = "grey37") + 
- # geom_text(data = glm_results, aes(
-    #x = min(prod.food.ffg$annual.mean.chla) * 1,  # Adjust to move the label to the left of the plot
-    #y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
-    #label = paste("R² =", r2_label, "\nP =", p_label), 
-    #group = FFG),
-    #hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
+  geom_smooth(method = "glm", method.args = list(family = Gamma(link = "log")), se = TRUE, color = "grey37") + 
+  geom_text(data = glm_results, aes(
+    x = min(prod.food.ffg$annual.mean.chla) * 1,  # Adjust to move the label to the left of the plot
+    y = quantile(prod.food.ffg$Summed.Annual.Production, 0.9),  # Move label upwards to avoid overlap
+    label = paste("R² =", r2_label, "\nP =", p_label), 
+    group = FFG),
+    hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
   facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
   ylab(expression(Secondary~Production~(g/m^2/yr))) + 
   xlab("Mean annual chl-a (g/m²)") + 
@@ -1786,9 +1826,13 @@ production_chla_lm <- ggplot(
 production_chla_lm
 
 
+# Checking assumptions
+par(mfrow = c(2, 2))
+plot(glm_results)
+shapiro.test(resid(glm_results))
 
 
-# Autotrophic index---------------------------
+_# Autotrophic index---------------------------
 
 plot(prod.food.ffg$annual.mean.AI, prod.food.ffg$Summed.Annual.Production) # variance increases with greater values, postively, right skewed --> Gamma
 
@@ -1979,7 +2023,7 @@ FBOM.CBOM.lm.cat
 plot(prod.food$annual.mean.Algae, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
 
 
-glm_results <- prod.food %>%
+glm_results_algae <- prod.food %>%
   group_by(SC.Category) %>%
   do({
     model <- glm(Sum.Annual.Production ~ annual.mean.Algae, family = gaussian(link="identity"), data = .)
@@ -1996,7 +2040,7 @@ glm_results <- prod.food %>%
   )
 
 # Print results
-print(glm_results)
+print(glm_results_algae)
 
 # Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
 glm_results <- prod.food %>%
@@ -2029,7 +2073,7 @@ print(glm_results)
 Algae.lm.cat <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Production, color = SC.Category)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  
   geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = FALSE) +  
-  geom_text(data = glm_results, aes(
+  geom_text(data = glm_results_algae, aes(
     x = min(prod.food$annual.mean.Algae) + 0.05 * (max(prod.food$annual.mean.Algae) - min(prod.food$annual.mean.Algae)),  # Adjust x position
     y = max(prod.food$Sum.Annual.Production) - 0.1 * (max(prod.food$Sum.Annual.Production) - min(prod.food$Sum.Annual.Production)) * as.numeric(factor(SC.Category)),  # Different y offsets per category
     label = label, 
@@ -2055,6 +2099,91 @@ Algae.lm.cat <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Prod
 
 Algae.lm.cat
 
+
+
+# CHLOROPHYLL-A---------------------------------------
+plot(prod.food$annual.mean.chla, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian
+
+
+glm_results_chla <- prod.food %>%
+  group_by(SC.Category) %>%
+  do({
+    model <- glm(Sum.Annual.Production ~ annual.mean.chla, family = Gamma(link="log"), data = .)
+    intercept <- coef(model)[1]
+    slope <- coef(model)[2]
+    p_value <- summary(model)$coefficients[2, 4]  
+    r2 <- 1 - sum(residuals(model)^2) / sum((.$Sum.Annual.Production - mean(.$Sum.Annual.Production, na.rm = TRUE))^2)  
+    equation <- paste0("y = ", signif(intercept, 3), " + ", signif(slope, 3), "x")
+    data.frame(intercept = intercept, slope = slope, p_value = p_value, r2 = r2, equation = equation)
+  }) %>%
+  ungroup() %>%
+  mutate(
+    label = paste0(equation, "\nP = ", signif(p_value, 3), "\nR² = ", signif(r2, 3))  # Format label text
+  )
+
+# Print results
+print(glm_results_chla)
+
+# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
+glm_results <- prod.food %>%
+  group_by(SC.Category) %>%
+  summarise(
+    glm_model = list(glm(Sum.Annual.Production ~ annual.mean.chla, 
+                         family = Gamma(link = "log"), # this yielded a very unfit model
+                         #family = gaussian(link = "identity"),
+                         control = glm.control(maxit = 1000),
+                         data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient estimates, standard errors, and p-values
+    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
+    model_stats = map(glm_model, ~ tibble(
+      null_deviance = summary(.x)$null.deviance,
+      residual_deviance = summary(.x)$deviance,
+      AIC = AIC(.x)
+    ))  # Extract deviance and AIC
+  ) %>%
+  unnest(coef_table) %>%  # Expand coefficient table
+  unnest(model_stats) %>%  # Expand model statistics
+  select(SC.Category, term, estimate, std.error, statistic, p.value, 
+         null_deviance, residual_deviance, AIC)  # Keep relevant columns
+
+
+print(glm_results)
+
+chla.lm.cat <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Production, color = SC.Category)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+  geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = Gamma(link="log")), se = TRUE) +  
+  #geom_text(data = glm_results_chla, aes(
+    #x = min(prod.food$annual.mean.chla) + 0.05 * (max(prod.food$annual.mean.chla) - min(prod.food$annual.mean.chla)),  # Adjust x position
+    #y = max(prod.food$Sum.Annual.Production) - 0.1 * (max(prod.food$Sum.Annual.Production) - min(prod.food$Sum.Annual.Production)) * as.numeric(factor(SC.Category)),  # Different y offsets per category
+    #label = label, 
+    #color = SC.Category  # Color the text based on SC.Category
+  #), inherit.aes = FALSE, hjust = 0, size = 5, alpha = 2) +  
+  ylab(expression(Secondary~Production~(g/m^2/yr))) +  
+  xlab("Mean annual chlorophyll-a standing stock (g/m²)") +  
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), name = "SC Category") +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Streams" = 8)) +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+chla.lm.cat
+
+par(mfrow = c(2, 2))
+plot(glm_results)
+shapiro.test(resid(glm_results))
 
 # ALL FOOD RESOURCES----------
 plot(prod.food$total.food, prod.food$Sum.Annual.Production) # variance doesn't increase significantly with more positive values-->gaussian

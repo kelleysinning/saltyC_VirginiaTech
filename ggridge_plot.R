@@ -49,11 +49,13 @@ library(ggridges)
 
 
 Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/2P sheets/SECPROD_FFGadjusted.csv")
-
+sum(Total_Lengths$Abundance)
 
 # Subsetting for Leuctra----------------------
 TotalLengths_leuctra <- Total_Lengths %>%
   filter(Genus == "Leuctra" & Site %in% c("EAS", "FRY", "RIC"))
+
+
   
 # Fix length and count columns
 TotalLengths_leuctra$Length<-as.numeric(TotalLengths_leuctra$Length)
