@@ -535,14 +535,14 @@ FBOM$Site <- stringr::str_replace_all(FBOM$Site, fixed("\xca"), "")
 
 str(FBOM)
 
-FBOM <- FBOM %>%
-  mutate(FBOM.AFDM.g.m2. = parse_number(FBOM.AFDM.g.m2.))
+#FBOM <- FBOM %>%
+ # mutate(FBOM.AFDM.g.m2. = parse_number(FBOM.AFDM.g.m2.))
 
 
 FBOM <- FBOM %>%
   mutate(
     Site = str_trim(Site),  # Remove extra spaces
-    FBOM.AFDM.g.m2. = as.numeric(FBOM.AFDM.g.m2.)  # Convert to numeric if needed
+    FBOM.AFDM.g.m2. = as.numeric(FBOM.AFDM.g.m2. )  # Convert to numeric if needed
   ) %>%
   group_by(Site, Sample.Month) %>%
   summarise(
@@ -1991,7 +1991,7 @@ print(glm_results)
 
 FBOM.CBOM.lm.cat <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Production, color = SC.Category)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  
-  geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = TRUE) +  
+  geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = FALSE) +  
   geom_text(data = glm_results_leaf, aes(
     x = min(prod.food$fbom.cbom) + 0.05 * (max(prod.food$fbom.cbom) - min(prod.food$fbom.cbom)),  # Adjust x position
     y = max(prod.food$Sum.Annual.Production) - 0.1 * (max(prod.food$Sum.Annual.Production) - min(prod.food$Sum.Annual.Production)) * as.numeric(factor(SC.Category)),  # Different y offsets per category
@@ -1999,7 +1999,7 @@ FBOM.CBOM.lm.cat <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Producti
     color = SC.Category  # Color the text based on SC.Category
   ), inherit.aes = FALSE, hjust = 0, size = 5, alpha = 0) +  
   ylab(expression(Secondary~Production~(g/m^2/yr))) +  
-  xlab("Mean annual leaf litter standing stock (g/m²)") +  
+  xlab("Mean annual CBOM + FBOM (g/m²)") +  
   scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), name = "SC Category") +  
   scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Streams" = 8)) +  
   theme_bw() +  
@@ -2455,7 +2455,7 @@ nmds_result$stress
 food.YSI$SC.Level <- as.numeric(as.character(food.YSI$SC.Level)) #making SC numeric for env_fit
 
 env_fit <- envfit(nmds_result, food.YSI %>% select(where(is.numeric)), permutations = 99999)
-
+str(food.YSI)
 
 
 # Extract NMDS site and species scores
@@ -3335,6 +3335,7 @@ write_xlsx(genera_scores, "generastats_biomassNMDS.xlsx")
 
 # Loading the appropriate packages
 library(vegan) # vegan to calculate distance matrices
+install.packages("ggplot2")
 library(ggplot2) # ggplot for plotting
 library(tidyverse) 
 library(dplyr)
@@ -3441,6 +3442,8 @@ ref.aug <- subset(site.scores, site %in% c("EAS.AUG", "CRO.AUG", "HCN.AUG"))
 # Filter data for specific colors
 
 # geom_mark_ellipse for ellipse instead of polygon
+dev.off()
+
 
 REF.NMDS <- ggplot() +    
   geom_polygon(data = ref.oct, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#70A494", alpha = 0.5) +
@@ -4055,7 +4058,11 @@ covariates <- covariates %>%
   mutate(
     X78Se..ppb. = as.numeric(X78Se..ppb.),
     TN..mg.L.N. = as.numeric(TN..mg.L.N.),
-    TP..mg.L.P. = as.numeric(TP..mg.L.P.)
+    TP..mg.L.P. = as.numeric(TP..mg.L.P.),
+    NH3..mg.L. = as.numeric(NH3..mg.L.),
+    NO3.NO2.mg.L. = as.numeric(NO3.NO2.mg.L.),
+    oPO4.mg.L. = as.numeric(oPO4.mg.L.),
+    CaCO3..mg.L. = as.numeric(CaCO3..mg.L.),
   )
 
 
@@ -4069,8 +4076,26 @@ covariates <- covariates %>%
     annual.mean.SO4 = mean(SO4..mg.SO4.L., na.rm = TRUE),
     annual.mean.Se = mean(X78Se..ppb., na.rm = TRUE),
     annual.mean.TN = mean(TN..mg.L.N., na.rm = TRUE),
-    annual.mean.TP = mean(TP..mg.L.P., na.rm = TRUE)
+    annual.mean.TP = mean(TP..mg.L.P., na.rm = TRUE),
+    annual.mean.NH3 = mean(NH3..mg.L., na.rm = TRUE),
+    annual.mean.NO3.NO2 = mean(NO3.NO2.mg.L., na.rm = TRUE),
+    annual.mean.oPO4 = mean(oPO4.mg.L., na.rm = TRUE),
+    annual.mean.CaCO3 = mean(CaCO3..mg.L., na.rm = TRUE)
   ) 
+
+# Manually giving LLC an annual average of 0.005, RIC and LLW are 0.006 and 0.004, so 
+# averaging those bc LLC have no oPO4 values for the year that were detected and could be used 
+covariates <- covariates %>% 
+  mutate(
+    annual.mean.oPO4 = if_else(
+      is.na(annual.mean.oPO4) & Site == "LLC",  # Fix the condition here
+      0.005,  # Value to replace NAs with
+      annual.mean.oPO4  # Keep original value if condition is not met
+    )
+  )
+
+  
+
 
 
 # Adding in other YSI 
@@ -4098,7 +4123,7 @@ str(total.covariates)
 
 # Making the correlation matrix
 total.covariates.matrix <- total.covariates %>%
-  select(-c(Site)) # Removing site so that it is all numeric, necessary for matrix
+  select(-c(Site, Type, Sample.Month, Date)) # Removing site so that it is all numeric, necessary for matrix
 
 cor_matrix <- cor(total.covariates.matrix, method = "spearman")
 print(cor_matrix)
@@ -4131,7 +4156,7 @@ ggcorrplot(
   lab = TRUE,           # Show correlation values inside the plot
   type = "lower",       # Display only the lower triangle
   colors = c("#CA562C", "white", "#70A494"),  # Custom color gradient (from red to white to green)
-  p.mat = result$P,     # P-value matrix from rcorr()
+  #p.mat = result$P,     # P-value matrix from rcorr()
   sig.level = 0.05,     # Significance level for asterisks
   insig = "pch"         # Use asterisks for insignificant correlations
 )
@@ -4196,7 +4221,7 @@ write_xlsx(SECPROD_SUMMARY_TOTALS, "SECPROD_SUMMARY_TOTALS.xlsx")
 
 
 
-# Making tables for water quality and food
+# Making tables for water quality and food-------------------------------------
 CBOM=read.csv("CBOM.Year1Summary.csv")
 FBOM=read.csv("FBOM.Year1Summary.csv")
 Algae=read.csv("Algae.Year1Summary.csv")
@@ -4204,6 +4229,9 @@ YSI <- read.csv("YSI.Year1.csv")
 SC <- read.csv("SC.yearly.Levels.csv")
 covariates <- read.csv("covariates.csv")
 
+library(dplyr)
+library(stringr)
+library(stringi)
 
 # ALGAE
 # Step 1: Average replicates within each site and sample month
@@ -4242,13 +4270,14 @@ mutate(
 print(se_table)
 
 
+colnames(CBOM)
 # CBOM
 # Step 1: Average replicates within each site and sample month
 monthly_avg <- CBOM %>%
   mutate(Site = str_trim(Site)) %>%
   group_by(Site, Sample.Month) %>%
   summarise(
-    CBOM.Monthly.Avg = mean(CBOM.AFDM.g.m2., na.rm = TRUE))
+    CBOM.Monthly.Avg = mean(CBOM.AFDM.g.m2, na.rm = TRUE))
 
 # Step 2: Compute the annual mean for each site
 annual_avg <- monthly_avg %>%
@@ -4270,7 +4299,8 @@ se_table <- monthly_avg %>%
 print(se_table)
 
 
-
+colnames(FBOM)
+str(FBOM)
 # FBOM
 # Step 1: Average replicates within each site and sample month
 FBOM <- FBOM %>%
@@ -4383,11 +4413,19 @@ print(se_table)
 
 # Covariates
 # Step 1: Average replicates within each site and sample months
+str(covariates)
+
 covariates <- covariates %>%
   mutate(
     X78Se..ppb. = as.numeric(X78Se..ppb.),
     TN..mg.L.N. = as.numeric(TN..mg.L.N.),
-    TP..mg.L.P. = as.numeric(TP..mg.L.P.)
+    TP..mg.L.P. = as.numeric(TP..mg.L.P.),
+    NH3..mg.L. = as.numeric(NH3..mg.L.),
+    NO3.NO2.mg.L. = as.numeric(NO3.NO2.mg.L.),
+    oPO4.mg.L. = as.numeric(oPO4.mg.L.),
+    CaCO3..mg.L. = as.numeric(CaCO3..mg.L.),
+    Potassium..ppb. = as.numeric(Potassium..ppb.),
+    Calcium..ppb. = as.numeric(Calcium..ppb.)
   )
 
 monthly_avg <- covariates %>%
@@ -4398,7 +4436,14 @@ monthly_avg <- covariates %>%
     SO4.Monthly.Avg = mean(SO4..mg.SO4.L., na.rm = TRUE),
     Se.Monthly.Avg = mean(X78Se..ppb., na.rm = TRUE),
     TN.Monthly.Avg = mean(TN..mg.L.N., na.rm = TRUE),
-    TP.Monthly.Avg = mean(TP..mg.L.P., na.rm = TRUE))
+    TP.Monthly.Avg = mean(TP..mg.L.P., na.rm = TRUE),
+    NH3.Monthly.Avg = mean(NH3..mg.L., na.rm = TRUE),
+    NO3.NO2.Monthly.Avg = mean(NO3.NO2.mg.L., na.rm = TRUE),
+    oPO4.Monthly.Avg = mean(oPO4.mg.L., na.rm = TRUE),
+    CaCO3.Monthly.Avg = mean(CaCO3..mg.L., na.rm = TRUE),
+    Potassium.Monthly.Avg = mean(Potassium..ppb., na.rm = TRUE),
+    Calcium.Monthly.Avg = mean(Calcium..ppb., na.rm = TRUE),
+    )
 
 # Step 2: Compute the annual mean for each site
 annual_avg <- monthly_avg %>%
@@ -4409,7 +4454,13 @@ annual_avg <- monthly_avg %>%
     Annual.SO4.Mean = mean(SO4.Monthly.Avg, na.rm = TRUE),
     Annual.Se.Mean = mean(Se.Monthly.Avg, na.rm = TRUE),
     Annual.TN.Mean = mean(TN.Monthly.Avg, na.rm = TRUE),
-    Annual.TP.Mean = mean(TP.Monthly.Avg, na.rm = TRUE),)
+    Annual.TP.Mean = mean(TP.Monthly.Avg, na.rm = TRUE),
+    Annual.NH3.Mean = mean(NH3.Monthly.Avg, na.rm = TRUE),
+    Annual.NO3.NO2.Mean = mean(NO3.NO2.Monthly.Avg, na.rm = TRUE),
+    Annual.oPO4.Mean = mean(oPO4.Monthly.Avg, na.rm = TRUE),
+    Annual.CaCO3.Mean = mean(CaCO3.Monthly.Avg, na.rm = TRUE),
+    Annual.Potassium.Mean = mean(Potassium.Monthly.Avg, na.rm = TRUE),
+    Annual.Calcium.Mean = mean(Calcium.Monthly.Avg, na.rm = TRUE),)
 
 # Step 3: Compute standard error of monthly values relative to annual mean
 se_table <- monthly_avg %>%
@@ -4423,11 +4474,23 @@ se_table <- monthly_avg %>%
     Annual.SO4.Mean = unique(Annual.SO4.Mean),
     SO4.SE = sd(SO4.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
     Annual.Se.Mean = unique(Annual.Se.Mean),
-    Se.SE = sd(Se.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Se.SE = sd(Se.Monthly.Avg, na.rm = TRUE) / sqrt(2),
     Annual.TN.Mean = unique(Annual.TN.Mean),
     TN.SE = sd(TN.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
     Annual.TP.Mean = unique(Annual.TP.Mean),
     TP.SE = sd(TP.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.NH3.Mean = unique(Annual.NH3.Mean),
+    NH3.SE = sd(NH3.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.NO3.NO2.Mean = unique(Annual.NO3.NO2.Mean),
+    NO3.NO2.SE = sd(NO3.NO2.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.oPO4.Mean = unique(Annual.oPO4.Mean),
+    oPO4.SE = sd(oPO4.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.CaCO3.Mean = unique(Annual.CaCO3.Mean),
+    CaCO3.SE = sd(CaCO3.Monthly.Avg, na.rm = TRUE) / sqrt(2),
+    Annual.Potassium.Mean = unique(Annual.Potassium.Mean),
+    Potassium.SE = sd(Potassium.Monthly.Avg, na.rm = TRUE) / sqrt(n()),
+    Annual.Calcium.Mean = unique(Annual.Calcium.Mean),
+    Calcium.SE = sd(Calcium.Monthly.Avg, na.rm = TRUE) / sqrt(n())
   ) %>%
   mutate(
     NPOC.Final = paste0(round(Annual.NPOC.Mean, 2), " ± ", round(NPOC.SE, 2)),
@@ -4435,11 +4498,35 @@ se_table <- monthly_avg %>%
     SO4.Final = paste0(round(Annual.SO4.Mean, 2), " ± ", round(SO4.SE, 2)),
     Se.Final = paste0(round(Annual.Se.Mean, 2), " ± ", round(Se.SE, 2)),
     TN.Final = paste0(round(Annual.TN.Mean, 2), " ± ", round(TN.SE, 2)),
-    TP.Final = paste0(round(Annual.TP.Mean, 2), " ± ", round(TP.SE, 2)),)
+    TP.Final = paste0(round(Annual.TP.Mean, 2), " ± ", round(TP.SE, 2)),
+    NH3.Final = paste0(round(Annual.NH3.Mean, 2), " ± ", round(NH3.SE, 2)),
+    NO3.NO2.Final = paste0(round(Annual.NO3.NO2.Mean, 2), " ± ", round(NO3.NO2.SE, 2)),
+    oPO4.Final = paste0(round(Annual.oPO4.Mean, 2), " ± ", round(oPO4.SE, 2)),
+    CaCO3.Final = paste0(round(Annual.CaCO3.Mean, 2), " ± ", round(CaCO3.SE, 2)),
+    Potassium.Final = paste0(round(Annual.Potassium.Mean, 2), " ± ", round(Potassium.SE, 2)),
+    Calcium.Final = paste0(round(Annual.Calcium.Mean, 2), " ± ", round(Calcium.SE, 2)))
 
 print(se_table)
 
 
 
 
+# TOP TAXA FOR SI
+
+library(dplyr)
+
+top10_producers <- TOTALPROD_Summary %>%
+  filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
+  arrange(desc(Annual.Production)) %>%
+  slice_head(n = 10)
+
+library(dplyr)
+
+top10_by_ffg <- TOTALPROD_Summary %>%
+  filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
+  group_by(FFG, Genus) %>%
+  summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE), .groups = "drop") %>%
+  arrange(FFG, desc(total_annual_production)) %>%
+  group_by(FFG) %>%
+  slice_head(n = 5)
 
