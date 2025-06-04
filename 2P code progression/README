@@ -1,0 +1,5 @@
+The 2P.2.0 script was where I added biomass equations with justification just to be certain that any hand-made biomass errors were 100% eliminated. It is also in this code that I do the major transformations of my raw data into the pretty format I needed to do further plotting/2P stuff. Also, all the 2P stuff is in here and annotated pretty well but still complicated. I also of course have some figures in there. This is still a pretty messy script.
+
+I switched to the 2P3.0 for my final thesis figures, adding in food resources, etc. I cut out all the thousands of line of code that I needed to get 2P and instead just start from the top with TOTALPROD.csv, which I made in 2P.2.0 after calculating 2P for everything. It’s essentially the summary sheet for production and made the code much more efficient. All the figures from my thesis are in here and maybe more
+
+My FinalsFiguresCode is what I use for publication figures and submission. The most organized and straight forward script there is.
