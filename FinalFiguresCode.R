@@ -1705,7 +1705,7 @@ library(readxl)
 library(lubridate)
 library(ggridges)
 
-Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/2P sheets/SECPROD_FFGadjusted.csv")
+Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/SUMMARY SHEETS/SECPROD_FFGadjusted.csv")
 
 # Subsetting for Stenonema--------------------------------------------------------
 TotalLengths_stenonema <- Total_Lengths %>%
@@ -1735,11 +1735,38 @@ ggplot(TotalLengths_stenonema, aes(Length, y = Sample.Month, fill = after_stat(x
   theme_classic()
 
 
-# Subsetting for Scraper--------------------------------------------------------
+# Subsetting for Leuctra--------------------------------------------------------
+TotalLengths_leuctra <- Total_Lengths %>%
+  filter(Genus == "Leuctra" & Site %in% c("EAS", "FRY", "RIC")) 
+
+# Fix length and count columns
+TotalLengths_leuctra$Length<-as.numeric(TotalLengths_leuctra$Length)
+TotalLengths_leuctra$Abundance<-as.numeric(TotalLengths_leuctra$Abundance)
+
+# Putting months in order of how I sampled them
+TotalLengths_leuctra$Sample.Month <- factor(
+  TotalLengths_leuctra$Sample.Month, 
+  levels = c("September", "October", "November", "December",
+             "January", "February", "March", "April", "May", 
+             "June", "July", "August")
+)
+
+
+# Ensure SC.Category is a factor with the desired order
+TotalLengths_leuctra$SC.Category <- factor(TotalLengths_leuctra$SC.Category, levels = c("REF", "MID", "HIGH"))
+
+ggplot(TotalLengths_leuctra, aes(Length, y = Sample.Month, fill = after_stat(x))) +
+  facet_wrap(~SC.Category)+
+  geom_density_ridges_gradient(scale = 1.5, alpha=.4) +
+  scale_y_discrete(limits = rev(levels(TotalLengths_leuctra$Sample.Month)))+
+  scale_fill_gradient(name = "Length (mm)", low= "skyblue", high="darkgoldenrod1") +
+  theme_classic()
+
+# Subsetting for Scrapers and shredders--------------------------------------------------------
 
 # Subsetting for FFGS----------------------
 TotalLengths_FFG <- Total_Lengths %>%
-  filter(FFG %in% c("Scraper", "Scraper - Coleoptera") & Site %in% c("EAS", "FRY", "RIC"))
+  filter(FFG %in% c("Scraper", "Scraper - Coleoptera", "Shredder") & Site %in% c("EAS", "FRY", "RIC"))
 
 # Fix length and count columns
 TotalLengths_FFG$Length<-as.numeric(TotalLengths_FFG$Length)
@@ -1755,7 +1782,7 @@ TotalLengths_FFG$Sample.Month <- factor(
 
 
 # Ensure SC.Category is a factor with the desired order
-TotalLengths_FFG$FFG <- factor(TotalLengths_FFG$FFG, levels = c("Scraper", "Scraper - Coleoptera"))
+TotalLengths_FFG$FFG <- factor(TotalLengths_FFG$FFG, levels = c("Scraper", "Scraper - Coleoptera", "Shredder"))
 TotalLengths_FFG$SC.Category <- factor(TotalLengths_FFG$SC.Category, levels = c("REF", "MID", "HIGH"))
 
 # Make ggridges plot
@@ -1763,7 +1790,7 @@ TotalLengths_FFG$SC.Category <- factor(TotalLengths_FFG$SC.Category, levels = c(
 ggplot(TotalLengths_FFG, aes(Length, y = Sample.Month, fill = after_stat(x))) + # after_stat let's you reference a computer variable (length) during plotting...maps length values to fill aesthetic
   facet_wrap(FFG~SC.Category)+
   geom_density_ridges_gradient(scale = 1.5, alpha=.4) + # computation of densities, kernal density estimations to get smoothed ridgelines
-  scale_x_continuous(limits = c(0, 20)) +
+  scale_x_continuous(limits = c(0, 10)) +
   scale_y_discrete(limits = rev(levels(TotalLengths_FFG$Sample.Month)))+ # reverses order of months so it read top to bottom easier
   scale_fill_gradient(name = "Length (mm)", low= "skyblue", high="darkgoldenrod1") +
   theme_classic()
