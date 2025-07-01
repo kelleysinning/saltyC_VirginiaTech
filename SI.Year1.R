@@ -74,6 +74,26 @@ SI.year1 <- SI.year1 %>%
   filter(Taxa != "Sciaridae")
 
 
+SI.Season <- SI.Season %>%
+  filter(Taxa != "Arcynopteryx dichroa")
+
+SI.Season <- SI.Season %>%
+  filter(Taxa != "Carabidae")
+
+SI.Season <- SI.Season %>%
+  filter(Taxa != "Helobata/Helocombus")
+
+SI.Season <- SI.Season %>%
+  filter(Taxa != "Helophorus")
+
+SI.Season <- SI.Season %>%
+  filter(Taxa != "Hydrochus")
+
+SI.Season <- SI.Season %>%
+  filter(Taxa != "Hydraena")
+
+SI.Season <- SI.Season %>%
+  filter(Taxa != "Sciaridae")
 
 # Assigning functional feeding groups to genera (note: some "genera" are family or the lowest taxonomic resolution possible)
 # CONUS primary feeding mode was how FFG was determined
@@ -243,6 +263,14 @@ SI.Season$SC.Category[SI.Season$Site =="LLW"] = "HIGH"
 SI.Season$SC.Category[SI.Season$Site =="LLC"] = "HIGH"
 SI.Season$SC.Category[SI.Season$Site =="RIC"] = "HIGH"
 
+# Ordering everything
+SI.Season$Site <- factor(SI.Season$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
+SI.Season$SC.Category <- factor(SI.Season$SC.Category, levels = c("REF","MID","HIGH"))
+SI.Season$SC.Level <- factor(SI.Season$SC.Level, levels = c("16","40","77","293","350","447","1048","1083","1185"))
+SI.Season$FFG <- factor(SI.Season$FFG, levels = c("Scraper","Coleoptera Scraper","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
+
+
+
 
 # Color Scheme stuff
 library(RColorBrewer)
@@ -292,7 +320,7 @@ ggplot(SI.year1, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
   theme_minimal()
 
 
-#Season
+# For Season
 
 ggplot(SI.Season, aes(x = season.d13C, y = season.d15N,
                       color = SC.Category, shape = FFG)) +
@@ -438,3 +466,81 @@ Nglm_results <- FFGsummary_d15N %>%
   )
 
 print(Nglm_results)
+
+
+
+# Adding food resources---------------------------------------------------------
+CBOM <- read.csv("FilteredYear1CBOM.csv")
+FBOM <- read.csv("FilteredYear1FBOM.csv")
+Algae <- read.csv("FilteredYear1Algae.csv")
+
+
+# Seasonal and Annual CBOM
+
+Season.CBOM <- CBOM %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Month, Sample_Type) %>%
+  summarise(
+    season.mean.d13C = mean(d13C, na.rm = TRUE),
+    season.mean.d15N = mean(d15N, na.rm = TRUE),
+    season.mean.wt.C = mean(wt..C, na.rm = TRUE),
+     season.mean.wt.N = mean(wt..N, na.rm = TRUE))
+    
+    
+Annual.CBOM <- Season.CBOM %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample_Type) %>%
+  summarise(
+    annual.mean.d13C = mean(season.mean.d13C, na.rm = TRUE),
+    annual.mean.d15N = mean(season.mean.d15N, na.rm = TRUE),
+    annual.mean.wt.C = mean(season.mean.wt.C, na.rm = TRUE),
+    annual.mean.wt.N = mean(season.mean.wt.N, na.rm = TRUE))
+
+
+# Seasonal and Annual FBOM
+
+Season.FBOM <- FBOM %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Month, Sample_Type) %>%
+  summarise(
+    season.mean.d13C = mean(d13C, na.rm = TRUE),
+    season.mean.d15N = mean(d15N, na.rm = TRUE),
+    season.mean.wt.C = mean(wt..C, na.rm = TRUE),
+    season.mean.wt.N = mean(wt..N, na.rm = TRUE))
+
+
+Annual.FBOM <- Season.FBOM %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample_Type) %>%
+  summarise(
+    annual.mean.d13C = mean(season.mean.d13C, na.rm = TRUE),
+    annual.mean.d15N = mean(season.mean.d15N, na.rm = TRUE),
+    annual.mean.wt.C = mean(season.mean.wt.C, na.rm = TRUE),
+    annual.mean.wt.N = mean(season.mean.wt.N, na.rm = TRUE))
+
+# Seasonal and Annual Algae
+
+Season.Algae <- Algae %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Month, Sample_Type) %>%
+  summarise(
+    season.mean.d13C = mean(d13C, na.rm = TRUE),
+    season.mean.d15N = mean(d15N, na.rm = TRUE),
+    season.mean.wt.C = mean(wt..C, na.rm = TRUE),
+    season.mean.wt.N = mean(wt..N, na.rm = TRUE))
+
+
+Annual.Algae <- Season.Algae %>%
+  mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
+  group_by(Site, Sample_Type) %>%
+  summarise(
+    annual.mean.d13C = mean(season.mean.d13C, na.rm = TRUE),
+    annual.mean.d15N = mean(season.mean.d15N, na.rm = TRUE),
+    annual.mean.wt.C = mean(season.mean.wt.C, na.rm = TRUE),
+    annual.mean.wt.N = mean(season.mean.wt.N, na.rm = TRUE))
+
+# Combining food resources
+food.season <- rbind(Season.CBOM,Season.FBOM,Season.Algae)
+food.annual <- rbind(Annual.CBOM, Annual.FBOM, Annual.Algae)
+
+
