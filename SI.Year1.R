@@ -30,7 +30,7 @@ SI <- SI %>%
 
 # Averaging replicates across seasons
 SI.Season <- SI %>%
-  group_by(Site, Sample_ID, Taxa) %>%
+  group_by(Site, Month, Taxa) %>%
   summarise(
     season.wtN = mean(wt..N, na.rm = TRUE),
     season.wtC = mean(wt..C, na.rm = TRUE),
@@ -324,7 +324,7 @@ ggplot(SI.year1, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
 
 ggplot(SI.Season, aes(x = season.d13C, y = season.d15N,
                       color = SC.Category, shape = FFG)) +
-  facet_wrap(~Sample_ID) +
+  facet_wrap(~Month) +
   geom_point(size = 3) +
   geom_text_repel(aes(label = Taxa), size = 3, show.legend = FALSE, max.overlaps = 50) +
   labs(
@@ -474,8 +474,15 @@ CBOM <- read.csv("FilteredYear1CBOM.csv")
 FBOM <- read.csv("FilteredYear1FBOM.csv")
 Algae <- read.csv("FilteredYear1Algae.csv")
 
+Algae <- Algae %>%
+  mutate(Sample_Type = ifelse(Sample_Type == "Algae ", "Algae", Sample_Type))
+
 
 # Seasonal and Annual CBOM
+CBOM <- CBOM %>%
+  group_by(Site, Replicate, Month, Sample_Type) %>%  # or Sample_ID, or any relevant combo
+  summarise(across(where(is.numeric), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+
 
 Season.CBOM <- CBOM %>%
   mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
@@ -498,6 +505,10 @@ Annual.CBOM <- Season.CBOM %>%
 
 
 # Seasonal and Annual FBOM
+FBOM <- FBOM %>%
+  group_by(Site, Replicate, Month, Sample_Type) %>%  # or Sample_ID, or any relevant combo
+  summarise(across(where(is.numeric), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+
 
 Season.FBOM <- FBOM %>%
   mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
@@ -519,6 +530,10 @@ Annual.FBOM <- Season.FBOM %>%
     annual.mean.wt.N = mean(season.mean.wt.N, na.rm = TRUE))
 
 # Seasonal and Annual Algae
+Algae <- Algae %>%
+  group_by(Site, Replicate, Month, Sample_Type) %>%  # or Sample_ID, or any relevant combo
+  summarise(across(where(is.numeric), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+
 
 Season.Algae <- Algae %>%
   mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
@@ -542,5 +557,467 @@ Annual.Algae <- Season.Algae %>%
 # Combining food resources
 food.season <- rbind(Season.CBOM,Season.FBOM,Season.Algae)
 food.annual <- rbind(Annual.CBOM, Annual.FBOM, Annual.Algae)
+
+# Cleaning up dataframes
+
+Clean.SI.Season <- SI.Season %>%
+  dplyr::select(Site, Month, d13C = season.d13C, d15N = season.d15N, Label = Taxa)
+
+Clean.food.season <- food.season %>%
+  dplyr::select(Site, Month, d13C = season.mean.d13C, d15N = season.mean.d15N, Label = Sample_Type)
+
+SI.season.macro.food <- bind_rows(Clean.food.season, Clean.SI.Season)
+
+unique(SI.season.macro.food$Month)
+
+SI.season.macro.food <- SI.season.macro.food %>% # Fixing typos
+  mutate(Month = ifelse(Month == "February ", "February", Month))
+
+
+# Adding back in information
+# Assigning functional feeding groups to genera (note: some "genera" are family or the lowest taxonomic resolution possible)
+# CONUS primary feeding mode was how FFG was determined
+
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Acroneuria"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Amphinemura"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Atherix"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Baetis"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Boyeria"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Cheumatopsyche"]="Collector-Filterer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Chironomini"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Collembola"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Dicranota"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Diplectrona"]="Collector-Filterer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Dixa"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Drunella"]="Scraper"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Dolophilodes"]="Collector-Filterer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Ectopria"]="Coleoptera Scraper"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Ephemera"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Ephemerella"]="Collector-Gatherer" 
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Ephemerellidae"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Eurylophella"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Glossosoma"]="Scraper"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Helichus"]="Scraper"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Hydatophylax"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Hydropsyche"]="Collector-Filterer" 
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Hydropsychidae"]="Collector-Filterer" 
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Isoperla"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Lanthus"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Lepidostoma"]= "Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Leuctra"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Molophilus"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Macronychus"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Neophylax"]="Scraper"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Nigronia"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Oligochaeta"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Orthocladiinae"]="Collector-Gatherer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Peltoperla"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Peltoperlidae"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Perlesta"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Platycentropus"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Prosimulium"]="Collector-Filterer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Psephenus"]="Coleoptera Scraper" 
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Psephenidae"]="Coleoptera Scraper"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Pteronarcys"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Pycnopsyche"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Rhagovelia"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Rhyacophila"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Sialis"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Simulium"]="Collector-Filterer"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Tallaperla"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Stenonema"]="Scraper" 
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Taeniopteryx"]="Shredder"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Tanypodinae"]="Predator"
+SI.season.macro.food$FFG[SI.season.macro.food$Label=="Tipula"]="Shredder"
+
+
+# Adding site characteristics like mean annual specific conductance
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="EAS"] = "16"
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="CRO"] = "40"
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="HCN"] = "77"
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="HUR"] = "293"
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="FRY"] = "350"
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="RUT"] = "447"
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="LLW"] = "1048"
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="LLC"] = "1083"
+SI.season.macro.food$SC.Level[SI.season.macro.food$Site =="RIC"] = "1185"
+
+# Specific conductance category...
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="EAS"] = "REF"
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="CRO"] = "REF"
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="HCN"] = "REF"
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="HUR"] = "MID"
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="FRY"] = "MID"
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="RUT"] = "MID"
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="LLW"] = "HIGH"
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="LLC"] = "HIGH"
+SI.season.macro.food$SC.Category[SI.season.macro.food$Site =="RIC"] = "HIGH"
+
+# Ordering everything
+SI.season.macro.food$Site <- factor(SI.season.macro.food$Site, levels = c("EAS", "FRY","RIC"))
+SI.season.macro.food$SC.Category <- factor(SI.season.macro.food$SC.Category, levels = c("REF","MID","HIGH"))
+SI.season.macro.food$SC.Level <- factor(SI.season.macro.food$SC.Level, levels = c("16","350","1185"))
+SI.season.macro.food$FFG <- factor(SI.season.macro.food$FFG, levels = c("Scraper","Coleoptera Scraper","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
+SI.season.macro.food$Month <- factor(SI.season.macro.food$Month, levels = c("October","February", "May","August"))
+
+# Adding years back in
+SI.season.macro.food <- SI.season.macro.food %>%
+  mutate(Month = case_when(
+    Month == "October"   ~ "October 2023",
+    Month == "February"  ~ "February 2024",
+    Month == "May"       ~ "May 2024",
+    Month == "August"    ~ "August 2024",
+    TRUE ~ as.character(Month)
+  )) %>%
+  mutate(Month = factor(Month, 
+                              levels = c("October 2023", "February 2024", "May 2024", "August 2024")))
+
+# Plotting!
+SI.season.macro.food <- SI.season.macro.food %>%
+  mutate(font_label = ifelse(Label %in% c("Algae", "CBOM", "FBOM"), "bold", "plain")) # Ensuring that food resources are bolded
+
+ggplot(SI.season.macro.food, aes(x = d13C, y = d15N,
+                                 color = SC.Category, shape = FFG)) +
+  facet_wrap(~Month, scales = "free") +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = Label, fontface = font_label),
+                  size = 3, show.legend = FALSE, max.overlaps = 50) +
+  labs(
+    x = "d13C",
+    y = "d15N",
+    color = "SC Category",
+    shape = "FFG"
+  ) +
+  scale_color_manual(
+    values = c(
+      "REF" = "#1b9e77",
+      "MID" = "#d95f02",
+      "HIGH" = "#7570b3"
+    )
+  ) +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "gray90", color = "black", linewidth = 0.5),
+    strip.text = element_text(face = "bold"),
+    panel.spacing = unit(1, "lines"),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5)
+  )
+
+
+
+# Do this again but for annual values--------------------------
+
+# Cleaning up dataframes
+
+Clean.SI.Annual <- SI.year1 %>%
+  dplyr::select(Site, d13C, d15N, Label = Taxa)
+
+Clean.food.annual <- food.annual %>%
+  dplyr::select(Site, d13C = annual.mean.d13C, d15N = annual.mean.d15N, Label = Sample_Type)
+
+SI.annual.macro.food <- bind_rows(Clean.food.annual, Clean.SI.Annual)
+
+
+# Adding back in information
+# Assigning functional feeding groups to genera (note: some "genera" are family or the lowest taxonomic resolution possible)
+# CONUS primary feeding mode was how FFG was determined
+
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Acroneuria"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Amphinemura"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Atherix"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Baetis"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Boyeria"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Cheumatopsyche"]="Collector-Filterer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Chironomini"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Collembola"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Dicranota"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Diplectrona"]="Collector-Filterer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Dixa"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Drunella"]="Scraper"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Dolophilodes"]="Collector-Filterer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Ectopria"]="Coleoptera Scraper"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Ephemera"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Ephemerella"]="Collector-Gatherer" 
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Ephemerellidae"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Eurylophella"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Glossosoma"]="Scraper"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Helichus"]="Scraper"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Hydatophylax"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Hydropsyche"]="Collector-Filterer" 
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Hydropsychidae"]="Collector-Filterer" 
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Isoperla"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Lanthus"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Lepidostoma"]= "Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Leuctra"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Molophilus"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Macronychus"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Neophylax"]="Scraper"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Nigronia"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Oligochaeta"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Orthocladiinae"]="Collector-Gatherer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Peltoperla"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Peltoperlidae"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Perlesta"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Platycentropus"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Prosimulium"]="Collector-Filterer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Psephenus"]="Coleoptera Scraper" 
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Psephenidae"]="Coleoptera Scraper"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Pteronarcys"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Pycnopsyche"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Rhagovelia"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Rhyacophila"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Sialis"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Simulium"]="Collector-Filterer"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Tallaperla"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Stenonema"]="Scraper" 
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Taeniopteryx"]="Shredder"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Tanypodinae"]="Predator"
+SI.annual.macro.food$FFG[SI.annual.macro.food$Label=="Tipula"]="Shredder"
+
+
+# Adding site characteristics like mean annual specific conductance
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="EAS"] = "16"
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="CRO"] = "40"
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="HCN"] = "77"
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="HUR"] = "293"
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="FRY"] = "350"
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="RUT"] = "447"
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="LLW"] = "1048"
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="LLC"] = "1083"
+SI.annual.macro.food$SC.Level[SI.annual.macro.food$Site =="RIC"] = "1185"
+
+# Specific conductance category...
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="EAS"] = "REF"
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="CRO"] = "REF"
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="HCN"] = "REF"
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="HUR"] = "MID"
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="FRY"] = "MID"
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="RUT"] = "MID"
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="LLW"] = "HIGH"
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="LLC"] = "HIGH"
+SI.annual.macro.food$SC.Category[SI.annual.macro.food$Site =="RIC"] = "HIGH"
+
+# Ordering everything
+SI.annual.macro.food$Site <- factor(SI.annual.macro.food$Site, levels = c("EAS", "FRY","RIC"))
+SI.annual.macro.food$SC.Category <- factor(SI.annual.macro.food$SC.Category, levels = c("REF","MID","HIGH"))
+SI.annual.macro.food$SC.Level <- factor(SI.annual.macro.food$SC.Level, levels = c("16","350","1185"))
+SI.annual.macro.food$FFG <- factor(SI.annual.macro.food$FFG, levels = c("Scraper","Coleoptera Scraper","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
+
+
+# Plotting!
+SI.annual.macro.food <- SI.annual.macro.food %>%
+  mutate(font_label = ifelse(Label %in% c("Algae", "CBOM", "FBOM"), "bold", "plain")) # Ensuring that food resources are bolded
+
+SI.annual.macro.food <- SI.annual.macro.food %>%
+  mutate(is_food = Label %in% c("Algae", "CBOM", "FBOM"))
+
+
+
+ggplot(SI.annual.macro.food, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
+  geom_point(size = 3) +
+  
+  # Food resource labels (bold, larger)
+  geom_text_repel(
+    data = subset(SI.annual.macro.food, is_food),
+    aes(label = Label),
+    fontface = "bold",
+    size = 4,
+    show.legend = FALSE,
+    max.overlaps = 50,
+    box.padding = 1.0,     # more space around text box
+    point.padding = 0.7,   # more space around points
+    segment.size = 0.9
+  ) +
+  
+  # Taxa labels (plain, slightly smaller)
+  geom_text_repel(
+    data = subset(SI.annual.macro.food, !is_food),
+    aes(label = Label),
+    fontface = "plain",
+    size = 2.9,
+    show.legend = FALSE,
+    max.overlaps = 50
+  ) +
+  
+  labs(
+    x = "d13C",
+    y = "d15N",
+    color = "SC Category",
+    shape = "FFG"
+  ) +
+  scale_color_manual(
+    values = c("REF" = "#1b9e77", "MID" = "#d95f02", "HIGH" = "#7570b3")
+  ) +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "gray90", color = "black", linewidth = 0.5),
+    strip.text = element_text(face = "bold"),
+    panel.spacing = unit(1, "lines"),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5)
+  )
+
+
+
+# Looking at C:N ratios-----------------------------------------------------------
+
+food.season <- food.season %>% 
+  mutate(Atomic.CN = ((season.mean.wt.C/season.mean.wt.N) * (14/12)))
+
+Clean.SI.Season.Atomic <- SI.Season %>%
+  dplyr::select(Site, Month, season.wtN, season.wtC, season.Atomic.CN, Label = Taxa)
+
+Clean.food.season.Atomic <- food.season %>%
+  dplyr::select(Site, Month, season.wtN = season.mean.wt.N, season.wtC = season.mean.wt.C,
+                season.Atomic.CN = Atomic.CN, Label = Sample_Type)
+
+SI.season.macro.food.Atomic <- bind_rows(Clean.SI.Season.Atomic, Clean.food.season.Atomic)
+
+SI.season.macro.food.Atomic <- SI.season.macro.food.Atomic %>% # Fixing typos
+  mutate(Month = ifelse(Month == "February ", "February", Month))
+
+
+
+# Adding back in information
+# Assigning functional feeding groups to genera (note: some "genera" are family or the lowest taxonomic resolution possible)
+# CONUS primary feeding mode was how FFG was determined
+
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Acroneuria"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Amphinemura"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Atherix"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Baetis"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Boyeria"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Cheumatopsyche"]="Collector-Filterer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Chironomini"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Collembola"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Dicranota"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Diplectrona"]="Collector-Filterer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Dixa"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Drunella"]="Scraper"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Dolophilodes"]="Collector-Filterer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Ectopria"]="Coleoptera Scraper"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Ephemera"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Ephemerella"]="Collector-Gatherer" 
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Ephemerellidae"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Eurylophella"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Glossosoma"]="Scraper"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Helichus"]="Scraper"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Hydatophylax"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Hydropsyche"]="Collector-Filterer" 
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Hydropsychidae"]="Collector-Filterer" 
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Isoperla"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Lanthus"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Lepidostoma"]= "Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Leuctra"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Molophilus"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Macronychus"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Neophylax"]="Scraper"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Nigronia"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Oligochaeta"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Orthocladiinae"]="Collector-Gatherer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Peltoperla"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Peltoperlidae"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Perlesta"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Platycentropus"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Prosimulium"]="Collector-Filterer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Psephenus"]="Coleoptera Scraper" 
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Psephenidae"]="Coleoptera Scraper"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Pteronarcys"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Pycnopsyche"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Rhagovelia"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Rhyacophila"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Sialis"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Simulium"]="Collector-Filterer"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Tallaperla"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Stenonema"]="Scraper" 
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Taeniopteryx"]="Shredder"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Tanypodinae"]="Predator"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Tipula"]="Shredder"
+
+
+# Adding site characteristics like mean annual specific conductance
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="EAS"] = "16"
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="CRO"] = "40"
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="HCN"] = "77"
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="HUR"] = "293"
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="FRY"] = "350"
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="RUT"] = "447"
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="LLW"] = "1048"
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="LLC"] = "1083"
+SI.season.macro.food.Atomic$SC.Level[SI.season.macro.food.Atomic$Site =="RIC"] = "1185"
+
+# Specific conductance category...
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="EAS"] = "REF"
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="CRO"] = "REF"
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="HCN"] = "REF"
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="HUR"] = "MID"
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="FRY"] = "MID"
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="RUT"] = "MID"
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="LLW"] = "HIGH"
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="LLC"] = "HIGH"
+SI.season.macro.food.Atomic$SC.Category[SI.season.macro.food.Atomic$Site =="RIC"] = "HIGH"
+
+# Ordering everything
+SI.season.macro.food.Atomic$Site <- factor(SI.season.macro.food.Atomic$Site, levels = c("EAS", "FRY","RIC"))
+SI.season.macro.food.Atomic$SC.Category <- factor(SI.season.macro.food.Atomic$SC.Category, levels = c("REF","MID","HIGH"))
+SI.season.macro.food.Atomic$SC.Level <- factor(SI.season.macro.food.Atomic$SC.Level, levels = c("16","350","1185"))
+SI.season.macro.food.Atomic$FFG <- factor(SI.season.macro.food.Atomic$FFG, levels = c("Scraper","Coleoptera Scraper","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
+SI.season.macro.food.Atomic$Month <- factor(SI.season.macro.food.Atomic$Month, levels = c("October","February", "May","August"))
+
+# Adding years back in
+SI.season.macro.food.Atomic <- SI.season.macro.food.Atomic %>%
+  mutate(Month = case_when(
+    Month == "October"   ~ "October 2023",
+    Month == "February"  ~ "February 2024",
+    Month == "May"       ~ "May 2024",
+    Month == "August"    ~ "August 2024",
+    TRUE ~ as.character(Month)
+  )) %>%
+  mutate(Month = factor(Month, 
+                        levels = c("October 2023", "February 2024", "May 2024", "August 2024")))
+
+# Plotting!
+SI.season.macro.food.Atomic <- SI.season.macro.food.Atomic %>%
+  mutate(font_label = ifelse(Label %in% c("Algae", "CBOM", "FBOM"), "bold", "plain")) # Ensuring that food resources are bolded
+
+ggplot(SI.season.macro.food.Atomic, aes(x = season.wtC, y = season.wtN,
+                                 color = SC.Category, shape = FFG)) +
+  facet_wrap(~Month, scales = "free") +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = Label, fontface = font_label),
+                  size = 3, show.legend = FALSE, max.overlaps = 50) +
+  labs(
+    x = "wt % C",
+    y = "wt % N",
+    color = "SC Category",
+    shape = "FFG"
+  ) +
+  scale_color_manual(
+    values = c(
+      "REF" = "#1b9e77",
+      "MID" = "#d95f02",
+      "HIGH" = "#7570b3"
+    )
+  ) +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "gray90", color = "black", linewidth = 0.5),
+    strip.text = element_text(face = "bold"),
+    panel.spacing = unit(1, "lines"),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5)
+  )
+
+
+
+
+
+
+
+
+# Attempting a mixing model
+
+install.packages("MixSIAR")
+library(MixSIAR)
+
+
 
 
