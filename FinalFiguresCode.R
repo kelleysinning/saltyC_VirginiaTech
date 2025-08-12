@@ -2,7 +2,7 @@
 
 rm(list=ls())  # clears workspace                     
 
-#load important packages##
+#load important packages#
 library(ggplot2)
 library(gridExtra)
 library(viridis)
@@ -13,6 +13,7 @@ library(RColorBrewer)
 library(rcartocolor)
 library(dplyr)
 library(purrr)
+
 
 # Set working directory 
 setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
@@ -152,14 +153,14 @@ TOTALPROD_Summary <- TOTALPROD_Summary %>%
   filter(!str_detect(Genus, "Hagenella|Stagnicola"))
 
 # Adding site characteristics like mean annual specific conductance
-TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="EAS"] = "16"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="EAS"] = "18"
 TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="CRO"] = "40"
 TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="HCN"] = "77"
 TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="HUR"] = "293"
-TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="FRY"] = "350"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="FRY"] = "328"
 TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="RUT"] = "447"
-TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="LLW"] = "1048"
-TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="LLC"] = "1083"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="LLW"] = "1049"
+TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="LLC"] = "1133"
 TOTALPROD_Summary$SC.Level[TOTALPROD_Summary$Site =="RIC"] = "1185"
 
 # Specific conductance category...
@@ -176,7 +177,7 @@ TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="RIC"] = "HIGH"
 # Ordering everything
 TOTALPROD_Summary$Site <- factor(TOTALPROD_Summary$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
 TOTALPROD_Summary$SC.Category <- factor(TOTALPROD_Summary$SC.Category, levels = c("REF","MID","HIGH"))
-TOTALPROD_Summary$SC.Level <- factor(TOTALPROD_Summary$SC.Level, levels = c("16","40","77","293","350","447","1048","1083","1185"))
+TOTALPROD_Summary$SC.Level <- factor(TOTALPROD_Summary$SC.Level, levels = c("18","40","77","293","328","447","1049","1133","1185"))
 TOTALPROD_Summary$FFG <- factor(TOTALPROD_Summary$FFG, levels = c("Scraper","Coleoptera Scraper","Shredder","Predator","Collector-Gatherer","Collector-Filterer"))
 
 TOTALPROD_Summary <- TOTALPROD_Summary %>%
@@ -185,16 +186,16 @@ TOTALPROD_Summary <- TOTALPROD_Summary %>%
 
 
 
-# Moving into linear 
+# Doing the same for annual totals datafram
 
-TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="EAS"] = "16"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="EAS"] = "18"
 TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="CRO"] = "40"
 TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="HCN"] = "77"
 TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="HUR"] = "293"
-TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="FRY"] = "350"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="FRY"] = "328"
 TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="RUT"] = "447"
-TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="LLW"] = "1048"
-TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="LLC"] = "1083"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="LLW"] = "1049"
+TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="LLC"] = "1133"
 TOTALPROD_sum$SC.Level[TOTALPROD_sum$Site =="RIC"] = "1185"
 
 TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="EAS"] = "REF"
@@ -210,20 +211,22 @@ TOTALPROD_sum$SC.Category[TOTALPROD_sum$Site =="RIC"] = "HIGH"
 
 TOTALPROD_sum$Site <- factor(TOTALPROD_sum$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
 TOTALPROD_sum$SC.Category <- factor(TOTALPROD_sum$SC.Category, levels = c("REF","MID","HIGH"))
-TOTALPROD_sum$SC.Level <- factor(TOTALPROD_sum$SC.Level, levels = c("16","40","77","293","350","447","1048","1083","1185"))
+TOTALPROD_sum$SC.Level <- factor(TOTALPROD_sum$SC.Level, levels = c("18","40","77","293","328","447","1049","1133","1185"))
 
 
 TOTALPROD_sum$SC.Level <- as.numeric(as.character(TOTALPROD_sum$SC.Level))# Ensure SC.Level is numeric
 
 TOTALPROD_sum$Site.Type <- ifelse(TOTALPROD_sum$Site %in% c("EAS", "FRY", "RIC"), 
-                                  "Core Streams", "Quarterly Streams")# Create a categorical variable for site type
+                                  "Monthly Streams", "Quarterly Streams")# Create a categorical variable for site type
 
-TOTALPROD_sum$Site.Type <- factor(TOTALPROD_sum$Site.Type, levels = c("Quarterly Streams", "Core Streams"))# Convert Site.Type to a factor for proper legend display
+TOTALPROD_sum$Site.Type <- factor(TOTALPROD_sum$Site.Type, levels = c("Quarterly Streams", "Monthly Streams"))# Convert Site.Type to a factor for proper legend display
 
 install.packages("ggpmisc")
 library(ggpmisc)
 
-# SECONDARY PRODUCTION ALONG SC GRADIENT-------------------------------------------------------------------------------
+
+
+# SECONDARY PRODUCTION ALONG SC GRADIENT (FIGURE 3)-------------------------------------------------------------
 
 glm_model <- glm(Sum.Annual.Production ~ SC.Level, 
                  family = Gamma(link = "log"), # better fit than gaussian
@@ -248,10 +251,10 @@ prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color
            y = max(TOTALPROD_sum$Sum.Annual.Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) +  
-  ylab(expression(Secondary~Production~(g/m^2/yr))) +   
+  ylab(expression(Secondary~Production~("g DM"/m^2/yr))) +   
   xlab("Specific Conductance (µS/cm)") +   
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
-  scale_shape_manual(values = c("Quarterly Streams" = 16, "Core Streams" = 8)) +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) +  
   theme_bw() +   
   theme(
     axis.title = element_text(size = 15),
@@ -271,7 +274,9 @@ prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color
 prod  # Display the plot
 
 
-# FUNCTIONAL FEEDING GROUP SECONDARY PRODUCTION ALONG SALINITY GRADIENT-------------------------------
+
+
+# FUNCTIONAL FEEDING GROUP SECONDARY PRODUCTION ALONG SALINITY GRADIENT (FIGURE 4)------------------
 TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>% # new df for FFG facet wraps
   group_by(Site,FFG, SC.Level) %>%
   summarise(
@@ -283,56 +288,43 @@ TOTALPROD_Summary_Sum <- TOTALPROD_Summary %>% # new df for FFG facet wraps
 TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))# Ensure SC.Level is numeric
 
 TOTALPROD_Summary_Sum$Site.Type <- ifelse(TOTALPROD_Summary_Sum$Site %in% c("EAS", "FRY", "RIC"), 
-                                          "Core Streams", "Quarterly Streams")# Create a categorical variable for site type
+                                          "Monthly Streams", "Quarterly Streams")# Create a categorical variable for site type
 
-TOTALPROD_Summary_Sum$Site.Type <- factor(TOTALPROD_Summary_Sum$Site.Type, levels = c("Quarterly Streams", "Core Streams"))# Convert Site.Type to a factor for proper legend display
+TOTALPROD_Summary_Sum$Site.Type <- factor(TOTALPROD_Summary_Sum$Site.Type, levels = c("Quarterly Streams", "Monthly Streams"))# Convert Site.Type to a factor for proper legend display
 
 TOTALPROD_Summary_Sum$FFG <- factor(TOTALPROD_Summary_Sum$FFG, levels = c("Coleoptera Scraper","Scraper","Collector-Gatherer","Predator","Collector-Filterer","Shredder"))
 
 
 
-# p-values and r2 for each FFG
+# glm results
+
 glm_results <- TOTALPROD_Summary_Sum %>%
   group_by(FFG) %>%
   summarise(
-    glm_model = list(glm(Summed.Annual.Production ~ SC.Level, 
-                         family = Gamma(link = "log"),  # Gamma low AIC
-                         #family = gaussian(link = "identity"),
-                         data = cur_data())),
-    .groups = "drop"
-  ) %>%
-  mutate(    # Extract p-values and R² values from each model
-    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
-    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
-    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
-    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
-  )
-
-
-# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
-glm_results <- TOTALPROD_Summary_Sum %>%
-  group_by(FFG) %>%
-  summarise(
-    glm_model = list(glm(Summed.Annual.Production ~ SC.Level, 
-                         family = gaussian, 
-                         data = cur_data())),
+    glm_model = list(glm(
+      Summed.Annual.Production ~ SC.Level, 
+      family = Gamma(link = "log"),
+      data = cur_data()
+    )),
     .groups = "drop"
   ) %>%
   mutate(
-    # Extract coefficient estimates, standard errors, and p-values
-    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
-    model_stats = map(glm_model, ~ tibble(
-      null_deviance = summary(.x)$null.deviance,
-      residual_deviance = summary(.x)$deviance,
-      AIC = AIC(.x)
-    ))  # Extract deviance and AIC
-  ) %>%
-  unnest(coef_table) %>%  # Expand coefficient table
-  unnest(model_stats) %>%  # Expand model statistics
-  select(FFG, term, estimate, std.error, statistic, p.value, 
-         null_deviance, residual_deviance, AIC)  # Keep relevant columns
+    # Extract p-values
+    p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
+    
+    # Calculate pseudo-R²
+    pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
+    
+    # Calculate AIC
+    AIC_value = sapply(glm_model, AIC),
+    
+    # Pretty labels
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),
+    r2_label = sprintf("R² = %.3f", pseudo_r2),
+    aic_label = sprintf("AIC = %.2f", AIC_value)
+  )
 
-print(glm_results)
+glm_results
 
 
 
@@ -349,17 +341,16 @@ TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$
 ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
   geom_point(aes(color = SC.Level, shape = Site.Type), size = 3, alpha = 0.8) +  # Color points by SC.Level
   geom_smooth(method = "glm", method.args = list(family = Gamma (link=log)), se = TRUE, color = "grey37") + 
-  # Add p-values and R² to each facet in the bottom left corner
   geom_text(data = glm_results, aes(
-    x = min(TOTALPROD_Summary_Sum$SC.Level),  # Place the text at the bottom left of each facet
+    x = min(TOTALPROD_Summary_Sum$SC.Level),  
     y = min(TOTALPROD_Summary_Sum$Summed.Annual.Production),  # Adjust y to the lower bound
     label = paste("R² =", r2_label, "\nP =", p_label)),
     hjust = 0, vjust = .1 , size = 3, alpha = 0, inherit.aes = FALSE) +  # Position text at bottom-left
   facet_wrap(~FFG, scales = "free") +  # Facet by FFG with independent scaling per facet
-  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
+  ylab(expression(Secondary~Production~("g DM"/m^2/yr))) + 
   xlab("Specific Conductivity (µS/cm)") + 
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +  # Gradient color scale
-  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) +
+  scale_shape_manual(values = c("Monthly Streams" = 8, "Quarterly Streams" = 16)) +
   theme_bw() + 
   theme(
     axis.title = element_text(size = 15),
@@ -392,7 +383,7 @@ library(stringr)
 # Replace the specific character "\xca" with an empty string (this was a weird error on some columns)
 CBOM$Site <- stringr::str_replace_all(CBOM$Site, fixed("\xca"), "")
 
-
+# mutating to get annual averages by averaging seasons
 CBOM <- CBOM %>%
   mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
   group_by(Site, Sample.Month) %>%
@@ -410,7 +401,7 @@ FBOM$Site <- stringr::str_replace_all(FBOM$Site, fixed("\xca"), "")
 
 str(FBOM)
 
-
+# mutating to get annual averages by averaging seasons
 FBOM <- FBOM %>%
   mutate(
     Site = str_trim(Site),  # Remove extra spaces
@@ -419,7 +410,7 @@ FBOM <- FBOM %>%
   group_by(Site, Sample.Month) %>%
   summarise(
     mean.FBOM = mean(FBOM.AFDM.g.m2., na.rm = TRUE), 
-    .groups = "drop"  # Removes automatic grouping
+    .groups = "drop"  
   ) %>%
   group_by(Site) %>%
   summarise(
@@ -430,6 +421,7 @@ FBOM <- FBOM %>%
 # Replace the specific character "\xca" with an empty string 
 Algae$Site <- stringr::str_replace_all(Algae$Site, fixed("\xca"), "")
 
+# mutating to get annual averages by averaging seasons
 Algae <- Algae %>%
   mutate(Site = str_trim(Site)) %>%  # Trim whitespace from Site names
   group_by(Site, Sample.Month) %>%
@@ -446,7 +438,7 @@ Algae <- Algae %>%
   )
 
 
-# Combining food resources into one df
+# Combining food resources into one df so there is one value for each site for the year
 food <- cbind(CBOM,FBOM,Algae)
 food <- CBOM %>%
   left_join(FBOM, by = "Site") %>%
@@ -466,7 +458,7 @@ prod.food.ffg <- left_join(food, TOTALPROD_Summary_Sum, by = c("Site"))
 prod.food <- prod.food %>%
   mutate(fbom.cbom = annual.mean.FBOM + annual.mean.CBOM) # column with fbom+cbom combined
 
-#FBOM + CBOM----------------------------
+#FBOM + CBOM (FIGURE 5A)----------------------------
 
 glm_model <- glm(fbom.cbom ~ SC.Level, 
                  #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
@@ -491,7 +483,7 @@ FBOM.CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = fbom.cbom, color = SC
   #y = max(prod.food$fbom.cbom), 
   #label = paste("P =", p_label, "\n", r2_label), 
   #vjust = 1, hjust = 0, size = 5, alpha = 2) + 
-  ylab(expression("Mean annual CBOM + FBOM (g/m²)")) +  
+  ylab(expression("Mean annual CBOM + FBOM (g AFDM/m²)")) +  
   xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
@@ -499,7 +491,7 @@ FBOM.CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = fbom.cbom, color = SC
     name = "Specific Conductivity"  # Labeled scale bar
   ) +  
   scale_shape_manual(
-    values = c("Quarterly Streams" = 16, "Core Streams" = 8)
+    values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
@@ -517,7 +509,7 @@ FBOM.CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = fbom.cbom, color = SC
 
 FBOM.CBOM.sc.lm
 
-#ALGAE----------------------------
+#ALGAE (FIGURE 5c)----------------------------
 
 glm_model <- glm(annual.mean.Algae ~ SC.Level, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
@@ -542,7 +534,7 @@ Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color 
            y = max(prod.food$annual.mean.Algae), 
            label = paste("P =", p_label, "\n", r2_label), 
            vjust = 1, hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Mean annual algae AFDM (g/m²)")) +  
+  ylab(expression("Mean annual algal biofilm (g AFDM/m²)")) +  
   xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
@@ -550,7 +542,7 @@ Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color 
     name = "Specific Conductivity"  # Labeled scale bar
   ) +  
   scale_shape_manual(
-    values = c("Quarterly Streams" = 16, "Core Streams" = 8)
+    values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
@@ -568,7 +560,7 @@ Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color 
 
 Algae.sc.lm
 
-#CHL-A----------------------------
+#CHL-A (FIGURE 5b)-----------------------
 
 glm_model <- glm(annual.mean.chla ~ SC.Level, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
@@ -593,7 +585,7 @@ chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = 
            y = max(prod.food$annual.mean.chla), 
            label = paste("P =", p_label, "\n", r2_label), 
            vjust = 1, hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Mean annual chlorophyll-a (g/m²)")) +  
+  ylab(expression("Mean annual chlorophyll-a (g AFDM/m²)")) +  
   xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
@@ -601,7 +593,7 @@ chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = 
     name = "Specific Conductivity"  # Labeled scale bar
   ) +  
   scale_shape_manual(
-    values = c("Quarterly Streams" = 16, "Core Streams" = 8)
+    values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
@@ -622,7 +614,7 @@ chla.sc.lm
 
 # PRODUCTION AND STANDING STOCK, NOT WITH FFG-------------------------------------
 
-#FBOM + CBOM----------------------------
+#FBOM + CBOM (FIGURE 6a)----------------------------
 
 glm_model <- glm(Sum.Annual.Production ~ fbom.cbom, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
@@ -647,15 +639,15 @@ FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Product
            y = max(prod.food$Sum.Annual.Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Secondary Production (g/m²/yr)")) +  
-  xlab("Mean annual CBOM + FBOM (g/m²)") +  # Corrected X-axis label
+  ylab(expression("Secondary Production (g DM/m²/yr)")) +  
+  xlab("Mean annual CBOM + FBOM (g AFDM/m²)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
     name = "Specific Conductivity"  # Labeled scale bar
   ) +  
   scale_shape_manual(
-    values = c("Quarterly Streams" = 16, "Core Streams" = 8)
+    values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
@@ -673,7 +665,7 @@ FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Product
 
 FBOM.CBOM.prod.lm
 
-#ALGAE----------------------------
+#ALGAE (FIGURE 6b)----------------------------
 
 glm_model <- glm(Sum.Annual.Production ~ annual.mean.Algae, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
@@ -698,15 +690,15 @@ Algae.prod.lm <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Pro
            y = max(prod.food$Sum.Annual.Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Secondary Production (g/m²/yr)")) +  
-  xlab("Mean annual algae standing stock (g/m²)") +  # Corrected X-axis label
+  ylab(expression("Secondary Production (g DM/m²/yr)")) +  
+  xlab("Mean annual algal biofilm (g AFDM/m²)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
     name = "Specific Conductivity"  # Labeled scale bar
   ) +  
   scale_shape_manual(
-    values = c("Quarterly Streams" = 16, "Core Streams" = 8)
+    values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
@@ -724,7 +716,7 @@ Algae.prod.lm <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Pro
 
 Algae.prod.lm
 
-#CHL-A----------------------------
+#CHL-A (FIGURE 6c)----------------------------
 
 glm_model <- glm(Sum.Annual.Production ~ annual.mean.chla, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
@@ -749,15 +741,15 @@ chla.prod.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Produ
            y = max(prod.food$Sum.Annual.Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            vjust= 1, hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Secondary Production (g/m²/yr)")) +  
-  xlab("Mean annual chlorophyll-a (g/m²)") +  # Corrected X-axis label
+  ylab(expression("Secondary Production (g DM/m²/yr)")) +  
+  xlab("Mean annual chlorophyll-a (g AFDM/m²)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
     high = "#CA562C",
     name = "Specific Conductivity"  # Labeled scale bar
   ) +  
   scale_shape_manual(
-    values = c("Quarterly Streams" = 16, "Core Streams" = 8)
+    values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)
   ) +  # Define shapes properly
   theme_bw() +  
   theme(
@@ -775,63 +767,101 @@ chla.prod.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Produ
 
 chla.prod.lm
 
+# Now, looking at chl-a slopes for each SC category (FIGURE 6d)----------------------
+
+glm_results_chla <- prod.food %>%
+  group_by(SC.Category) %>%
+  do({
+    model <- glm(Sum.Annual.Production ~ annual.mean.chla, 
+                 family = gaussian(link = "identity"), 
+                 data = .)
+    
+    intercept <- coef(model)[1]
+    slope <- coef(model)[2]
+    p_value <- summary(model)$coefficients[2, 4]
+    r2 <- 1 - sum(residuals(model)^2) / 
+      sum((.$Sum.Annual.Production - mean(.$Sum.Annual.Production, na.rm = TRUE))^2)
+    aic <- AIC(model)
+    
+    equation <- paste0("y = ", signif(intercept, 3), " + ", signif(slope, 3), "x")
+    
+    data.frame(
+      intercept = intercept, 
+      slope = slope, 
+      p_value = p_value, 
+      r2 = r2, 
+      aic = aic,
+      equation = equation
+    )
+  }) %>%
+  ungroup() %>%
+  mutate(
+    label = paste0(equation, 
+                   "\nP = ", signif(p_value, 3), 
+                   "\nR² = ", signif(r2, 3),
+                   "\nAIC = ", signif(aic, 3))
+  )
+
+# Print results
+print(glm_results_chla)
+
+
+chla.lm.cat <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Production, color = SC.Category)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+  geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = TRUE) +  
+  ylab(expression(Secondary~Production~("g DM"/m^2/yr))) +  
+  xlab("Mean annual chlorophyll-a (g AFDM/m²)") +  
+  scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), name = "SC Category") +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) +  
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+chla.lm.cat
+
 
 
 # INVESTIGATING FFG PRODUCTION WITH INCREASING CHLOROPHYLL-A SINCE IT IS SIGNIFICANT
 
-# Chl-a------------------------------
+# Chl-a (FIGURE 7)------------------------------
 
 glm_results <- prod.food.ffg %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla, 
                          family = Gamma(link = "log"), # this yielded a very unfit model
-                         #family = gaussian(link = "identity"),
+                         # family = gaussian(link = "identity"),
                          control = glm.control(maxit = 1000),
                          data = cur_data())),
     .groups = "drop"
   ) %>%
   mutate(
-    # Extract p-values and R² values from each model
+    # Extract p-values, R², and AIC from each model
     p_value = sapply(glm_model, function(model) summary(model)$coefficients[2, 4]),
     pseudo_r2 = sapply(glm_model, function(model) 1 - (model$deviance / model$null.deviance)),
-    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),  # Format p-values
-    r2_label = sprintf("R² = %.3f", pseudo_r2)  # Format R²
+    aic = sapply(glm_model, function(model) AIC(model)),
+    
+    # Formatting
+    p_label = ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value)),
+    r2_label = sprintf("R² = %.3f", pseudo_r2),
+    aic_label = sprintf("AIC = %.2f", aic)
   )
 
-summary(glm_results)
+glm_results
 
 # Merge with main dataset
 prod.food.ffg <- prod.food.ffg %>%
   left_join(glm_results, by = "FFG")
-
-
-# Fit GLM models for each FFG and extract results (the coefficients, std error, etc)
-glm_results <- prod.food.ffg %>%
-  group_by(FFG) %>%
-  summarise(
-    glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla, 
-                         family = Gamma(link = "log"), 
-                         #family = gaussian(link = "identity"),
-                         control = glm.control(maxit = 1000),
-                         data = cur_data())),
-    .groups = "drop"
-  ) %>%
-  mutate(
-    # Extract coefficient estimates, standard errors, and p-values
-    coef_table = map(glm_model, ~ broom::tidy(.x)),  # Extract model coefficients
-    model_stats = map(glm_model, ~ tibble(
-      null_deviance = summary(.x)$null.deviance,
-      residual_deviance = summary(.x)$deviance,
-      AIC = AIC(.x)
-    ))  # Extract deviance and AIC
-  ) %>%
-  unnest(coef_table) %>%  # Expand coefficient table
-  unnest(model_stats) %>%  # Expand model statistics
-  select(FFG, term, estimate, std.error, statistic, p.value, 
-         null_deviance, residual_deviance, AIC)  # Keep relevant columns
-
-print(glm_results)
 
 
 # Create the plot
@@ -848,10 +878,10 @@ production_chla_lm <- ggplot(
     #group = FFG),
     #hjust = 0, vjust = 1, size = 3, alpha = 1, inherit.aes = FALSE) + 
   facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
-  ylab(expression(Secondary~Production~(g/m^2/yr))) + 
-  xlab("Mean annual chl-a (g/m²)") + 
+  ylab(expression(Secondary~Production~("g DM"/m^2/yr))) + 
+  xlab("Mean annual chlorophyll-a (AFDM g/m²)") + 
   scale_colour_gradient(low = "#70A494", high = "#CA562C") + 
-  scale_shape_manual(values = c("Core Streams" = 8, "Quarterly Streams" = 16)) + 
+  scale_shape_manual(values = c("Monthly Streams" = 8, "Quarterly Streams" = 16)) + 
   theme_bw() + 
   theme(
     axis.title = element_text(size = 15), 
@@ -877,8 +907,7 @@ production_chla_lm <- ggplot(
 production_chla_lm
 
 
-
-# BIOMASS SEASONAL NMDS--------------------------
+# BIOMASS SEASONAL NMDS------------------------------------------------------------
 
 # Isolate REF sites for each quarterly---------
 
