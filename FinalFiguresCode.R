@@ -11,7 +11,6 @@ library(dplyr)
 library(tidyverse)
 library(RColorBrewer)
 library(rcartocolor)
-library(dplyr)
 library(purrr)
 
 
@@ -228,16 +227,16 @@ library(ggpmisc)
 
 # SECONDARY PRODUCTION ALONG SC GRADIENT (FIGURE 3)-------------------------------------------------------------
 
-glm_model <- glm(Sum.Annual.Production ~ SC.Level, 
+glm_model.fig3 <- glm(Sum.Annual.Production ~ SC.Level, 
                  family = Gamma(link = "log"), # better fit than gaussian
                  #family = gaussian(link = "identity"),
                  data = TOTALPROD_sum)
 
-summary(glm_model)  # Check model summary
+summary(glm_model.fig3)  # Check model summary
 
-p_value <- summary(glm_model)$coefficients[2, 4]  # Extract p-value for SC.Level
+p_value <- summary(glm_model.fig3)$coefficients[2, 4]  # Extract p-value for SC.Level
 
-pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+pseudo_r2 <- 1 - (glm_model.fig3$deviance / glm_model.fig3$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
 
 p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
 r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
@@ -303,7 +302,7 @@ library(broom)
 library(tidyr)
 library(purrr)
 
-glm_results <- TOTALPROD_Summary_Sum %>%
+glm_model.fig4 <- TOTALPROD_Summary_Sum %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(
@@ -344,23 +343,14 @@ glm_results <- TOTALPROD_Summary_Sum %>%
     aic_label = sprintf("AIC = %.2f", AIC_value)
   )
 
-glm_results
-
-
-# At this point, p_value, pseudo_r2, p_label, and r2_label are all in the `glm_results` dataframe.
-
-# Merge with main dataset
-TOTALPROD_Summary_Sum <- TOTALPROD_Summary_Sum %>%
-  left_join(glm_results, by = "FFG")
-
-TOTALPROD_Summary_Sum$SC.Level <- as.numeric(as.character(TOTALPROD_Summary_Sum$SC.Level))
+glm_model.fig4
 
 
 # Plot to scale
 ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) + 
   geom_point(aes(color = SC.Level, shape = Site.Type), size = 3, alpha = 0.8) +  # Color points by SC.Level
   geom_smooth(method = "glm", method.args = list(family = Gamma (link=log)), se = TRUE, color = "grey37") + 
-  geom_text(data = glm_results, aes(
+  geom_text(data = glm_model.fig4, aes(
     x = min(TOTALPROD_Summary_Sum$SC.Level),  
     y = min(TOTALPROD_Summary_Sum$Summed.Annual.Production),  # Adjust y to the lower bound
     label = paste("R² =", r2_label, "\nP =", p_label)),
@@ -479,16 +469,16 @@ prod.food <- prod.food %>%
 
 #FBOM + CBOM (FIGURE 5A)----------------------------
 
-glm_model <- glm(fbom.cbom ~ SC.Level, 
+glm_model.fig5a <- glm(fbom.cbom ~ SC.Level, 
                  #family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  family = gaussian(link = "identity"),
                  data = prod.food)
 
-summary(glm_model)  # Check model summary
+summary(glm_model.fig5a)  # Check model summary
 
-p_value <- summary(glm_model)$coefficients[2, 4]  # Extract p-value for SC.Level
+p_value <- summary(glm_model.fig5a)$coefficients[2, 4]  # Extract p-value for SC.Level
 
-pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+pseudo_r2 <- 1 - (glm_model.fig5a$deviance / glm_model.fig5a$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
 
 p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
 r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
@@ -525,16 +515,16 @@ FBOM.CBOM.sc.lm
 
 #ALGAE (FIGURE 5c)----------------------------
 
-glm_model <- glm(annual.mean.Algae ~ SC.Level, 
+glm_model.fig5c <- glm(annual.mean.Algae ~ SC.Level, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  #family = gaussian(link = "identity"),
                  data = prod.food)
 
-summary(glm_model)  # Check model summary
+summary(glm_model.fig5c)  # Check model summary
 
-p_value <- summary(glm_model)$coefficients[2, 4]  # Extract p-value for SC.Level
+p_value <- summary(glm_model.fig5c)$coefficients[2, 4]  # Extract p-value for SC.Level
 
-pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+pseudo_r2 <- 1 - (glm_model.fig5c$deviance / glm_model.fig5c$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
 
 p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
 r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
@@ -576,16 +566,16 @@ Algae.sc.lm
 
 #CHL-A (FIGURE 5b)-----------------------
 
-glm_model <- glm(annual.mean.chla ~ SC.Level, 
+glm_model.figb <- glm(annual.mean.chla ~ SC.Level, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  #family = gaussian(link = "identity"),
                  data = prod.food)
 
-summary(glm_model)  # Check model summary
+summary(glm_model.figb)  # Check model summary
 
-p_value <- summary(glm_model)$coefficients[2, 4]  # Extract p-value for SC.Level
+p_value <- summary(glm_model.figb)$coefficients[2, 4]  # Extract p-value for SC.Level
 
-pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+pseudo_r2 <- 1 - (glm_model.figb$deviance / glm_model.figb$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
 
 p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
 r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
@@ -630,16 +620,16 @@ chla.sc.lm
 
 #FBOM + CBOM (FIGURE 6a)----------------------------
 
-glm_model <- glm(Sum.Annual.Production ~ fbom.cbom, 
+glm_model.fig6a <- glm(Sum.Annual.Production ~ fbom.cbom, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  #family = gaussian(link = "identity"),
                  data = prod.food)
 
-summary(glm_model)  # Check model summary
+summary(glm_model.fig6a)  # Check model summary
 
-p_value <- summary(glm_model)$coefficients[2, 4]  # Extract p-value for SC.Level
+p_value <- summary(glm_model.fig6a)$coefficients[2, 4]  # Extract p-value for SC.Level
 
-pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+pseudo_r2 <- 1 - (glm_model.fig6a$deviance / glm_model.fig6a$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
 
 p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
 r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
@@ -681,16 +671,16 @@ FBOM.CBOM.prod.lm
 
 #ALGAE (FIGURE 6b)----------------------------
 
-glm_model <- glm(Sum.Annual.Production ~ annual.mean.Algae, 
+glm_model.fig6b <- glm(Sum.Annual.Production ~ annual.mean.Algae, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  #family = gaussian(link = "identity"),
                  data = prod.food)
 
-summary(glm_model)  # Check model summary
+summary(glm_model.fig6b)  # Check model summary
 
-p_value <- summary(glm_model)$coefficients[2, 4]  # Extract p-value for SC.Level
+p_value <- summary(glm_model.fig6b)$coefficients[2, 4]  # Extract p-value for SC.Level
 
-pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+pseudo_r2 <- 1 - (glm_model.fig6b$deviance / glm_model.fig6b$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
 
 p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
 r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
@@ -732,16 +722,16 @@ Algae.prod.lm
 
 #CHL-A (FIGURE 6c)----------------------------
 
-glm_model <- glm(Sum.Annual.Production ~ annual.mean.chla, 
+glm_model.fig6c <- glm(Sum.Annual.Production ~ annual.mean.chla, 
                  family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
                  #family = gaussian(link = "identity"),
                  data = prod.food)
 
-summary(glm_model)  # Check model summary
+summary(glm_model.fig6c)  # Check model summary
 
-p_value <- summary(glm_model)$coefficients[2, 4]  # Extract p-value for SC.Level
+p_value <- summary(glm_model.fig6c)$coefficients[2, 4]  # Extract p-value for SC.Level
 
-pseudo_r2 <- 1 - (glm_model$deviance / glm_model$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+pseudo_r2 <- 1 - (glm_model.fig6c$deviance / glm_model.fig6c$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
 
 p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
 r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
@@ -783,7 +773,7 @@ chla.prod.lm
 
 # Now, looking at chl-a slopes for each SC category (FIGURE 6d)----------------------
 
-glm_results_chla <- prod.food %>%
+glm_model.fig6d <- prod.food %>%
   group_by(SC.Category) %>%
   summarise(
     glm_model = list(glm(Sum.Annual.Production ~ annual.mean.chla,
@@ -801,7 +791,7 @@ glm_results_chla <- prod.food %>%
   select(SC.Category, term, estimate, std.error, statistic, p.value,
          null_deviance, residual_deviance, AIC_value)
 
-glm_results_chla
+glm_model.fig6d
 
 
 
@@ -834,12 +824,12 @@ chla.lm.cat
 
 # Chl-a relationship with FFG 2P (FIGURE 7)------------------------------
 
-glm_results <- prod.food.ffg %>%
+glm_model.fig7 <- prod.food.ffg %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla, 
-                          #family = Gamma(link = "log"), # this yielded a very unfit model
-                          family = gaussian(link = "identity"),
+                          family = Gamma(link = "log"), 
+                          #family = gaussian(link = "identity"),
                          control = glm.control(maxit = 1000),
                          data = cur_data())),
     .groups = "drop"
@@ -856,9 +846,9 @@ glm_results <- prod.food.ffg %>%
     aic_label = sprintf("AIC = %.2f", aic)
   )
 
-glm_results
+glm_model.fig7
 
-glm_results <- prod.food.ffg %>%
+glm_model.fig7 <- prod.food.ffg %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla,
@@ -879,14 +869,16 @@ glm_results <- prod.food.ffg %>%
   select(FFG, term, estimate, std.error, statistic, p.value,
          null_deviance, residual_deviance, p_value, pseudo_r2, aic)
 
-glm_results
+glm_model.fig7
 
 # Merge with main dataset
 prod.food.ffg <- prod.food.ffg %>%
-  left_join(glm_results, by = "FFG")
+  left_join(glm_model.fig7, by = "FFG")
 
 
 # Create the plot
+dev.off()
+
 production_chla_lm <- ggplot(
   data = prod.food.ffg, 
   aes(x = annual.mean.chla, y = Summed.Annual.Production, color = SC.Level)
@@ -918,6 +910,7 @@ production_chla_lm <- ggplot(
     expand = c(0.05, 0)  # Remove extra space on x-axis
   ) + 
   scale_y_continuous(expand = c(0.0, 0.1))  # Add padding to the y-axis to ensure points don't get cut off
+
 
 # Print the plot
 production_chla_lm
@@ -1074,6 +1067,7 @@ levels(as.factor(biomass.ref.filter$Sample.Month))
 
 biomass.ref.filter$Sample.Month <- as.factor(biomass.ref.filter$Sample.Month)
 # First, create the distance matrix using vegdist() 
+set.seed(42)
 dist_matrix <- vegdist(biomass.ref.filter[, -(1:4)], method = "bray")  # adjust based on your actual columns
 
 # Then, run adonis2 using the distance matrix and relevant factors
@@ -1088,6 +1082,7 @@ print(adonis_result)
 
 
 # Compute dispersion (PERMDISP)
+set.seed(42)
 dispersion_test <- betadisper(dist_matrix, biomass.ref.filter$Sample.Month)
 
 # Perform permutation test for dispersion
@@ -1308,6 +1303,7 @@ levels(as.factor(biomass.ref.filter$Sample.Month))
 
 biomass.mid.filter$Sample.Month <- as.factor(biomass.mid.filter$Sample.Month)
 # First, create the distance matrix using vegdist() 
+set.seed(42)
 dist_matrix <- vegdist(biomass.mid.filter[, -(1:4)], method = "bray")  # adjust based on your actual columns
 
 # Then, run adonis2 using the distance matrix and relevant factors
@@ -1322,6 +1318,7 @@ print(adonis_result)
 
 
 # Compute dispersion (PERMDISP)
+set.seed(42)
 dispersion_test <- betadisper(dist_matrix, biomass.mid.filter$Sample.Month)
 
 # Perform permutation test for dispersion
@@ -1512,7 +1509,7 @@ HIGH.NMDS <- ggplot() +
   geom_polygon(data = high.feb, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#EDBB8A", alpha = 0.5) +
   geom_polygon(data = high.may, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#CA562C", alpha = 0.5) +
   geom_polygon(data = high.aug, aes(x = NMDS1, y = NMDS2, group = "site"), fill = "#F6EDBD", alpha = 0.5) +
-  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.2, vjust = 0.5, color = "grey23") +   
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label = species), alpha = 0.0, vjust = 0.5, color = "grey23") +   
   geom_point(data = site.scores, aes(x = NMDS1, y = NMDS2, color = site), size = 3) + 
   geom_text(data = site.scores, aes(x = NMDS1, y = NMDS2, label = site), size = 2, vjust = 0.5, alpha = 0) +
   scale_colour_manual(values = c(  "EAS.OCT" = "#CA562C00", "EAS.FEB" = "#CA562C00", "EAS.MAY" = "#CA562C00","EAS.AUG"="#EDBB8A00",
@@ -1542,6 +1539,7 @@ levels(as.factor(biomass.high.filter$Sample.Month))
 
 biomass.high.filter$Sample.Month <- as.factor(biomass.high.filter$Sample.Month)
 # First, create the distance matrix using vegdist() 
+set.seed(42)
 dist_matrix <- vegdist(biomass.high.filter[, -(1:4)], method = "bray")  # adjust based on your actual columns
 
 # Then, run adonis2 using the distance matrix and relevant factors
@@ -1556,6 +1554,7 @@ print(adonis_result)
 
 
 # Compute dispersion (PERMDISP)
+set.seed(42)
 dispersion_test <- betadisper(dist_matrix, biomass.high.filter$Sample.Month)
 
 # Perform permutation test for dispersion
