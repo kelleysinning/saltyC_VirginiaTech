@@ -1633,6 +1633,7 @@ write_xlsx(genera_scores, "generastats_biomassHIGHacrossSZN_NMDS.xlsx")
 library(dbplyr)
 
 covariates <- read.csv("covariates.csv")
+YSI <- read.csv("YSI.Year1.csv")
 
 str(covariates)
 
@@ -1645,7 +1646,7 @@ covariates <- covariates %>%
     NO3.NO2.mg.L. = as.numeric(NO3.NO2.mg.L.),
     oPO4.mg.L. = as.numeric(oPO4.mg.L.),
     CaCO3..mg.L. = as.numeric(CaCO3..mg.L.),
-  )
+  ) #There will be NAs because some water chem was below detection
 
 
 # Averaging available data to get yearly values
