@@ -838,8 +838,8 @@ glm_results <- prod.food.ffg %>%
   group_by(FFG) %>%
   summarise(
     glm_model = list(glm(Summed.Annual.Production ~ annual.mean.chla, 
-                          #family = Gamma(link = "log"), # this yielded a very unfit model
-                          family = gaussian(link = "identity"),
+                          family = Gamma(link = "log"), 
+                          #family = gaussian(link = "identity"),
                          control = glm.control(maxit = 1000),
                          data = cur_data())),
     .groups = "drop"
@@ -884,6 +884,7 @@ glm_results
 # Merge with main dataset
 prod.food.ffg <- prod.food.ffg %>%
   left_join(glm_results, by = "FFG")
+
 
 
 # Create the plot

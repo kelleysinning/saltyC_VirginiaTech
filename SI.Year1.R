@@ -813,6 +813,8 @@ SI.annual.macro.food <- SI.annual.macro.food %>%
 
 
 
+# Atomic C:N for FFGs and food resources
+
 ggplot(SI.annual.macro.food, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
   geom_point(size = 3) +
   
@@ -932,6 +934,20 @@ SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Stenonema"]=
 SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Taeniopteryx"]="Shredder"
 SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Tanypodinae"]="Predator"
 SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label=="Tipula"]="Shredder"
+# For each case where FFG is NA, set it to the correct Label value
+SI.season.macro.food.Atomic$FFG <- as.character(SI.season.macro.food.Atomic$FFG)
+
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label == "CBOM"] <- "CBOM"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label == "FBOM"] <- "FBOM"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label == "Algae"] <- "Algae"
+
+# If you still want FFG as a factor afterward:
+SI.season.macro.food.Atomic$FFG <- factor(SI.season.macro.food.Atomic$FFG)
+
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label == "CBOM"] <- "CBOM"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label == "FBOM"] <- "FBOM"
+SI.season.macro.food.Atomic$FFG[SI.season.macro.food.Atomic$Label == "Algae"] <- "Algae"
+
 
 
 # Adding site characteristics like mean annual specific conductance
@@ -1008,7 +1024,62 @@ ggplot(SI.season.macro.food.Atomic, aes(x = season.wtC, y = season.wtN,
 
 
 
+ggplot(SI.season.macro.food.Atomic, aes(x = FFG, y = season.Atomic.CN,
+                                        color = SC.Category, shape = FFG)) +
+  facet_wrap(~Month, scales = "free") +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = Label, fontface = font_label),
+                  size = 3, show.legend = FALSE, max.overlaps = 50) +
+  labs(
+    x = "wt % C",
+    y = "wt % N",
+    color = "SC Category",
+    shape = "FFG"
+  ) +
+  scale_color_manual(
+    values = c(
+      "REF" = "#1b9e77",
+      "MID" = "#d95f02",
+      "HIGH" = "#7570b3"
+    )
+  ) +
+  theme_minimal() +
+  theme(
+    strip.background = element_rect(fill = "gray90", color = "black", linewidth = 0.5),
+    strip.text = element_text(face = "bold"),
+    panel.spacing = unit(1, "lines"),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5)
+  )
 
+
+library(ggplot2)
+library(dplyr)
+
+ggplot(SI.season.macro.food.Atomic, 
+       aes(x = FFG, y = season.Atomic.CN, fill = SC.Category)) +
+  facet_wrap(~Month, scales = "free") +
+  stat_summary(fun = mean, geom = "bar", 
+               position = position_dodge(width = 0.9), width = 0.7) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", 
+               position = position_dodge(width = 0.9), width = 0.3) +
+  labs(
+    x = "Feeding Functional Group",
+    y = "Atomic C:N",
+    fill = "SC Category"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "REF" = "#1b9e77",
+      "MID" = "#d95f02",
+      "HIGH" = "#7570b3"
+    )
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    strip.background = element_rect(fill = "gray90", color = "black", linewidth = 0.5),
+    strip.text = element_text(face = "bold"),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5)
+  )
 
 
 
