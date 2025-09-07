@@ -4511,7 +4511,9 @@ print(se_table)
 
 
 
-# TOP TAXA FOR SI
+# TOP TAXA FOR SI-----
+TOTALPROD_Summary <- TOTALPROD_Summary %>%
+  filter(Site %in% c("EAS", "FRY", "RIC"))
 
 library(dplyr)
 
@@ -4522,11 +4524,58 @@ top10_producers <- TOTALPROD_Summary %>%
 
 library(dplyr)
 
-top10_by_ffg <- TOTALPROD_Summary %>%
+# specifying they are represented in EAS, FRY, and RIC
+top5_by_ffg <- TOTALPROD_Summary %>%
   filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
   group_by(FFG, Genus) %>%
+  filter(all(c("EAS", "FRY", "RIC") %in% unique(Site))) %>%
   summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE), .groups = "drop") %>%
   arrange(FFG, desc(total_annual_production)) %>%
   group_by(FFG) %>%
+  slice_head(n = 5)
+
+# top 5 for each site
+top5_by_ffg <- TOTALPROD_Summary %>%
+  filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
+  group_by(Site, FFG, Genus) %>%
+  summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE),
+            .groups = "drop") %>%
+  arrange(Site, FFG, desc(total_annual_production)) %>%
+  group_by(Site, FFG) %>%
+  slice_head(n = 5)
+
+
+
+# Unchanged taxa for SI
+
+bottom10_producers <- TOTALPROD_Summary %>%
+  filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
+  arrange(Annual.Production) %>%   # ascending order (smallest first)
+  slice_head(n = 10)
+
+library(dplyr)
+
+
+# specifying they are represented in EAS, FRY, and RIC
+bottom5_by_ffg <- TOTALPROD_Summary %>%
+  filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
+  group_by(FFG, Genus) %>%
+  # check how many unique sites each Genus is found in
+  filter(all(c("EAS", "FRY", "RIC") %in% unique(Site))) %>%
+  summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE),
+            .groups = "drop") %>%
+  arrange(FFG, total_annual_production) %>%
+  group_by(FFG) %>%
+  slice_head(n = 5)
+
+
+# bottom 5 for each site
+bottom5_by_ffg <- TOTALPROD_Summary %>%
+  filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
+  group_by(Site, FFG, Genus) %>%
+  summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE),
+            .groups = "drop") %>%
+  arrange(Site, FFG, total_annual_production) %>%
+  group_by(Site, FFG) %>%
   slice_head(n = 5)
 

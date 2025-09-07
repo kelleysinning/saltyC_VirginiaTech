@@ -27,6 +27,8 @@ SI <- SI %>%
 SI <- SI %>%
   mutate(Taxa = ifelse(Taxa == "Acroneuria ", "Acroneuria", Taxa))
 
+SI <- SI %>%
+  mutate(Month = ifelse(Month == "October ", "October", Month))
 
 # Averaging replicates across seasons
 SI.Season <- SI %>%
@@ -278,26 +280,31 @@ common_taxa <- SI.year1 %>%
   pull(common)
 
 
-SI.year1 <- SI.year1 %>%
-  filter(Taxa %in% c("Glossosoma",
-                    "Neophylax",
-                     "Stenonema",
-                     "Epeorus",
-                     "Stenelmis",
-                     "Ectopria",
-                     "Psephenus",
-                     "Oulimnius",
-                     "Optioservus",
-                     "Molophilus",
-                     "Lepidostoma",
-                     "Hydatophylax",
-                     "Pycnopsyche",
-                     "Tallaperla",
-                     "Leuctra",
-                     "Taeniopteryx",
-                     "Amphinemura",
-                     "Prostoia",
-                     "Paracapnia"))
+# These are the top and bottom target taxa that I know have SI for them and 
+# only want to include (see SECPROD_SUMMARY_TOTAL excel)
+taxa_EAS <- c("Amphinemura", "Glossosoma","Pteronarcys","Stenonema",
+              "Tallaperla")
+
+taxa_FRY <- c("Amphinemura","Leuctra", "Neophylax", "Psephenus", "Pteronarcys",
+              "Stenonema", "Tallaperla", "Tipula")
+
+taxa_RIC <- c("Amphinemura","Ectopria", "Hydatophylax","Leuctra", "Pycnopsyche",
+              "Taeniopteryx", "Tipula")
+
+filterSI.year1 <- SI.year1 %>%
+  filter(
+      (Site == "EAS" & Taxa %in% taxa_EAS) |
+      (Site == "FRY" & Taxa %in% taxa_FRY) |
+      (Site == "RIC" & Taxa %in% taxa_RIC)
+  )
+
+filterSI.season <- SI.Season %>%
+  filter(
+      (Site == "EAS" & Taxa %in% taxa_EAS) |
+      (Site == "FRY" & Taxa %in% taxa_FRY) |
+      (Site == "RIC" & Taxa %in% taxa_RIC)
+  )
+
 
 # Color Scheme stuff
 library(RColorBrewer)
@@ -307,8 +314,8 @@ my_colors = carto_pal(7, "Geyser") #to get hex codes
 library(rcartocolor)
 
 # Plots for taxa signatures
-
-ggplot(SI.year1, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
+#can easily sub SI.year1 for filterSI.year1 to see original plots
+ggplot(filterSI.year1, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
   geom_point(size = 3) +
   labs(
     x = "d13C",
@@ -328,7 +335,7 @@ ggplot(SI.year1, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
 # With names of taxa
 library(ggrepel)
 
-ggplot(SI.year1, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
+ggplot(filterSI.year1, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
   geom_point(size = 3) +
   geom_text_repel(aes(label = Taxa), size = 3, show.legend = FALSE, max.overlaps = 50) +
   labs(
@@ -349,7 +356,7 @@ ggplot(SI.year1, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
 
 # For Season
 
-ggplot(SI.Season, aes(x = season.d13C, y = season.d15N,
+ggplot(filterSI.season, aes(x = season.d13C, y = season.d15N,
                       color = SC.Category, shape = FFG)) +
   facet_wrap(~Month) +
   geom_point(size = 3) +
@@ -378,7 +385,7 @@ ggplot(SI.Season, aes(x = season.d13C, y = season.d15N,
 
 
 # Summarizing average isotope signatures for each FFG
-FFGsummary_df <- SI.year1 %>%
+FFGsummary_df <- filterSI.year1 %>%
   group_by(SC.Category, SC.Level, FFG) %>%
   summarise(
     mean_d13C = mean(d13C, na.rm = TRUE),
@@ -587,7 +594,7 @@ food.annual <- rbind(Annual.CBOM, Annual.FBOM, Annual.Algae)
 
 # Cleaning up dataframes
 
-Clean.SI.Season <- SI.Season %>%
+Clean.SI.Season <- filterSI.season %>%
   dplyr::select(Site, Month, d13C = season.d13C, d15N = season.d15N, Label = Taxa)
 
 Clean.food.season <- food.season %>%
@@ -736,7 +743,7 @@ ggplot(SI.season.macro.food, aes(x = d13C, y = d15N,
 
 # Cleaning up dataframes
 
-Clean.SI.Annual <- SI.year1 %>%
+Clean.SI.Annual <- filterSI.year1 %>%
   dplyr::select(Site, d13C, d15N, Label = Taxa)
 
 Clean.food.annual <- food.annual %>%
@@ -839,9 +846,6 @@ SI.annual.macro.food <- SI.annual.macro.food %>%
   mutate(is_food = Label %in% c("Algae", "CBOM", "FBOM"))
 
 
-
-# Atomic C:N for FFGs and food resources
-
 ggplot(SI.annual.macro.food, aes(x = d13C, y = d15N, color = SC.Category, shape = FFG)) +
   geom_point(size = 3) +
   
@@ -855,7 +859,7 @@ ggplot(SI.annual.macro.food, aes(x = d13C, y = d15N, color = SC.Category, shape 
     max.overlaps = 50,
     box.padding = 1.0,     # more space around text box
     point.padding = 0.7,   # more space around points
-    segment.size = 0.9
+    segment.size = 0.0
   ) +
   
   # Taxa labels (plain, slightly smaller)
@@ -892,8 +896,11 @@ ggplot(SI.annual.macro.food, aes(x = d13C, y = d15N, color = SC.Category, shape 
 food.season <- food.season %>% 
   mutate(Atomic.CN = ((season.mean.wt.C/season.mean.wt.N) * (14/12)))
 
-Clean.SI.Season.Atomic <- SI.Season %>%
-  dplyr::select(Site, Month, season.wtN, season.wtC, season.Atomic.CN, Label = Taxa)
+filterSI.season <- filterSI.season %>% 
+  mutate(season.Atomic.CN = ((season.wtC/season.wtN) * (14/12))) 
+
+Clean.SI.Season.Atomic <- filterSI.season %>%
+  dplyr::select(Site, Month, season.wtN, season.wtC, season.Atomic.CN, Label = Taxa) 
 
 Clean.food.season.Atomic <- food.season %>%
   dplyr::select(Site, Month, season.wtN = season.mean.wt.N, season.wtC = season.mean.wt.C,
@@ -1018,6 +1025,7 @@ SI.season.macro.food.Atomic <- SI.season.macro.food.Atomic %>%
   mutate(Month = factor(Month, 
                         levels = c("October 2023", "February 2024", "May 2024", "August 2024")))
 
+
 # Plotting!
 SI.season.macro.food.Atomic <- SI.season.macro.food.Atomic %>%
   mutate(font_label = ifelse(Label %in% c("Algae", "CBOM", "FBOM"), "bold", "plain")) # Ensuring that food resources are bolded
@@ -1027,7 +1035,7 @@ ggplot(SI.season.macro.food.Atomic, aes(x = season.wtC, y = season.wtN,
   facet_wrap(~Month, scales = "free") +
   geom_point(size = 3) +
   geom_text_repel(aes(label = Label, fontface = font_label),
-                  size = 3, show.legend = FALSE, max.overlaps = 50) +
+                  size = 3, segment.size = 0.9,show.legend = FALSE, max.overlaps = 50) +
   labs(
     x = "wt % C",
     y = "wt % N",
@@ -1050,7 +1058,7 @@ ggplot(SI.season.macro.food.Atomic, aes(x = season.wtC, y = season.wtN,
   )
 
 
-
+# this is ugly
 ggplot(SI.season.macro.food.Atomic, aes(x = FFG, y = season.Atomic.CN,
                                         color = SC.Category, shape = FFG)) +
   facet_wrap(~Month, scales = "free") +

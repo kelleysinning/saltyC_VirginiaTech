@@ -3,7 +3,6 @@ February,EAS,1,Pteronarcys,5.84,54.47,10.88,0.77,-29.72
 February,EAS,1,Prosimulium,8.56,43.23,5.89,2.15,-27.08
 February,EAS,1,Eurylophella,3.65,55.19,17.64,-0.63,-29.29
 February,EAS,1,Tallaperla,8.92,53.95,7.06,0.74,-28.24
-February,EAS,2,Helobata/Helocombus,8.74,56.65,7.56,1.61,-27.32
 February,EAS,3,Pteronarcys,9.13,50.15,6.41,0.06,-27.46
 February,EAS,3,Prosimulium,8.8,47.57,6.31,2.25,-27.11
 February,FRY,1,Pteronarcys,9.81,49.28,5.86,0.49,-27.72
@@ -41,7 +40,6 @@ May,EAS,2,Isoperla,10.63,51.24,5.62,3.08,-27.7
 May,EAS,2,Amphinemura,5.91,45.79,9.04,-0.52,-27.84
 May,EAS,2,Orthocladiinae,10.36,50.09,5.64,-0.55,-25.51
 May,EAS,2,Lepidostoma,7.04,51.44,8.52,-2.62,-27.55
-May,EAS,2,Staphylinidae (adult),7.64,56.73,8.67,-0.26,-27.32
 May,EAS,2,Chironomini,10,48.52,5.66,1.17,-26.24
 May,EAS,2,Carabidae,7.68,55.68,8.45,2.33,-27.32
 May,EAS,1,Arcynopteryx dichroa,9.81,55.84,6.64,3.99,-27.42
@@ -51,7 +49,6 @@ May,EAS,1,Rhyacophila,7.83,57.61,8.59,2.23,-27.45
 May,EAS,1,Amphinemura,4.33,44.54,11.99,-1.12,-28.8
 May,EAS,1,Simulium,9.92,45.15,5.31,1.58,-25.95
 May,EAS,1,Ephemerella,7.78,53.62,8.04,-0.4,-28.36
-May,EAS,1,Staphylinidae (adult),7.92,55.34,8.15,3.06,-27.53
 May,EAS,1,Collembola,10.94,51.26,5.46,-0.97,-26.63
 May,EAS,1,Isoperla,11.18,50.6,5.28,4.12,-27.33
 May,EAS,1,Dicranota,8.35,57.35,8.02,3.02,-27.21
@@ -67,7 +64,7 @@ May,FRY,1,Tanypodinae,11.29,49.21,5.09,4.4,-23.1
 May,FRY,1,Pteronarcys,7.18,49.4,8.02,-1.88,-27.84
 May,FRY,1,Acroneuria,9.96,51.85,6.08,4.84,-23.98
 May,FRY,2,Neophylax,9.1,51.42,6.59,2.77,-24.7
-May,FRY,2,"Amphinemura (5 larvae, 1 adult)",7.69,39.79,6.03,0.81,-26.42
+May,FRY,2,Amphinemura,7.69,39.79,6.03,0.81,-26.42
 May,FRY,2,Isoperla,8.58,48.41,6.58,3.77,-25.74
 May,FRY,2,Perlesta,10.36,46.11,5.19,4.77,-23.66
 May,FRY,2,Diplectrona,10.34,45.16,5.1,2.11,-24.84
@@ -103,7 +100,7 @@ May,RIC,3,Cheumatopsyche,6.45,45.48,8.23,8.31,-23.64
 May,RIC,3,Hydropsyche,8.28,52.48,7.4,7.09,-23.25
 May,RIC,3,Pycnopsyche,8.65,52.74,7.11,1.3,-25.74
 May,RIC,3,Amphinemura,10.34,47.84,5.4,6.33,-21.62
-May,RIC,3,Tipula (Nippotipula),8.64,44.21,5.97,3.79,-27.24
+May,RIC,3,Tipula ,8.64,44.21,5.97,3.79,-27.24
 May,RIC,3,Acroneuria,10.42,53.87,6.03,8.98,-23.42
 May,RIC,3,Perlesta,10.78,48.06,5.2,9.22,-22.05
 May,RIC,3,Leuctra,6.81,50.83,8.7,7.01,-24.92
@@ -121,27 +118,21 @@ August,EAS,1,Orthocladiinae,11.24,49.11,5.1,-0.93,-26.93
 August,EAS,1,Stenonema,8.79,44.69,5.93,2.12,-28.18
 August,EAS,3,Peltoperla,8.36,49.96,6.97,0.88,-27.81
 August,FRY,1,Acroneuria,10.81,46.96,5.07,5.54,-24.59
-August,FRY,1,Helichus (adult),10.4,50.78,5.7,2.79,-26.12
 August,FRY,1,Hydrochus,9.11,51.59,6.6,2.12,-27.32
 August,FRY,1,Leuctra,9.31,49.67,6.23,3.19,-26.79
 August,FRY,1,Nigronia,9.38,40.14,4.99,4.13,-24.8
 August,FRY,1,Pteronarcys,8.7,49.49,6.64,-0.18,-28.27
 August,FRY,2,Leuctra,9.6,47.97,5.83,3.78,-26.67
-August,FRY,2,Staphylinidae (adult),10.55,49.55,5.48,1.55,-25.99
 August,FRY,2,Pteronarcys,11.01,46.79,4.96,1.4,-26.42
 August,FRY,2,Stenonema,4.08,36.05,10.3,0.65,-31.64
-August,FRY,2,Helichus (adult),10.71,48.59,5.29,2.4,-26.23
 August,FRY,2,Acroneuria,13.4,47.27,4.11,6.09,-23.9
 August,FRY,3,Psephenus,10.1,47.2,5.45,-0.34,-30.94
 August,FRY,3,Stenonema,5.02,32.25,7.5,2.56,-28.31
 August,FRY,3,Acroneuria,11.55,49.68,5.02,4.89,-25.43
-August,FRY,3,Helichus (adult),11,48.93,5.19,2.8,-25.98
 August,RIC,1,Sciaridae,9.82,51.42,6.11,4.48,-27.37
-August,RIC,1,Macronychus (adult),13.24,46.21,4.07,7.72,-25.62
 August,RIC,2,Acroneuria,11.53,45.15,4.57,9.56,-22.38
 August,RIC,2,Dolophilodes,10.34,43.06,4.86,7.78,-24.92
 August,RIC,2,Leuctra,6.86,48.58,8.27,7.33,-25.5
-August,RIC,2,Helichus (adult),10.98,50.14,5.33,7.41,-25.53
 August,RIC,2,Hydropsyche,7.67,37.29,5.67,6.33,-24.53
 August,RIC,3,Atherix,10.27,46.51,5.28,9.13,-23.89
 August,RIC,3,Cheumatopsyche,8.04,38.3,5.56,5.94,-24.83
