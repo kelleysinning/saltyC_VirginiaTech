@@ -15,7 +15,7 @@ library(purrr)
 
 
 # Set working directory 
-setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
+setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/2023-2025 VT/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
 
 # Bringing in total prod csv from 2P_2.0.R to cut out a lot of coding from previous scripts!
 TOTAL_PROD_lengths <- read.csv("TOTALPROD.csv")
@@ -250,7 +250,7 @@ prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color
            y = max(TOTALPROD_sum$Sum.Annual.Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) +  
-  ylab(expression(Secondary~Production~("g DM"/m^2/yr))) +   
+  ylab(expression(Secondary~Production~(g~DM~m^{2-1}~yr^-1))) +   
   xlab("Specific Conductance (µS/cm)") +   
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
   scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) +  
@@ -268,6 +268,7 @@ prod <- ggplot(TOTALPROD_sum, aes(x = SC.Level, y = Sum.Annual.Production, color
     legend.key = element_rect(fill = "white", color = "white")
   ) +
   coord_cartesian(ylim = range(TOTALPROD_sum$Sum.Annual.Production, na.rm = TRUE) * c(0.0, 1.1))
+
 
 
 prod  # Display the plot
@@ -356,7 +357,7 @@ ggplot(TOTALPROD_Summary_Sum, aes(x = SC.Level, y = Summed.Annual.Production)) +
     label = paste("R² =", r2_label, "\nP =", p_label)),
     hjust = 0, vjust = .1 , size = 3, alpha = 0, inherit.aes = FALSE) +  # Position text at bottom-left
   facet_wrap(~FFG, scales = "free") +  # Facet by FFG with independent scaling per facet
-  ylab(expression(Secondary~Production~("g DM"/m^2/yr))) + 
+  ylab(expression(Secondary~Production~(g~DM~m^{2-1}~yr^-1))) + 
   xlab("Specific Conductance (µS/cm)") + 
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +  # Gradient color scale
   scale_shape_manual(values = c("Monthly Streams" = 8, "Quarterly Streams" = 16)) +
@@ -513,6 +514,57 @@ FBOM.CBOM.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = fbom.cbom, color = SC
 
 FBOM.CBOM.sc.lm
 
+#CHL-A (FIGURE 5b)-----------------------
+
+glm_model.figb <- glm(annual.mean.chla ~ SC.Level, 
+                      family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
+                      #family = gaussian(link = "identity"),
+                      data = prod.food)
+
+summary(glm_model.figb)  # Check model summary
+
+p_value <- summary(glm_model.figb)$coefficients[2, 4]  # Extract p-value for SC.Level
+
+pseudo_r2 <- 1 - (glm_model.figb$deviance / glm_model.figb$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+
+p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
+r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
+
+
+chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
+  geom_smooth(method = "glm", method.args = list(family = Gamma(link="log")), se = TRUE, color = "grey37") +  
+  annotate("text", 
+           x = min(prod.food$SC.Level), 
+           y = max(prod.food$annual.mean.chla), 
+           label = paste("P =", p_label, "\n", r2_label), 
+           vjust = 1, hjust = 0, size = 5, alpha = 0) + 
+  ylab(expression("Mean annual chlorophyll-a (g/m²)")) +  
+  xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
+  scale_colour_gradient(
+    low = "#70A494", 
+    high = "#CA562C",
+    name = "Specific Conductivity"  # Labeled scale bar
+  ) +  
+  scale_shape_manual(
+    values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)
+  ) +  # Define shapes properly
+  theme_bw() +  
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_text(size = 10),  # Adjusted legend title size
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  )
+
+chla.sc.lm
+
 #ALGAE (FIGURE 5c)----------------------------
 
 glm_model.fig5c <- glm(annual.mean.Algae ~ SC.Level, 
@@ -564,56 +616,6 @@ Algae.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.Algae, color 
 
 Algae.sc.lm
 
-#CHL-A (FIGURE 5b)-----------------------
-
-glm_model.figb <- glm(annual.mean.chla ~ SC.Level, 
-                 family = Gamma(link = "log"), # not as appropriate for this figure as gaussian
-                 #family = gaussian(link = "identity"),
-                 data = prod.food)
-
-summary(glm_model.figb)  # Check model summary
-
-p_value <- summary(glm_model.figb)$coefficients[2, 4]  # Extract p-value for SC.Level
-
-pseudo_r2 <- 1 - (glm_model.figb$deviance / glm_model.figb$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
-
-p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
-r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
-
-
-chla.sc.lm <- ggplot(prod.food, aes(x = SC.Level, y = annual.mean.chla, color = SC.Level)) +  
-  geom_point(aes(shape = Site.Type), size = 3) +  # Use Site.Type for shape mapping
-  geom_smooth(method = "glm", method.args = list(family = Gamma(link="log")), se = TRUE, color = "grey37") +  
-  annotate("text", 
-           x = min(prod.food$SC.Level), 
-           y = max(prod.food$annual.mean.chla), 
-           label = paste("P =", p_label, "\n", r2_label), 
-           vjust = 1, hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Mean annual chlorophyll-a (g/m²)")) +  
-  xlab("Specific Conductance (µS/cm)") +  # Corrected X-axis label
-  scale_colour_gradient(
-    low = "#70A494", 
-    high = "#CA562C",
-    name = "Specific Conductivity"  # Labeled scale bar
-  ) +  
-  scale_shape_manual(
-    values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)
-  ) +  # Define shapes properly
-  theme_bw() +  
-  theme(
-    axis.title = element_text(size = 15),
-    axis.text = element_text(size = 15),
-    panel.grid = element_blank(),
-    axis.line = element_line(),
-    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
-    legend.position = "top",
-    legend.title = element_text(size = 10),  # Adjusted legend title size
-    legend.text = element_text(size = 10),
-    legend.background = element_blank(),
-    legend.key = element_rect(fill = "white", color = "white")
-  )
-
-chla.sc.lm
 
 
 # PRODUCTION AND STANDING STOCK, NOT WITH FFG-------------------------------------
@@ -643,7 +645,7 @@ FBOM.CBOM.prod.lm <- ggplot(prod.food, aes(x = fbom.cbom, y = Sum.Annual.Product
            y = max(prod.food$Sum.Annual.Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Secondary Production (g DM/m²/yr)")) +  
+  ylab(expression(Secondary~Production~(g~DM~m^{2-1}~yr^-1))) +  
   xlab("Mean annual CBOM + FBOM (g AFDM/m²)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
@@ -694,7 +696,7 @@ Algae.prod.lm <- ggplot(prod.food, aes(x = annual.mean.Algae, y = Sum.Annual.Pro
            y = max(prod.food$Sum.Annual.Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Secondary Production (g DM/m²/yr)")) +  
+  ylab(expression(Secondary~Production~(g~DM~m^{2-1}~yr^-1))) +  
   xlab("Mean annual algal biofilm (g AFDM/m²)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
@@ -745,7 +747,7 @@ chla.prod.lm <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Produ
            y = max(prod.food$Sum.Annual.Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            vjust= 1, hjust = 0, size = 5, alpha = 0) + 
-  ylab(expression("Secondary Production (g DM/m²/yr)")) +  
+  ylab(expression(Secondary~Production~(g~DM~m^{2-1}~yr^-1))) +  
   xlab("Mean annual chlorophyll-a (g/m²)") +  # Corrected X-axis label
   scale_colour_gradient(
     low = "#70A494", 
@@ -798,7 +800,7 @@ glm_model.fig6d
 chla.lm.cat <- ggplot(prod.food, aes(x = annual.mean.chla, y = Sum.Annual.Production, color = SC.Category)) +  
   geom_point(aes(shape = Site.Type), size = 3) +  
   geom_smooth(aes(group = SC.Category), method = "glm", method.args = list(family = gaussian(link="identity")), se = TRUE) +  
-  ylab(expression(Secondary~Production~("g DM"/m^2/yr))) +  
+  ylab(expression(Secondary~Production~(g~DM~m^{2-1}~yr^-1))) +  
   xlab("Mean annual chlorophyll-a (g/m²)") +  
   scale_colour_manual(values = c("REF" = "#70A494", "MID" = "#DE8A5A", "HIGH" = "#CA562C"), name = "SC Category") +  
   scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) +  
@@ -886,7 +888,7 @@ production_chla_lm <- ggplot(
   geom_point(aes(shape = Site.Type), size = 3, alpha = 0.8) + 
   geom_smooth(method = "glm", method.args = list(family = Gamma(link = "log")), se = TRUE, color = "grey37") + 
   facet_wrap(~FFG, scales = "free") +  # Allow free y-axis scales
-  ylab(expression(Secondary~Production~("g DM"/m^2/yr))) + 
+  ylab(expression(Secondary~Production~(g~DM~m^{2-1}~yr^-1))) + 
   xlab("Mean annual chlorophyll-a (g/m²)") + 
   scale_colour_gradient(low = "#70A494", high = "#CA562C") + 
   scale_shape_manual(values = c("Monthly Streams" = 8, "Quarterly Streams" = 16)) + 
