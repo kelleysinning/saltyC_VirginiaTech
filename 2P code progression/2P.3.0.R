@@ -4637,11 +4637,6 @@ library(dplyr)
 library(ggplot2)
 
 # Define the list of target genera
-target_genera <- c(
-  "Amphinemura", "Glossosoma", "Molophilus", "Pteronarcys", "Stenonema",
-  "Tallaperla", "Leuctra", "Neophylax", "Psephenus", "Tipula",
-  "Ectopria", "Hydatophylax", "Pycnopsyche", "Taeniopteryx"
-)
 
 target_genera <- data.frame(
   Site = c(
@@ -4659,39 +4654,6 @@ target_genera <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# Filter for those genera
-production_data_filtered <- TOTALPROD_Summary %>%
-  #filter(Genus %in% target_genera) %>%
-  filter(Genus %in% target_genera$Genus) %>%
-  # Optional: order taxa by total production for plotting
-  group_by(Genus) %>%
-  summarise(total_prod = sum(Annual.Production, na.rm = TRUE), .groups = "drop") %>%
-  arrange(desc(total_prod)) %>%
-  pull(Genus) -> taxon_order
-
-production_data_filtered <- TOTALPROD_Summary %>%
-  #filter(Genus %in% target_genera) %>%
-  filter(Genus %in% target_genera$Genus) %>%
-  mutate(Genus = factor(Genus, levels = taxon_order))
-
-# Plot
-ggplot(production_data_filtered, aes(x = Genus, y = Annual.Production, fill = Genus)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~ Site, scales = "free_y") +
-  labs(
-    x = "Genus",
-    y = "Annual Production (g/m²/year)",
-    title = "Secondary Production per Stream (Selected Genera)"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "none"
-  )
-
-
-library(dplyr)
-library(ggplot2)
 
 # Ensure character columns
 TOTALPROD_Summary <- TOTALPROD_Summary %>%
