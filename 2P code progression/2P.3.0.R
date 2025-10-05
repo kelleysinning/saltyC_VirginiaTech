@@ -14,7 +14,7 @@ library(rcartocolor)
 library(dplyr)
 library(purrr)
 
-setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
+setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/2023-2025 VT/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
 
 # Bringing in total prod csv from 2P_2.0.R to cut out a lot of coding from previous scripts!
 TOTAL_PROD_lengths <- read.csv("TOTALPROD.csv")
@@ -4513,47 +4513,35 @@ print(se_table)
 
 # TOP TAXA FOR SI-----
 TOTALPROD_Summary <- TOTALPROD_Summary %>%
-  filter(Site %in% c("EAS", "FRY", "RIC"))
+  filter(Site %in% c("EAS", "FRY", "RIC")) %>%
+  group_by(Site) %>%
+  mutate(total_site_prod = sum(Annual.Production)) 
 
-library(dplyr)
-
-top10_producers <- TOTALPROD_Summary %>%
-  filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
-  arrange(desc(Annual.Production)) %>%
-  slice_head(n = 10)
-
-library(dplyr)
 
 # specifying they are represented in EAS, FRY, and RIC
 top5_by_ffg <- TOTALPROD_Summary %>%
   filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
   group_by(FFG, Genus) %>%
   filter(all(c("EAS", "FRY", "RIC") %in% unique(Site))) %>%
-  summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE), .groups = "drop") %>%
+  summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE), .groups = "drop") %>% #.groups = "drop") %>%
   arrange(FFG, desc(total_annual_production)) %>%
   group_by(FFG) %>%
   slice_head(n = 5)
 
-# top 5 for each site
+
+# top 5 for each site with % prod 
 top5_by_ffg <- TOTALPROD_Summary %>%
   filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
-  group_by(Site, FFG, Genus) %>%
+  group_by(Site, FFG, Genus, total_site_prod) %>%
   summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE),
             .groups = "drop") %>%
+  mutate(perc_prod = 100 * total_annual_production / total_site_prod) %>%
   arrange(Site, FFG, desc(total_annual_production)) %>%
   group_by(Site, FFG) %>%
-  slice_head(n = 5)
-
-
-
-# Unchanged taxa for SI
-
-bottom10_producers <- TOTALPROD_Summary %>%
-  filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
-  arrange(Annual.Production) %>%   # ascending order (smallest first)
   slice_head(n = 10)
 
-library(dplyr)
+
+
 
 
 # specifying they are represented in EAS, FRY, and RIC
@@ -4572,10 +4560,173 @@ bottom5_by_ffg <- TOTALPROD_Summary %>%
 # bottom 5 for each site
 bottom5_by_ffg <- TOTALPROD_Summary %>%
   filter(FFG %in% c("Shredder", "Scraper", "Coleoptera Scraper")) %>%
-  group_by(Site, FFG, Genus) %>%
+  group_by(Site, FFG, Genus, total_site_prod) %>%
   summarise(total_annual_production = sum(Annual.Production, na.rm = TRUE),
             .groups = "drop") %>%
+  mutate(perc_prod = 100 * total_annual_production / total_site_prod) %>%
   arrange(Site, FFG, total_annual_production) %>%
   group_by(Site, FFG) %>%
   slice_head(n = 5)
 
+
+
+# ATTEMPTING PRODUCTION CURVES---------------------------------------------------
+
+library(dplyr)
+library(ggplot2)
+
+
+taxon_order <- TOTALPROD_Summary %>%
+  group_by(Genus) %>%
+  summarise(total_prod = sum(Annual.Production, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(total_prod)) %>%
+  pull(Genus)
+
+production_data <- TOTALPROD_Summary %>%
+  mutate(Genus = factor(Genus,  levels = taxon_order))
+
+library(ggplot2)
+
+ggplot(production_data, aes(x = Genus, y = Annual.Production, fill = Genus)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Site, scales = "free_y") +
+  labs(x = "Genus", y = "Annual Production (g/m²/year)", title = "Secondary Production per Stream") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+
+
+# top 25% of production only 
+
+library(dplyr)
+library(ggplot2)
+
+# 1. Calculate total production per Genus
+taxon_totals <- TOTALPROD_Summary %>%
+  group_by(Genus) %>%
+  summarise(total_prod = sum(Annual.Production, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(total_prod))
+
+# 2. Keep only the top 25% of taxa
+n_top <- ceiling(nrow(taxon_totals) * 0.50)
+top_taxa <- taxon_totals$Genus[1:n_top]
+
+# 3. Filter original data to keep only top taxa and order them
+production_data <- TOTALPROD_Summary %>%
+  filter(Genus %in% top_taxa) %>%
+  mutate(Genus = factor(Genus, levels = top_taxa))
+
+# 4. Plot
+ggplot(production_data, aes(x = Genus, y = Annual.Production, fill = Genus)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Site, scales = "free_y") +
+  labs(
+    x = "Genus",
+    y = "Annual Production (g/m²/year)",
+    title = "Secondary Production per Stream (Top 25% Taxa)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  )
+
+
+# Filtering for taxa we have SI for
+
+library(dplyr)
+library(ggplot2)
+
+# Define the list of target genera
+target_genera <- c(
+  "Amphinemura", "Glossosoma", "Molophilus", "Pteronarcys", "Stenonema",
+  "Tallaperla", "Leuctra", "Neophylax", "Psephenus", "Tipula",
+  "Ectopria", "Hydatophylax", "Pycnopsyche", "Taeniopteryx"
+)
+
+target_genera <- data.frame(
+  Site = c(
+    rep("EAS", 5),
+    rep("FRY", 8),
+    rep("RIC", 7)
+  ),
+  Genus = c(
+    "Amphinemura", "Glossosoma", "Pteronarcys", "Stenonema", "Tallaperla",
+    "Amphinemura", "Leuctra", "Neophylax", "Psephenus", "Pteronarcys",
+    "Stenonema", "Tallaperla", "Tipula",
+    "Amphinemura", "Ectopria", "Hydatophylax", "Leuctra", "Pycnopsyche",
+    "Taeniopteryx", "Tipula"
+  ),
+  stringsAsFactors = FALSE
+)
+
+# Filter for those genera
+production_data_filtered <- TOTALPROD_Summary %>%
+  #filter(Genus %in% target_genera) %>%
+  filter(Genus %in% target_genera$Genus) %>%
+  # Optional: order taxa by total production for plotting
+  group_by(Genus) %>%
+  summarise(total_prod = sum(Annual.Production, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(total_prod)) %>%
+  pull(Genus) -> taxon_order
+
+production_data_filtered <- TOTALPROD_Summary %>%
+  #filter(Genus %in% target_genera) %>%
+  filter(Genus %in% target_genera$Genus) %>%
+  mutate(Genus = factor(Genus, levels = taxon_order))
+
+# Plot
+ggplot(production_data_filtered, aes(x = Genus, y = Annual.Production, fill = Genus)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Site, scales = "free_y") +
+  labs(
+    x = "Genus",
+    y = "Annual Production (g/m²/year)",
+    title = "Secondary Production per Stream (Selected Genera)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  )
+
+
+library(dplyr)
+library(ggplot2)
+
+# Ensure character columns
+TOTALPROD_Summary <- TOTALPROD_Summary %>%
+  mutate(
+    Site = as.character(Site),
+    Genus = as.character(Genus)
+  )
+
+target_genera <- target_genera %>%
+  mutate(
+    Site = as.character(Site),
+    Genus = as.character(Genus)
+  )
+
+# Keep only site-specific genera
+production_data_filtered <- TOTALPROD_Summary %>%
+  semi_join(target_genera, by = c("Site", "Genus"))
+
+# Make Genus a factor per Site
+production_data_filtered <- production_data_filtered %>%
+  group_by(Site) %>%
+  mutate(Genus = factor(Genus, levels = unique(Genus))) %>%
+  ungroup()
+
+# Plot: each facet has its own Genus axis
+ggplot(production_data_filtered, aes(x = Genus, y = Annual.Production, fill = Genus)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Site, scales = "free") +  # <-- free_x ensures unique x-axis per facet
+  labs(
+    x = "Genus",
+    y = "Annual Production (g/m²/year)",
+    title = "Secondary Production per Stream (Selected Genera)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  )
