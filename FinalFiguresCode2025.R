@@ -1631,7 +1631,7 @@ library(writexl)
 write_xlsx(genera_scores, "generastats_biomassHIGHacrossSZN_NMDS.xlsx")
 
 
-# SPEARMANS CORRELATION MATRIX---------------------------------------------------
+# SPEARMANS CORRELATION MATRIX (SUPPLEMENTAL)---------------------------------------------------
 library(dbplyr)
 
 covariates <- read.csv("covariates.csv")
@@ -1744,7 +1744,7 @@ ggcorrplot(
 )
 
 
-# GGRIDGE PLOTS
+# GGRIDGE PLOTS (SUPPLEMENTAL)------------------------------------------------------
 
 
 library(tidyverse)
@@ -1754,7 +1754,7 @@ library(ggridges)
 
 Total_Lengths <- read.csv("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/Data/saltyC_VirginiaTech/SUMMARY SHEETS/SECPROD_FFGadjusted.csv")
 
-# Subsetting for Stenonema--------------------------------------------------------
+# Subsetting for Stenonema----------------------
 TotalLengths_stenonema <- Total_Lengths %>%
   filter(Genus == "Stenonema" & Site %in% c("EAS", "FRY", "RIC")) 
 
@@ -1782,7 +1782,7 @@ ggplot(TotalLengths_stenonema, aes(Length, y = Sample.Month, fill = after_stat(x
   theme_classic()
 
 
-# Subsetting for Leuctra--------------------------------------------------------
+# Subsetting for Leuctra---------------------
 TotalLengths_leuctra <- Total_Lengths %>%
   filter(Genus == "Leuctra" & Site %in% c("EAS", "FRY", "RIC")) 
 
@@ -1809,9 +1809,9 @@ ggplot(TotalLengths_leuctra, aes(Length, y = Sample.Month, fill = after_stat(x))
   scale_fill_gradient(name = "Length (mm)", low= "skyblue", high="darkgoldenrod1") +
   theme_classic()
 
-# Subsetting for Scrapers and shredders--------------------------------------------------------
+# Subsetting for Scrapers and shredders-----------------
 
-# Subsetting for FFGS----------------------
+# Subsetting for FFGS
 TotalLengths_FFG <- Total_Lengths %>%
   filter(FFG %in% c("Scraper", "Scraper - Coleoptera", "Shredder") & Site %in% c("EAS", "FRY", "RIC"))
 
@@ -1842,3 +1842,64 @@ ggplot(TotalLengths_FFG, aes(Length, y = Sample.Month, fill = after_stat(x))) + 
   scale_fill_gradient(name = "Length (mm)", low= "skyblue", high="darkgoldenrod1") +
   theme_classic()
 
+
+# PREDADOR VS CONSUMER (SUPPLEMENTAL)-----------------------------------------------
+
+library(dplyr)
+
+TOTALPROD_pred <- TOTALPROD_Summary %>%
+  group_by(Site, SC.Level) %>%
+  summarise(
+    Sum.Predator_Production = sum(Annual.Production[FFG == "Predator"], na.rm = TRUE),
+    Sum.NonPred_Production = sum(Annual.Production[FFG != "Predator"], na.rm = TRUE)
+  )
+
+TOTALPROD_pred$Site.Type <- ifelse(TOTALPROD_pred$Site %in% c("EAS", "FRY", "RIC"), 
+                                  "Monthly Streams", "Quarterly Streams")# Create a categorical variable for site type
+
+TOTALPROD_pred$SC.Level <- as.numeric(as.character(TOTALPROD_pred$SC.Level))
+
+pred_consumer <- glm(Sum.Predator_Production ~ Sum.NonPred_Production, 
+                     family = Gamma(link = "log"),
+                     data = TOTALPROD_pred)
+
+
+summary(pred_consumer)  # Check model summary
+
+p_value <- summary(pred_consumer)$coefficients[2, 4]  # Extract p-value for SC.Level
+
+pseudo_r2 <- 1 - (pred_consumer$deviance / pred_consumer$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
+
+p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
+r2_label <- sprintf("Pseudo-R² = %.3f", pseudo_r2)
+
+
+
+pred_consumer <- ggplot(TOTALPROD_pred, aes(x = Sum.NonPred_Production, y = Sum.Predator_Production, colour = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+  geom_smooth(method = "glm", method.args = list(family = Gamma (link = "log")), se = TRUE, color = "grey37") +  
+  annotate("text", 
+           x = min(TOTALPROD_pred$Sum.NonPred_Production), 
+           y = max(TOTALPROD_pred$Sum.Predator_Production), 
+           label = paste("P =", p_label, "\n", r2_label), 
+           hjust = 0, size = 5, alpha = 0) +  
+  ylab(expression(Consumer~Production~(g~DM~m^{2-1}~yr^-1))) +   
+  xlab(expression(Predator~Production~(g~DM~m^{2-1}~yr^-1))) +   
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) +  
+  theme_bw() +   
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    legend.background = element_blank(),
+    legend.key = element_rect(fill = "white", color = "white")
+  ) +
+  coord_cartesian(ylim = c(0, 22), xlim = c(0,20))
+
+pred_consumer  # Display the plot
