@@ -1883,8 +1883,8 @@ pred_consumer <- ggplot(TOTALPROD_pred, aes(x = Sum.NonPred_Production, y = Sum.
            y = max(TOTALPROD_pred$Sum.Predator_Production), 
            label = paste("P =", p_label, "\n", r2_label), 
            hjust = 0, size = 5, alpha = 0) +  
-  ylab(expression(Consumer~Production~(g~DM~m^{2-1}~yr^-1))) +   
-  xlab(expression(Predator~Production~(g~DM~m^{2-1}~yr^-1))) +   
+  ylab(expression(Predator~Production~(g~DM~m^{2-1}~yr^-1))) +   
+  xlab(expression(Consumer~Production~(g~DM~m^{2-1}~yr^-1))) +   
   scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
   scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) +  
   theme_bw() +   
