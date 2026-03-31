@@ -1866,7 +1866,7 @@ pred_consumer <- glm(Sum.Predator_Production ~ Sum.NonPred_Production,
 
 summary(pred_consumer)  # Check model summary
 
-p_value <- summary(pred_consumer)$coefficients[2, 4]  # Extract p-value for SC.Level
+p_value <- summary(pred_consumer)$coefficients[2, 4]  # Extract p-value for Sum.NonPred_Production
 
 pseudo_r2 <- 1 - (pred_consumer$deviance / pred_consumer$null.deviance) # Compute pseudo-R² (1 - (residual deviance / null deviance))
 
@@ -1903,3 +1903,99 @@ pred_consumer <- ggplot(TOTALPROD_pred, aes(x = Sum.NonPred_Production, y = Sum.
   coord_cartesian(ylim = c(0, 22), xlim = c(0,20))
 
 pred_consumer  # Display the plot
+
+
+# Doing it linear
+
+lm_model <- lm(log(Sum.Predator_Production) ~ log(Sum.NonPred_Production),
+               data = TOTALPROD_pred)
+summary(lm_model)
+
+p_value <- summary(lm_model)$coefficients[2, 4]  # Extract p-value for Sum.NonPred_Production
+r2 <- summary(lm_model)$r.squared
+
+p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
+r2_label <- sprintf("R² = %.3f", r2)
+
+coef_vals <- coef(lm_model)
+
+b <- coef_vals[1]   # intercept
+m <- coef_vals[2]   # slope
+
+eq_label <- sprintf("log(y) = %.2f + %.2f log(x)", b, m)
+
+
+pred_consumer_plot <- ggplot(TOTALPROD_pred,
+                             aes(x = log(Sum.NonPred_Production),
+                                 y = log(Sum.Predator_Production),
+                                 colour = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+
+  geom_smooth(method = "lm", se = TRUE, color = "grey37") +  
+  annotate("text", 
+           x = log(min(TOTALPROD_pred$Sum.NonPred_Production)),
+           y = log(max(TOTALPROD_pred$Sum.Predator_Production))*0.8,
+           label = paste(eq_label, "\nP =", p_label, "\n", r2_label), 
+           hjust = 0, size = 5) +  
+  xlab(expression(log~"(Consumer Production (g DM m"^-2*" yr"^-1*"))")) +
+  ylab(expression(log~"(Predator Production (g DM m"^-2*" yr"^-1*"))")) +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) + 
+  theme_bw()+
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
+
+pred_consumer_plot
+
+
+# Not log
+
+# Doing it linear
+
+lm_model <- lm(Sum.Predator_Production ~ Sum.NonPred_Production,
+               data = TOTALPROD_pred)
+summary(lm_model)
+
+p_value <- summary(lm_model)$coefficients[2, 4] # Extract p-value for Sum.NonPred_Production
+r2 <- summary(lm_model)$r.squared
+
+p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
+r2_label <- sprintf("R² = %.3f", r2)
+
+coef_vals <- coef(lm_model)
+
+b <- coef_vals[1]   # intercept
+m <- coef_vals[2]   # slope
+
+eq_label <- sprintf("y = %.2f + %.2f x", b, m)
+
+pred_consumer_plot <- ggplot(TOTALPROD_pred,
+                             aes(x = Sum.NonPred_Production,
+                                 y = Sum.Predator_Production,
+                                 colour = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+  #geom_abline(intercept = b, slope = m, color = "grey37") +
+  geom_smooth(method = "lm", se = TRUE, color = "grey37") +  
+  annotate("text", 
+           x = min(TOTALPROD_pred$Sum.NonPred_Production), 
+           y = max(TOTALPROD_pred$Sum.Predator_Production)* 0.9,  
+           label = paste(eq_label, "\nP =", p_label, "\n", r2_label), 
+           hjust = 0, size = 5) +  
+  ylab(expression(Predator~Production~(g~DM~m^{2-1}~yr^-1))) +   
+  xlab(expression(Consumer~Production~(g~DM~m^{2-1}~yr^-1))) + 
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) + 
+  theme_bw()+
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
+
+pred_consumer_plot
+
