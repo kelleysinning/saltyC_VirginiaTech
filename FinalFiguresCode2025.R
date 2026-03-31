@@ -1999,3 +1999,116 @@ pred_consumer_plot <- ggplot(TOTALPROD_pred,
 
 pred_consumer_plot
 
+
+# PREDATOR VS ALL PRODUCTION (SUPPLEMENTAL)------------------
+
+TOTALPROD_pred.total <- TOTALPROD_Summary %>%
+  group_by(Site, SC.Level) %>%
+  summarise(
+    Sum.Predator_Production = sum(Annual.Production[FFG == "Predator"], na.rm = TRUE),
+    Sum.Total_Production = sum(Annual.Production, na.rm = TRUE),  # total production
+    .groups = "drop"
+  )
+
+TOTALPROD_pred.total$Site.Type <- ifelse(TOTALPROD_pred.total$Site %in% c("EAS", "FRY", "RIC"), 
+                                   "Monthly Streams", "Quarterly Streams")# Create a categorical variable for site type
+
+TOTALPROD_pred.total$SC.Level <- as.numeric(as.character(TOTALPROD_pred.total$SC.Level))
+
+
+
+
+# Doing it linear
+
+lm_model <- lm(log(Sum.Predator_Production) ~ log(Sum.Total_Production),
+               data = TOTALPROD_pred.total)
+summary(lm_model)
+
+p_value <- summary(lm_model)$coefficients[2, 4]  # Extract p-value for Sum.NonPred_Production
+r2 <- summary(lm_model)$r.squared
+
+p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
+r2_label <- sprintf("R² = %.3f", r2)
+
+coef_vals <- coef(lm_model)
+
+b <- coef_vals[1]   # intercept
+m <- coef_vals[2]   # slope
+
+eq_label <- sprintf("log(y) = %.2f + %.2f log(x)", b, m)
+
+
+pred_consumer_plot <- ggplot(TOTALPROD_pred.total,
+                             aes(x = log(Sum.Total_Production),
+                                 y = log(Sum.Predator_Production),
+                                 colour = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+  
+  geom_smooth(method = "lm", se = TRUE, color = "grey37") +  
+  annotate("text", 
+           x = log(min(TOTALPROD_pred.total$Sum.Total_Production)),
+           y = log(max(TOTALPROD_pred.total$Sum.Predator_Production))*0.8,
+           label = paste(eq_label, "\nP =", p_label, "\n", r2_label), 
+           hjust = 0, size = 5) +  
+  xlab(expression(log~"(Annual Total Macroinvertebrate Production (g DM m"^-2*" yr"^-1*"))")) +
+  ylab(expression(log~"(Annual Predator Production (g DM m"^-2*" yr"^-1*"))")) +
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) + 
+  theme_bw()+
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
+
+pred_consumer_plot
+
+
+# Not log
+
+# Doing it linear
+
+lm_model <- lm(Sum.Predator_Production ~ Sum.Total_Production,
+               data = TOTALPROD_pred.total)
+summary(lm_model)
+
+p_value <- summary(lm_model)$coefficients[2, 4] # Extract p-value for Sum.NonPred_Production
+r2 <- summary(lm_model)$r.squared
+
+p_label <- ifelse(p_value < 0.001, "< 0.001", sprintf("%.3f", p_value))# Format labels for the plot
+r2_label <- sprintf("R² = %.3f", r2)
+
+coef_vals <- coef(lm_model)
+
+b <- coef_vals[1]   # intercept
+m <- coef_vals[2]   # slope
+
+eq_label <- sprintf("y = %.2f + %.2f x", b, m)
+
+pred_consumer_plot <- ggplot(TOTALPROD_pred.total,
+                             aes(x = Sum.Total_Production,
+                                 y = Sum.Predator_Production,
+                                 colour = SC.Level)) +  
+  geom_point(aes(shape = Site.Type), size = 3) +  
+  #geom_abline(intercept = b, slope = m, color = "grey37") +
+  geom_smooth(method = "lm", se = TRUE, color = "grey37") +  
+  annotate("text", 
+           x = min(TOTALPROD_pred.total$Sum.Total_Production), 
+           y = max(TOTALPROD_pred.total$Sum.Predator_Production)* 0.9,  
+           label = paste(eq_label, "\nP =", p_label, "\n", r2_label), 
+           hjust = 0, size = 5) +  
+  ylab(expression(Annual~Predator~Production~(g~DM~m^{2-1}~yr^-1))) +   
+  xlab(expression(Annual~Total~Macroinvertebrate~Production~(g~DM~m^{2-1}~yr^-1))) + 
+  scale_colour_gradient(low = "#70A494", high = "#CA562C") +  
+  scale_shape_manual(values = c("Quarterly Streams" = 16, "Monthly Streams" = 8)) + 
+  theme_bw()+
+  theme(
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 15),
+    panel.grid = element_blank(),
+    axis.line = element_line(),
+    axis.text.x = element_text(angle = 90, hjust = 1, face = "italic"))
+
+pred_consumer_plot
+
