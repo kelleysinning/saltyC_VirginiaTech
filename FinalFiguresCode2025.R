@@ -1843,9 +1843,23 @@ ggplot(TotalLengths_FFG, aes(Length, y = Sample.Month, fill = after_stat(x))) + 
   theme_classic()
 
 
-# PREDADOR VS CONSUMER (SUPPLEMENTAL)-----------------------------------------------
+# PREDADOR VS TOTAL PR (SUPPLEMENTAL)-----------------------------------------------
 
 library(dplyr)
+
+TOTALPROD_pred.total <- TOTALPROD_Summary %>%
+  group_by(Site, SC.Level) %>%
+  summarise(
+    Sum.Predator_Production = sum(Annual.Production[FFG == "Predator"], na.rm = TRUE),
+    Sum.Total_Production = sum(Annual.Production, na.rm = TRUE),  # total production
+    .groups = "drop"
+  )
+
+TOTALPROD_pred.total$Site.Type <- ifelse(TOTALPROD_pred.total$Site %in% c("EAS", "FRY", "RIC"), 
+                                         "Monthly Streams", "Quarterly Streams")# Create a categorical variable for site type
+
+TOTALPROD_pred.total$SC.Level <- as.numeric(as.character(TOTALPROD_pred.total$SC.Level))
+
 
 lm_model <- lm(Sum.Predator_Production ~ Sum.Total_Production,
                data = TOTALPROD_pred.total)
