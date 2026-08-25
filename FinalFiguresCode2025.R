@@ -13,9 +13,9 @@ library(RColorBrewer)
 library(rcartocolor)
 library(purrr)
 
-
+unique(TOTALPROD_Summary$Genus)
 # Set working directory 
-setwd("~/Library/CloudStorage/GoogleDrive-ksinning@vt.edu/My Drive/2023-2025 VT/Data/saltyC_VirginiaTech/SUMMARY SHEETS")
+setwd("~/Library/CloudStorage/OneDrive-TheUniversityofMontana/VT Work/saltyC_VirginiaTech/SUMMARY SHEETS")
 
 # Bringing in total prod csv from 2P_2.0.R to cut out a lot of coding from previous scripts!
 TOTAL_PROD_lengths <- read.csv("TOTALPROD.csv")
@@ -172,6 +172,7 @@ TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="RUT"] = "MID"
 TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="LLW"] = "HIGH"
 TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="LLC"] = "HIGH"
 TOTALPROD_Summary$SC.Category[TOTALPROD_Summary$Site =="RIC"] = "HIGH"
+
 
 # Ordering everything
 TOTALPROD_Summary$Site <- factor(TOTALPROD_Summary$Site, levels = c("EAS", "CRO","HCN","HUR","FRY","RUT","LLW","LLC","RIC"))
@@ -1843,7 +1844,7 @@ ggplot(TotalLengths_FFG, aes(Length, y = Sample.Month, fill = after_stat(x))) + 
   theme_classic()
 
 
-# PREDADOR VS TOTAL PR (SUPPLEMENTAL)-----------------------------------------------
+# PREDADOR VS TOTAL PRODUCTION (SUPPLEMENTAL)-----------------------------------------------
 
 library(dplyr)
 
