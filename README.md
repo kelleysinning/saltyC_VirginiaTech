@@ -5,7 +5,7 @@ This is a reposity for Kelley Sinning (me) for my M.S. work at Virginia Tech fro
 Data in this repository primarily focuses on macroinvertebrate secondary production dynamics along a 
 mining induced salinity gradient in the central appalachian coalfields for the NSF Salty Carbon collaborative.
 
-Email me at kelley.sinning@umontana.edu if needed.
+Email me at ksinning@vt.edu if needed.
 
 9/14/2025
 
